@@ -128,7 +128,7 @@ def create_analyst_node(
         # Enforce source traceability and reject invented source IDs
         validate_finding_sources(findings, sources)
 
-        logger.info("[ANALYST] produced %d findings", len(findings))
+        logger.info("[Analyst] findings=%d", len(findings))
         return {"findings": findings}
 
     return analyst_node
