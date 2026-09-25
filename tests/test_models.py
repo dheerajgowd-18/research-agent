@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 from verified_research.graph.state import ResearchState
-from verified_research.models.research import AnalystOutput, Finding, Source
+from verified_research.models.research import AnalystOutput, Critique, Finding, Source
 
 
 class TestSourceModel:
@@ -93,7 +93,59 @@ class TestAnalystOutputModel:
         assert output.findings == []
 
 
+class TestCritiqueModel:
+    """Tests for Critique Pydantic model."""
+
+    def test_critique_valid_instantiation(self):
+        critique = Critique(
+            quality_score=0.85,
+            missing_topics=["Scalability benchmarks"],
+            weak_findings=["finding_001"],
+            citation_gaps=["Claim X needs URL"],
+            recommended_queries=["quantum computing benchmark 2026"],
+            should_research_again=False,
+        )
+        assert critique.quality_score == 0.85
+        assert critique.should_research_again is False
+        assert len(critique.missing_topics) == 1
+        assert len(critique.recommended_queries) == 1
+
+    def test_critique_score_bounds_validation(self):
+        # Below 0.0 fails
+        with pytest.raises(ValidationError):
+            Critique(
+                quality_score=-0.1,
+                should_research_again=True,
+            )
+
+        # Above 1.0 fails
+        with pytest.raises(ValidationError):
+            Critique(
+                quality_score=1.01,
+                should_research_again=True,
+            )
+
+    def test_critique_extra_fields_forbidden(self):
+        with pytest.raises(ValidationError):
+            Critique(
+                quality_score=0.5,
+                should_research_again=True,
+                extra_field="disallowed",  # type: ignore
+            )
+
+    def test_critique_defaults(self):
+        critique = Critique(
+            quality_score=0.5,
+            should_research_again=True,
+        )
+        assert critique.missing_topics == []
+        assert critique.weak_findings == []
+        assert critique.citation_gaps == []
+        assert critique.recommended_queries == []
+
+
 class TestResearchStateSchema:
+
     """Tests for LangGraph ResearchState TypedDict schema."""
 
     def test_research_state_partial_instantiation(self):

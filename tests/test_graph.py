@@ -6,7 +6,7 @@ from langchain_core.language_models import BaseChatModel
 from verified_research.agents.analyst import create_analyst_node
 from verified_research.agents.researcher import create_researcher_node
 from verified_research.graph.graph import build_research_graph, create_research_graph
-from verified_research.models.research import AnalystOutput, Finding, Source
+from verified_research.models.research import AnalystOutput, Critique, Finding, Source
 
 
 class MockSearchService:
@@ -64,10 +64,21 @@ class TestResearchGraphExecution:
 
         researcher = create_researcher_node(search_client=MockSearchService())
         analyst = create_analyst_node(llm=mock_llm)
+        critic = lambda state: {
+            "critique": Critique(
+                quality_score=0.95,
+                missing_topics=[],
+                weak_findings=[],
+                citation_gaps=[],
+                recommended_queries=[],
+                should_research_again=False,
+            )
+        }
 
         graph = create_research_graph(
             custom_researcher=researcher,
             custom_analyst=analyst,
+            custom_critic=critic,
         )
 
         initial_state = {"question": "How are neural architectures used in drug discovery?"}
@@ -96,9 +107,21 @@ class TestResearchGraphExecution:
         researcher = create_researcher_node(search_client=MockSearchService(sources=[]))
         analyst = create_analyst_node(llm=MagicMock(spec=BaseChatModel))
 
+        critic = lambda state: {
+            "critique": Critique(
+                quality_score=0.0,
+                missing_topics=["No sources"],
+                weak_findings=[],
+                citation_gaps=[],
+                recommended_queries=[],
+                should_research_again=False,
+            )
+        }
+
         graph = create_research_graph(
             custom_researcher=researcher,
             custom_analyst=analyst,
+            custom_critic=critic,
         )
 
         initial_state = {"question": "Completely unknown topic with 0 hits"}
@@ -125,3 +148,5 @@ class TestResearchGraphExecution:
         nodes = list(builder.nodes.keys())
         assert "researcher" in nodes
         assert "analyst" in nodes
+        assert "critic" in nodes
+
