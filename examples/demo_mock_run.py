@@ -1,81 +1,116 @@
-"""Local demo script executing Phase 1 graph with mocked search and LLM."""
+"""Local demo script executing graph with mocked search, analyst, and critic."""
 
 import logging
-from unittest.mock import MagicMock
-from langchain_core.language_models import BaseChatModel
+from typing import Any
 from verified_research.agents.analyst import create_analyst_node
+from verified_research.agents.critic import create_critic_node
 from verified_research.agents.researcher import create_researcher_node
 from verified_research.graph.graph import create_research_graph
-from verified_research.models.research import AnalystOutput, Finding, Source
+from verified_research.models.research import AnalystOutput, Critique, Finding, Source
 from verified_research.tools.search import SearchService
 
-# Configure simple logging format to observe state transitions
+# Configure logging format to observe state transitions cleanly
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
 
 
 class DemoSearchService(SearchService):
-    """Demo search provider returning realistic mock results."""
+    """Demo search provider returning query-specific mock results."""
+
+    def __init__(self) -> None:
+        self.call_count = 0
 
     def search(self, query: str, max_results: int = 5) -> list[Source]:
+        self.call_count += 1
+        if "fault tolerance" in query.lower():
+            return [
+                Source(
+                    source_id=f"src_{self.call_count:03d}",
+                    title="Quantum Fault-Tolerance Thresholds in Surface Codes",
+                    url="https://phys-review.org/qec-surface-codes",
+                    content=(
+                        "Surface code scaling past the fault-tolerant threshold proves that "
+                        "logical error rates decrease exponentially with code distance."
+                    ),
+                )
+            ]
         return [
             Source(
-                source_id="src_001",
+                source_id=f"src_{self.call_count:03d}",
                 title="Superconducting Qubit Advances in 2026",
                 url="https://quantum-research.org/advances-2026",
                 content=(
                     "Recent experiments demonstrate 2-qubit gate fidelities exceeding 99.9% "
                     "using fluxonium and transmon architecture hybrids."
                 ),
-            ),
-            Source(
-                source_id="src_002",
-                title="Quantum Error Correction Breakthroughs",
-                url="https://phys-review.org/qec-surface-codes",
-                content=(
-                    "Surface code scaling past the fault-tolerant threshold has proven "
-                    "that logical error rates decrease exponentially with code distance."
-                ),
-            ),
+            )
         ]
 
 
 def main() -> None:
     print("=" * 70)
-    print("VERIFIED RESEARCH AGENT - PHASE 1 LOCAL EXECUTION DEMO")
-    print("Pipeline: START -> researcher -> analyst -> END")
+    print("VERIFIED RESEARCH AGENT - CONDITIONAL ROUTING & CYCLES DEMO")
+    print("Pipeline: START -> researcher -> analyst -> critic -> router -> (researcher | END)")
     print("=" * 70)
 
-    # 1. Setup mock search client
+    # 1. Setup search service
     search_service = DemoSearchService()
     researcher = create_researcher_node(search_client=search_service)
 
-    # 2. Setup mock LLM with structured output adhering to AnalystOutput
-    mock_llm = MagicMock(spec=BaseChatModel)
-    structured_mock = MagicMock()
-    mock_findings = [
-        Finding(
-            finding_id="finding_001",
-            text="Hybrid fluxonium-transmon qubits achieve 2-qubit gate fidelities above 99.9%.",
-            source_ids=["src_001"],
-        ),
-        Finding(
-            finding_id="finding_002",
-            text="Logical error rates decline exponentially with code distance in surface codes.",
-            source_ids=["src_002"],
-        ),
-    ]
-    structured_mock.invoke.return_value = AnalystOutput(findings=mock_findings)
-    mock_llm.with_structured_output.return_value = structured_mock
-    analyst = create_analyst_node(llm=mock_llm)
+    # 2. Setup mock analyst
+    def mock_analyst(state: dict[str, Any]) -> dict[str, list[Finding]]:
+        sources = state.get("sources", [])
+        findings = []
+        for i, s in enumerate(sources, start=1):
+            findings.append(
+                Finding(
+                    finding_id=f"finding_{i:03d}",
+                    text=f"Insight synthesized from: {s.title}",
+                    source_ids=[s.source_id],
+                )
+            )
+        logger.info("[Analyst] findings=%d", len(findings))
+        return {"findings": findings}
 
-    # 3. Build and compile graph
+    # 3. Setup mock critic with 2-pass progression (weak on pass 1, good on pass 2)
+    critic_invocations = 0
+
+    def mock_critic(state: dict[str, Any]) -> dict[str, Critique]:
+        nonlocal critic_invocations
+        critic_invocations += 1
+        if critic_invocations == 1:
+            critique = Critique(
+                quality_score=0.62,
+                missing_topics=["Fault-tolerance threshold details"],
+                weak_findings=[],
+                citation_gaps=[],
+                recommended_queries=["quantum fault tolerance thresholds surface codes"],
+                should_research_again=True,
+            )
+        else:
+            critique = Critique(
+                quality_score=0.91,
+                missing_topics=[],
+                weak_findings=[],
+                citation_gaps=[],
+                recommended_queries=[],
+                should_research_again=False,
+            )
+        logger.info(
+            "[Critic] score=%.2f continue=%s",
+            critique.quality_score,
+            critique.should_research_again,
+        )
+        return {"critique": critique}
+
+    # 4. Build and compile graph
     graph = create_research_graph(
         custom_researcher=researcher,
-        custom_analyst=analyst,
+        custom_analyst=mock_analyst,
+        custom_critic=mock_critic,
     )
 
-    # 4. Invoke graph
+    # 5. Invoke graph
     user_question = "What are the recent milestones in quantum computing hardware and error correction?"
     print(f"\n[USER QUESTION]: {user_question}\n")
 
@@ -85,19 +120,23 @@ def main() -> None:
     print("\n" + "=" * 70)
     print("FINAL GRAPH STATE")
     print("=" * 70)
-    print(f"Question: {final_state['question']}\n")
+    print(f"Question: {final_state['question']}")
+    print(f"Completed Research Iterations: {final_state['research_iteration']}\n")
 
-    print(f"Sources Retrieved ({len(final_state['sources'])}):")
+    critique = final_state.get("critique")
+    if critique:
+        print(f"Final Critique Score: {critique.quality_score:.2f}")
+        print(f"Should Research Again: {critique.should_research_again}\n")
+
+    print(f"Sources Accumulated ({len(final_state['sources'])}):")
     for s in final_state["sources"]:
         print(f"  [{s.source_id}] {s.title} ({s.url})")
-        print(f"      Snippet: {s.content[:80]}...\n")
 
-    print(f"Findings Produced ({len(final_state['findings'])}):")
+    print(f"\nFindings Produced ({len(final_state['findings'])}):")
     for f in final_state["findings"]:
-        print(f"  [{f.finding_id}] {f.text}")
-        print(f"      Cited Sources: {f.source_ids}\n")
+        print(f"  [{f.finding_id}] {f.text} -> Sources: {f.source_ids}")
 
-    print("Execution complete. Traceability verified: all finding source_ids match state sources.")
+    print("\nExecution complete. Bounded cycle and state transitions verified.")
 
 
 if __name__ == "__main__":
