@@ -29,13 +29,15 @@ class TavilySearchClient:
     """Tavily search service implementation that normalizes results into Source models."""
 
     def __init__(self, api_key: str | None = None, max_results: int = 5) -> None:
-        settings = get_settings()
-        self.api_key = api_key or settings.tavily_api_key
+        if api_key is not None:
+            self.api_key = api_key
+        else:
+            self.api_key = get_settings().tavily_api_key
         self.max_results = max_results
         self._client = None
 
     def _get_client(self):
-        if not self.api_key:
+        if not self.api_key or not self.api_key.strip():
             raise MissingApiKeyError(
                 "Tavily API key is missing. Set TAVILY_API_KEY in your environment or .env file."
             )
