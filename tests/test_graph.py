@@ -146,7 +146,7 @@ class TestResearchGraphExecution:
     def test_graph_node_structure(self):
         builder = build_research_graph()
         nodes = list(builder.nodes.keys())
-        assert "researcher" in nodes
-        assert "analyst" in nodes
-        assert "critic" in nodes
+        assert "research" in nodes
+        assert len(nodes) == 1
+
 
