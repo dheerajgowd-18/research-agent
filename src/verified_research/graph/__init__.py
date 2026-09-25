@@ -9,12 +9,18 @@ if TYPE_CHECKING:
         build_research_graph,
         create_research_graph,
     )
+    from verified_research.graph.research_subgraph import (
+        build_research_subgraph,
+        create_research_subgraph,
+    )
 
 __all__ = [
     "ResearchState",
     "route_after_critic",
     "build_research_graph",
     "create_research_graph",
+    "build_research_subgraph",
+    "create_research_subgraph",
 ]
 
 
@@ -23,4 +29,8 @@ def __getattr__(name: str):
         from verified_research.graph import graph
 
         return getattr(graph, name)
+    if name in ("build_research_subgraph", "create_research_subgraph"):
+        from verified_research.graph import research_subgraph
+
+        return getattr(research_subgraph, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
