@@ -74,3 +74,46 @@ class AnalystOutput(BaseModel):
         default_factory=list,
         description="Collection of synthesized findings with source attributions.",
     )
+
+
+class Critique(BaseModel):
+    """Structured evaluation output produced by the critic node.
+
+    Attributes:
+        quality_score: Quantitative assessment of research quality (0.0 to 1.0).
+        missing_topics: Substantive topics or angles missing from current findings.
+        weak_findings: Specific findings that need stronger evidence or clarification.
+        citation_gaps: Identified claims lacking direct or credible source support.
+        recommended_queries: Targeted queries recommended for follow-up research passes.
+        should_research_again: Boolean flag indicating if another research cycle is warranted.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    quality_score: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Overall research quality score between 0.0 and 1.0.",
+    )
+    missing_topics: list[str] = Field(
+        default_factory=list,
+        description="Substantive topics or angles missing from current findings.",
+    )
+    weak_findings: list[str] = Field(
+        default_factory=list,
+        description="Specific findings that need stronger evidence or clarification.",
+    )
+    citation_gaps: list[str] = Field(
+        default_factory=list,
+        description="Identified claims lacking direct or credible source support.",
+    )
+    recommended_queries: list[str] = Field(
+        default_factory=list,
+        description="Targeted queries recommended for follow-up research passes.",
+    )
+    should_research_again: bool = Field(
+        ...,
+        description="True if further research iteration is warranted; False if research is sufficient.",
+    )
+

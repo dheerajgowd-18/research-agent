@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     # Search Configuration
     tavily_api_key: str | None = Field(default=None, alias="TAVILY_API_KEY")
     search_max_results: int = Field(default=5, alias="SEARCH_MAX_RESULTS")
+    max_iterations: int = Field(default=3, alias="MAX_ITERATIONS")
 
     # LLM Configuration
     llm_provider: Literal["groq", "openai", "fake"] = Field(
@@ -36,7 +37,11 @@ class Settings(BaseSettings):
     )
 
 
+DEFAULT_MAX_ITERATIONS = 3
+
+
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     """Retrieve cached application settings."""
     return Settings()
+
