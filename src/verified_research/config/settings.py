@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     llm_provider: Literal["groq", "openai", "fake"] = Field(
         default="groq", alias="LLM_PROVIDER"
     )
-    llm_model: str = Field(default="llama-3.1-8b-instant", alias="LLM_MODEL")
+    llm_model: str = Field(default="openai/gpt-oss-20b", alias="LLM_MODEL")
     llm_temperature: float = Field(default=0.0, alias="LLM_TEMPERATURE")
     groq_api_key: str | None = Field(default=None, alias="GROQ_API_KEY")
     openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
