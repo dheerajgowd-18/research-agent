@@ -7,6 +7,8 @@ from verified_research.models.research import (
     Evidence,
     Finding,
     Source,
+    VerdictType,
+    VerificationResult,
 )
 from verified_research.models.traceability import (
     DuplicateIdError,
@@ -27,6 +29,8 @@ __all__ = [
     "Critique",
     "Evidence",
     "Claim",
+    "VerdictType",
+    "VerificationResult",
     "TraceabilityError",
     "UnknownEvidenceError",
     "UnknownSourceError",

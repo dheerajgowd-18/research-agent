@@ -1,6 +1,6 @@
-"""Data models for research sources, findings, and analyst outputs."""
-
+from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
+
 
 
 class Source(BaseModel):
@@ -179,4 +179,49 @@ class Critique(BaseModel):
         ...,
         description="True if further research iteration is warranted; False if research is sufficient.",
     )
+
+
+VerdictType = Literal["SUPPORTED", "PARTIAL", "UNSUPPORTED"]
+
+
+class VerificationResult(BaseModel):
+    """Result of evaluating a specific claim against its cited evidence.
+
+    Attributes:
+        claim_id: Identifier of the Claim being evaluated.
+        verdict: Categorical evaluation: 'SUPPORTED', 'PARTIAL', or 'UNSUPPORTED'.
+        confidence: Numerical score between 0.0 and 1.0 representing model certainty.
+        reasoning: Explicit rationale explaining why the evidence supports, partially supports,
+                   or fails to support the claim.
+        evidence_ids: List of evidence IDs that were examined for this verdict.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    claim_id: str = Field(
+        ...,
+        min_length=1,
+        description="Identifier of the Claim evaluated.",
+    )
+    verdict: VerdictType = Field(
+        ...,
+        description="Verification outcome: SUPPORTED, PARTIAL, or UNSUPPORTED.",
+    )
+    confidence: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Model-reported confidence score between 0.0 and 1.0.",
+    )
+    reasoning: str = Field(
+        ...,
+        min_length=1,
+        description="Justification for the verdict based strictly on supplied evidence.",
+    )
+    evidence_ids: list[str] = Field(
+        ...,
+        min_length=1,
+        description="List of evidence IDs supplied for this evaluation.",
+    )
+
 
