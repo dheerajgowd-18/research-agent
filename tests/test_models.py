@@ -3,7 +3,14 @@
 import pytest
 from pydantic import ValidationError
 from verified_research.graph.state import ResearchState
-from verified_research.models.research import AnalystOutput, Critique, Finding, Source
+from verified_research.models.research import (
+    AnalystOutput,
+    Claim,
+    Critique,
+    Evidence,
+    Finding,
+    Source,
+)
 
 
 class TestSourceModel:
@@ -144,8 +151,88 @@ class TestCritiqueModel:
         assert critique.recommended_queries == []
 
 
-class TestResearchStateSchema:
+class TestEvidenceModel:
+    """Tests for Evidence Pydantic model."""
 
+    def test_evidence_valid_instantiation(self):
+        ev = Evidence(
+            evidence_id="ev_001",
+            source_id="src_001",
+            text="Coherence times reached 500 microseconds under cryogenic shielding.",
+        )
+        assert ev.evidence_id == "ev_001"
+        assert ev.source_id == "src_001"
+        assert "cryogenic" in ev.text
+
+    def test_evidence_empty_fields_fail(self):
+        with pytest.raises(ValidationError):
+            Evidence(evidence_id="", source_id="src_001", text="some text")
+
+        with pytest.raises(ValidationError):
+            Evidence(evidence_id="ev_001", source_id="", text="some text")
+
+        with pytest.raises(ValidationError):
+            Evidence(evidence_id="ev_001", source_id="src_001", text="")
+
+    def test_evidence_immutability(self):
+        ev = Evidence(evidence_id="ev_001", source_id="src_001", text="text")
+        with pytest.raises(ValidationError):
+            ev.text = "modified text"  # type: ignore
+
+    def test_evidence_extra_fields_forbidden(self):
+        with pytest.raises(ValidationError):
+            Evidence(
+                evidence_id="ev_001",
+                source_id="src_001",
+                text="text",
+                extra_field="disallowed",  # type: ignore
+            )
+
+
+class TestClaimModel:
+    """Tests for Claim Pydantic model."""
+
+    def test_claim_valid_instantiation(self):
+        claim = Claim(
+            claim_id="claim_001",
+            text="Superconducting qubits exceeded fault-tolerant fidelity limits.",
+            evidence_ids=["ev_001", "ev_002"],
+        )
+        assert claim.claim_id == "claim_001"
+        assert len(claim.evidence_ids) == 2
+        assert "ev_001" in claim.evidence_ids
+
+    def test_claim_empty_evidence_ids_fails(self):
+        with pytest.raises(ValidationError):
+            Claim(
+                claim_id="claim_001",
+                text="Statement without evidence.",
+                evidence_ids=[],
+            )
+
+    def test_claim_empty_fields_fail(self):
+        with pytest.raises(ValidationError):
+            Claim(claim_id="", text="Text", evidence_ids=["ev_001"])
+
+        with pytest.raises(ValidationError):
+            Claim(claim_id="claim_001", text="", evidence_ids=["ev_001"])
+
+    def test_claim_immutability(self):
+        claim = Claim(claim_id="claim_001", text="Text", evidence_ids=["ev_001"])
+        with pytest.raises(ValidationError):
+            claim.text = "New text"  # type: ignore
+
+    def test_claim_extra_fields_forbidden(self):
+        with pytest.raises(ValidationError):
+            Claim(
+                claim_id="claim_001",
+                text="Text",
+                evidence_ids=["ev_001"],
+                confidence=0.99,  # type: ignore
+            )
+
+
+class TestResearchStateSchema:
     """Tests for LangGraph ResearchState TypedDict schema."""
 
     def test_research_state_partial_instantiation(self):
@@ -154,6 +241,8 @@ class TestResearchStateSchema:
         assert state["question"] == "What is the state of quantum error correction?"
         assert "sources" not in state
         assert "findings" not in state
+        assert "evidence" not in state
+        assert "claims" not in state
 
     def test_research_state_full_instantiation(self):
         source = Source(
@@ -167,11 +256,28 @@ class TestResearchStateSchema:
             text="Surface codes improve fault tolerance.",
             source_ids=["src_001"],
         )
+        evidence = Evidence(
+            evidence_id="ev_001",
+            source_id="src_001",
+            text="Summary of error correction experiments.",
+        )
+        claim = Claim(
+            claim_id="claim_001",
+            text="Surface codes improve fault tolerance.",
+            evidence_ids=["ev_001"],
+        )
         state: ResearchState = {
             "question": "What is quantum error correction?",
             "sources": [source],
             "findings": [finding],
+            "evidence": [evidence],
+            "claims": [claim],
+            "research_iteration": 1,
         }
         assert len(state["sources"]) == 1
         assert len(state["findings"]) == 1
-        assert state["findings"][0].source_ids == ["src_001"]
+        assert len(state["evidence"]) == 1
+        assert len(state["claims"]) == 1
+        assert state["claims"][0].evidence_ids == ["ev_001"]
+        assert state["evidence"][0].source_id == "src_001"
+

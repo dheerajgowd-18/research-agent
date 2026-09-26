@@ -1,7 +1,7 @@
 """Analyst node implementation for Phase 1 research pipeline."""
 
 import logging
-from typing import Callable
+from typing import Any, Callable
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from verified_research.config.llm import get_chat_model
