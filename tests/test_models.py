@@ -10,6 +10,7 @@ from verified_research.models.research import (
     Evidence,
     Finding,
     Source,
+    VerificationResult,
 )
 
 
@@ -280,4 +281,121 @@ class TestResearchStateSchema:
         assert len(state["claims"]) == 1
         assert state["claims"][0].evidence_ids == ["ev_001"]
         assert state["evidence"][0].source_id == "src_001"
+        assert "verification_results" not in state
+
+        # Also supports state with verification_results
+        result = VerificationResult(
+            claim_id="claim_001",
+            verdict="SUPPORTED",
+            confidence=0.95,
+            reasoning="Evidence aligns directly with claim.",
+            evidence_ids=["ev_001"],
+        )
+        state_with_verdicts: ResearchState = {
+            "question": "What is quantum error correction?",
+            "verification_results": [result],
+        }
+        assert len(state_with_verdicts["verification_results"]) == 1
+        assert state_with_verdicts["verification_results"][0].verdict == "SUPPORTED"
+
+
+class TestVerificationResultModel:
+    """Tests for VerificationResult Pydantic model."""
+
+    def test_verification_result_valid_instantiations(self):
+        for verdict in ("SUPPORTED", "PARTIAL", "UNSUPPORTED"):
+            res = VerificationResult(
+                claim_id="claim_100",
+                verdict=verdict,
+                confidence=0.85,
+                reasoning=f"Valid verdict: {verdict}",
+                evidence_ids=["ev_100"],
+            )
+            assert res.claim_id == "claim_100"
+            assert res.verdict == verdict
+            assert res.confidence == 0.85
+            assert res.reasoning == f"Valid verdict: {verdict}"
+            assert res.evidence_ids == ["ev_100"]
+
+    def test_verification_result_invalid_verdict_fails(self):
+        with pytest.raises(ValidationError):
+            VerificationResult(
+                claim_id="claim_100",
+                verdict="TRUE",  # Invalid verdict
+                confidence=0.9,
+                reasoning="Invalid verdict keyword",
+                evidence_ids=["ev_100"],
+            )
+
+    def test_verification_result_confidence_bounds(self):
+        # Negative confidence
+        with pytest.raises(ValidationError):
+            VerificationResult(
+                claim_id="claim_100",
+                verdict="SUPPORTED",
+                confidence=-0.1,
+                reasoning="Negative confidence",
+                evidence_ids=["ev_100"],
+            )
+        # Exceeds 1.0
+        with pytest.raises(ValidationError):
+            VerificationResult(
+                claim_id="claim_100",
+                verdict="SUPPORTED",
+                confidence=1.05,
+                reasoning="Confidence above 1",
+                evidence_ids=["ev_100"],
+            )
+
+    def test_verification_result_empty_fields_fail(self):
+        # Empty claim_id
+        with pytest.raises(ValidationError):
+            VerificationResult(
+                claim_id="",
+                verdict="SUPPORTED",
+                confidence=0.9,
+                reasoning="Reasoning",
+                evidence_ids=["ev_100"],
+            )
+        # Empty reasoning
+        with pytest.raises(ValidationError):
+            VerificationResult(
+                claim_id="claim_100",
+                verdict="SUPPORTED",
+                confidence=0.9,
+                reasoning="",
+                evidence_ids=["ev_100"],
+            )
+        # Empty evidence_ids
+        with pytest.raises(ValidationError):
+            VerificationResult(
+                claim_id="claim_100",
+                verdict="SUPPORTED",
+                confidence=0.9,
+                reasoning="Reasoning",
+                evidence_ids=[],
+            )
+
+    def test_verification_result_immutability(self):
+        res = VerificationResult(
+            claim_id="claim_100",
+            verdict="SUPPORTED",
+            confidence=0.9,
+            reasoning="Reasoning",
+            evidence_ids=["ev_100"],
+        )
+        with pytest.raises(ValidationError):
+            res.verdict = "UNSUPPORTED"  # type: ignore
+
+    def test_verification_result_extra_fields_forbidden(self):
+        with pytest.raises(ValidationError):
+            VerificationResult(
+                claim_id="claim_100",
+                verdict="SUPPORTED",
+                confidence=0.9,
+                reasoning="Reasoning",
+                evidence_ids=["ev_100"],
+                extra_field="disallowed",  # type: ignore
+            )
+
 

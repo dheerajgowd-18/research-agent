@@ -53,7 +53,19 @@ def build_research_graph(
         )
 
     if custom_verifier is not None:
-        verifier = custom_verifier
+        import inspect
+        from verified_research.agents.verifier import VerifierService, create_verifier_node
+
+        if isinstance(custom_verifier, VerifierService):
+            verifier = create_verifier_node(verifier_service=custom_verifier)
+        elif callable(custom_verifier):
+            sig = inspect.signature(custom_verifier)
+            if len(sig.parameters) == 2:
+                verifier = create_verifier_node(custom_verifier=custom_verifier)
+            else:
+                verifier = custom_verifier
+        else:
+            verifier = custom_verifier
     else:
         from verified_research.agents.verifier import verifier_node
 

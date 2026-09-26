@@ -6,7 +6,13 @@ from langchain_core.language_models import BaseChatModel
 from verified_research.agents.analyst import create_analyst_node
 from verified_research.agents.researcher import create_researcher_node
 from verified_research.graph.graph import build_research_graph, create_research_graph
-from verified_research.models.research import AnalystOutput, Critique, Finding, Source
+from verified_research.models.research import (
+    AnalystOutput,
+    Critique,
+    Finding,
+    Source,
+    VerificationResult,
+)
 
 
 class MockSearchService:
@@ -75,10 +81,19 @@ class TestResearchGraphExecution:
             )
         }
 
+        mock_verifier = lambda claim, evidence: VerificationResult(
+            claim_id=claim.claim_id,
+            verdict="SUPPORTED",
+            confidence=0.95,
+            reasoning="Verified in graph integration test.",
+            evidence_ids=claim.evidence_ids,
+        )
+
         graph = create_research_graph(
             custom_researcher=researcher,
             custom_analyst=analyst,
             custom_critic=critic,
+            custom_verifier=mock_verifier,
         )
 
         initial_state = {"question": "How are neural architectures used in drug discovery?"}
@@ -101,6 +116,9 @@ class TestResearchGraphExecution:
             for sid in finding.source_ids:
                 assert sid in source_id_map
                 assert isinstance(source_id_map[sid], Source)
+
+        assert "verification_results" in final_state
+        assert len(final_state["verification_results"]) == len(final_state.get("claims", []))
 
     def test_graph_handles_empty_search_results(self):
         # Empty search results -> researcher returns [], analyst returns []
@@ -147,6 +165,7 @@ class TestResearchGraphExecution:
         builder = build_research_graph()
         nodes = list(builder.nodes.keys())
         assert "research" in nodes
-        assert len(nodes) == 1
+        assert "verifier" in nodes
+        assert len(nodes) == 2
 
 

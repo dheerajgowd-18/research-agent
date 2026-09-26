@@ -178,9 +178,10 @@ class TestParentGraphComposition:
         parent_builder = build_research_graph()
         parent_nodes = list(parent_builder.nodes.keys())
 
-        # Parent must see exactly one logical research unit
+        # Parent must see research and verifier units
         assert "research" in parent_nodes
-        assert len(parent_nodes) == 1
+        assert "verifier" in parent_nodes
+        assert len(parent_nodes) == 2
 
         # Parent must NOT register internal child nodes directly
         assert "researcher" not in parent_nodes
