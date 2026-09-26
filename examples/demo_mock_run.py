@@ -2,11 +2,16 @@
 
 import logging
 from typing import Any
-from verified_research.agents.analyst import create_analyst_node
 from verified_research.agents.critic import create_critic_node
 from verified_research.agents.researcher import create_researcher_node
 from verified_research.graph.graph import create_research_graph
-from verified_research.models.research import AnalystOutput, Critique, Finding, Source
+from verified_research.models.research import Critique, Finding, Source
+from verified_research.models.traceability import (
+    calculate_citation_coverage,
+    generate_claims_and_evidence_from_findings,
+    get_claim_sources,
+    validate_traceability,
+)
 from verified_research.tools.search import SearchService
 
 # Configure logging format to observe state transitions cleanly
@@ -49,16 +54,16 @@ class DemoSearchService(SearchService):
 
 def main() -> None:
     print("=" * 70)
-    print("VERIFIED RESEARCH AGENT - CONDITIONAL ROUTING & CYCLES DEMO")
-    print("Pipeline: START -> researcher -> analyst -> critic -> router -> (researcher | END)")
+    print("VERIFIED RESEARCH AGENT - EVIDENCE & CLAIM MODEL DEMO")
+    print("Traceability: Claim -> Evidence -> Source")
     print("=" * 70)
 
     # 1. Setup search service
     search_service = DemoSearchService()
     researcher = create_researcher_node(search_client=search_service)
 
-    # 2. Setup mock analyst
-    def mock_analyst(state: dict[str, Any]) -> dict[str, list[Finding]]:
+    # 2. Setup mock analyst producing findings, evidence snapshots, and claims
+    def mock_analyst(state: dict[str, Any]) -> dict[str, Any]:
         sources = state.get("sources", [])
         findings = []
         for i, s in enumerate(sources, start=1):
@@ -69,8 +74,16 @@ def main() -> None:
                     source_ids=[s.source_id],
                 )
             )
-        logger.info("[Analyst] findings=%d", len(findings))
-        return {"findings": findings}
+
+        evidence, claims = generate_claims_and_evidence_from_findings(findings, sources)
+        validate_traceability(claims, evidence, sources)
+        logger.info(
+            "[Analyst] findings=%d evidence=%d claims=%d",
+            len(findings),
+            len(evidence),
+            len(claims),
+        )
+        return {"findings": findings, "evidence": evidence, "claims": claims}
 
     # 3. Setup mock critic with 2-pass progression (weak on pass 1, good on pass 2)
     critic_invocations = 0
@@ -128,15 +141,35 @@ def main() -> None:
         print(f"Final Critique Score: {critique.quality_score:.2f}")
         print(f"Should Research Again: {critique.should_research_again}\n")
 
-    print(f"Sources Accumulated ({len(final_state['sources'])}):")
-    for s in final_state["sources"]:
+    sources = final_state.get("sources", [])
+    evidence = final_state.get("evidence", [])
+    claims = final_state.get("claims", [])
+
+    print(f"Sources Accumulated ({len(sources)}):")
+    for s in sources:
         print(f"  [{s.source_id}] {s.title} ({s.url})")
 
-    print(f"\nFindings Produced ({len(final_state['findings'])}):")
-    for f in final_state["findings"]:
-        print(f"  [{f.finding_id}] {f.text} -> Sources: {f.source_ids}")
+    print(f"\nEvidence Snapshots ({len(evidence)}):")
+    for ev in evidence:
+        print(f"  [{ev.evidence_id}] (Source: {ev.source_id}) Excerpt: '{ev.text[:65]}...'")
 
-    print("\nExecution complete. Bounded cycle and state transitions verified.")
+    print(f"\nFactual Claims ({len(claims)}):")
+    for c in claims:
+        print(f"  [{c.claim_id}] {c.text}")
+        print(f"      Grounding Evidence IDs: {c.evidence_ids}")
+
+    coverage = calculate_citation_coverage(claims, evidence)
+    print(f"\nCitation Coverage: {coverage:.1%}")
+
+    print("\n" + "=" * 70)
+    print("CLAIM -> EVIDENCE -> SOURCE RESOLUTION TRACE")
+    print("=" * 70)
+    for c in claims:
+        grounding_sources = get_claim_sources(c, evidence, sources)
+        source_titles = [f"[{s.source_id}] {s.title}" for s in grounding_sources]
+        print(f"Claim '{c.claim_id}' -> Evidence {c.evidence_ids} -> Sources: {source_titles}")
+
+    print("\nExecution complete. Structural traceability and citation coverage verified.")
 
 
 if __name__ == "__main__":
