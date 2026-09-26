@@ -1,0 +1,142 @@
+[
+  {
+    "id": "eval_001",
+    "category": "direct_support",
+    "claim": "Acme Corp reported $4.2B in annual revenue for fiscal year 2023.",
+    "evidence": "According to its annual regulatory filing, Acme Corp reported $4.2B in annual revenue for fiscal year 2023.",
+    "expected_verdict": "SUPPORTED"
+  },
+  {
+    "id": "eval_002",
+    "category": "direct_support",
+    "claim": "The James Webb Space Telescope operates at the Sun-Earth L2 Lagrange point.",
+    "evidence": "The James Webb Space Telescope is stationed in an operational orbit around the second Sun-Earth Lagrange point (L2).",
+    "expected_verdict": "SUPPORTED"
+  },
+  {
+    "id": "eval_003",
+    "category": "paraphrase",
+    "claim": "European antitrust authorities sanctioned the technology conglomerate following an anticompetitive practices inquiry.",
+    "evidence": "The European Commission imposed a major fine on the tech giant after concluding an extensive investigation into market monopolization.",
+    "expected_verdict": "SUPPORTED"
+  },
+  {
+    "id": "eval_004",
+    "category": "paraphrase",
+    "claim": "The therapeutic candidate demonstrated a favorable safety profile across initial human cohorts.",
+    "evidence": "In Phase 1 clinical testing, human subjects exhibited negligible adverse events and tolerated the compound exceptionally well.",
+    "expected_verdict": "SUPPORTED"
+  },
+  {
+    "id": "eval_005",
+    "category": "partial_support",
+    "claim": "The cloud platform launched regional data centers in Frankfurt, Tokyo, and Sydney.",
+    "evidence": "The cloud provider announced the official opening of regional data centers in Frankfurt and Tokyo.",
+    "expected_verdict": "PARTIAL"
+  },
+  {
+    "id": "eval_006",
+    "category": "partial_support",
+    "claim": "The autonomous vehicle sensor suite integrates LiDAR, radar, and thermal infrared cameras for nocturnal navigation.",
+    "evidence": "The vehicle navigation hardware architecture includes forward-facing LiDAR and 77 GHz radar modules.",
+    "expected_verdict": "PARTIAL"
+  },
+  {
+    "id": "eval_007",
+    "category": "contradiction",
+    "claim": "The Phase 3 oncology trial met its primary endpoint of improving overall survival.",
+    "evidence": "The clinical trial failed to achieve statistical significance on its primary endpoint of overall survival compared to standard chemotherapy.",
+    "expected_verdict": "UNSUPPORTED"
+  },
+  {
+    "id": "eval_008",
+    "category": "contradiction",
+    "claim": "Global semiconductor production expanded by 12% in the second quarter.",
+    "evidence": "Worldwide semiconductor manufacturing output contracted by 12% during Q2 due to severe supply chain bottlenecks.",
+    "expected_verdict": "UNSUPPORTED"
+  },
+  {
+    "id": "eval_009",
+    "category": "irrelevant_evidence",
+    "claim": "The spacecraft propulsion system uses xenon ion thrusters for orbital maneuvers.",
+    "evidence": "The solar array wings provide 12 kilowatts of electrical power to the satellite communications payload.",
+    "expected_verdict": "UNSUPPORTED"
+  },
+  {
+    "id": "eval_010",
+    "category": "irrelevant_evidence",
+    "claim": "The patient cohort exhibited elevated biomarkers indicating acute cardiac inflammation.",
+    "evidence": "Participants in the clinical dietary study consumed 2,000 calories daily comprising 40% carbohydrates and 30% healthy fats.",
+    "expected_verdict": "UNSUPPORTED"
+  },
+  {
+    "id": "eval_011",
+    "category": "numeric_mismatch",
+    "claim": "The transformer model achieved an 89.4% accuracy score on the multi-task reasoning benchmark.",
+    "evidence": "On the multi-task reasoning benchmark, the evaluated transformer architecture scored 79.4% accuracy.",
+    "expected_verdict": "UNSUPPORTED"
+  },
+  {
+    "id": "eval_012",
+    "category": "numeric_mismatch",
+    "claim": "The investment syndicate completed a $150M Series B financing round.",
+    "evidence": "The startup secured $15M in Series B funding led by prominent institutional venture partners.",
+    "expected_verdict": "UNSUPPORTED"
+  },
+  {
+    "id": "eval_013",
+    "category": "temporal_mismatch",
+    "claim": "Dr. Elena Vance currently directs the Institute for Advanced Theoretical Physics.",
+    "evidence": "Dr. Elena Vance served as director of the Institute for Advanced Theoretical Physics from 2012 until her retirement in 2019.",
+    "expected_verdict": "UNSUPPORTED"
+  },
+  {
+    "id": "eval_014",
+    "category": "temporal_mismatch",
+    "claim": "The bilateral trade pact between both nations entered into force in January 2021.",
+    "evidence": "The bilateral trade pact was ratified by parliament in January 2024, after negotiations that stalled in 2021.",
+    "expected_verdict": "UNSUPPORTED"
+  },
+  {
+    "id": "eval_015",
+    "category": "entity_mismatch",
+    "claim": "DeepMind developed the AlphaFold structural biology prediction system.",
+    "evidence": "OpenAI introduced the GPT-4 multi-modal model capable of complex text and image analysis.",
+    "expected_verdict": "UNSUPPORTED"
+  },
+  {
+    "id": "eval_016",
+    "category": "entity_mismatch",
+    "claim": "Merck finalized the commercial acquisition of Prometheus Biosciences.",
+    "evidence": "Pfizer finalized the strategic purchase of Arena Pharmaceuticals to bolster its immunology pipeline.",
+    "expected_verdict": "UNSUPPORTED"
+  },
+  {
+    "id": "eval_017",
+    "category": "scope_mismatch",
+    "claim": "The monoclonal antibody neutralizes all influenza A virus subtypes.",
+    "evidence": "In vitro neutralization assays demonstrated that the monoclonal antibody effectively neutralizes H1N1 and H3N2 subtypes of influenza A.",
+    "expected_verdict": "PARTIAL"
+  },
+  {
+    "id": "eval_018",
+    "category": "scope_mismatch",
+    "claim": "The experimental battery definitely eliminates thermal runaway risk across all operating temperatures.",
+    "evidence": "Laboratory tests suggest the ceramic solid-state electrolyte may reduce thermal degradation at ambient room temperature.",
+    "expected_verdict": "UNSUPPORTED"
+  },
+  {
+    "id": "eval_019",
+    "category": "negation",
+    "claim": "The archaeological survey detected traces of human habitation beneath the sediment layer.",
+    "evidence": "Extensive geophysical radar scans showed no indication whatsoever of anthropogenic structures or human presence within the sediment.",
+    "expected_verdict": "UNSUPPORTED"
+  },
+  {
+    "id": "eval_020",
+    "category": "negation",
+    "claim": "The updated compiler optimization pass did not degrade application runtime latency.",
+    "evidence": "Benchmarking revealed that activating the new optimization pass increased average execution latency by 14%.",
+    "expected_verdict": "UNSUPPORTED"
+  }
+]
