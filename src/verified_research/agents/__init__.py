@@ -11,6 +11,12 @@ from verified_research.agents.critic import (
     critic_node,
 )
 from verified_research.agents.researcher import create_researcher_node, researcher_node
+from verified_research.agents.verifier import (
+    ClaimVerifierService,
+    VerifierService,
+    create_verifier_node,
+    verifier_node,
+)
 
 __all__ = [
     "researcher_node",
@@ -19,6 +25,10 @@ __all__ = [
     "create_analyst_node",
     "critic_node",
     "create_critic_node",
+    "verifier_node",
+    "create_verifier_node",
+    "ClaimVerifierService",
+    "VerifierService",
     "validate_finding_sources",
     "InvalidSourceReferenceError",
 ]
