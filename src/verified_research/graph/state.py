@@ -1,15 +1,16 @@
 from typing import NotRequired, TypedDict
-from verified_research.models.research import Critique, Finding, Source
+from verified_research.models.research import Claim, Critique, Evidence, Finding, Source
 
 
 class ResearchState(TypedDict):
-    """LangGraph state schema for research pipeline with conditional routing.
+    """LangGraph state schema for verified research pipeline.
 
     Contract:
         START: Pipeline is initialized with 'question' (and optionally 'research_iteration': 0).
         researcher: Consumes 'question', optional 'critique', increments 'research_iteration',
                     and populates/updates 'sources'.
-        analyst: Consumes 'question' and 'sources', populates/updates 'findings'.
+        analyst: Consumes 'question' and 'sources', populates/updates 'findings',
+                 'evidence', and 'claims'.
         critic: Consumes 'question', 'sources', and 'findings', populates 'critique'.
         router: Inspects 'critique' and 'research_iteration' to conditionally route
                 back to 'researcher' or terminate at END.
@@ -20,6 +21,8 @@ class ResearchState(TypedDict):
         findings: List of synthesized Finding objects with source attributions.
         critique: Structured evaluation output assessing research sufficiency.
         research_iteration: Counter of completed research passes (0, 1, 2, 3).
+        evidence: List of atomic, preserved Evidence excerpts extracted from sources.
+        claims: List of specific, testable factual Claims referencing evidence IDs.
     """
 
     question: str
@@ -27,4 +30,5 @@ class ResearchState(TypedDict):
     findings: NotRequired[list[Finding]]
     critique: NotRequired[Critique]
     research_iteration: NotRequired[int]
-
+    evidence: NotRequired[list[Evidence]]
+    claims: NotRequired[list[Claim]]

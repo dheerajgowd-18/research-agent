@@ -65,6 +65,69 @@ class Finding(BaseModel):
     )
 
 
+class Evidence(BaseModel):
+    """A specific textual excerpt/snapshot extracted from a Source.
+
+    Evidence preserves the exact textual context from a source at the time of research,
+    ensuring that downstream claim verification does not rely on mutable external URLs.
+
+    Attributes:
+        evidence_id: Unique identifier for the evidence snapshot (e.g., 'ev_001').
+        source_id: Identifier of the parent Source from which this excerpt was taken.
+        text: The preserved textual excerpt/snapshot used for factual grounding.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    evidence_id: str = Field(
+        ...,
+        min_length=1,
+        description="Unique identifier for the evidence excerpt, e.g. 'ev_001'.",
+    )
+    source_id: str = Field(
+        ...,
+        min_length=1,
+        description="Identifier of the Source from which this evidence is drawn, e.g. 'src_001'.",
+    )
+    text: str = Field(
+        ...,
+        min_length=1,
+        description="Preserved textual snapshot/excerpt from the source.",
+    )
+
+
+class Claim(BaseModel):
+    """An atomic, testable factual statement that can be verified against evidence.
+
+    Unlike a high-level analytical Finding (which synthesizes multiple themes),
+    a Claim is an atomic factual proposition tied directly to one or more Evidence excerpts.
+
+    Attributes:
+        claim_id: Unique identifier for the claim (e.g., 'claim_001').
+        text: The specific factual assertion to be verified.
+        evidence_ids: Non-empty list of evidence IDs directly grounding this claim.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    claim_id: str = Field(
+        ...,
+        min_length=1,
+        description="Unique identifier for the claim, e.g. 'claim_001'.",
+    )
+    text: str = Field(
+        ...,
+        min_length=1,
+        description="The substantive factual assertion of the claim.",
+    )
+    evidence_ids: list[str] = Field(
+        ...,
+        min_length=1,
+        description="List of evidence_ids directly supporting this claim (at least 1 required).",
+    )
+
+
+
 class AnalystOutput(BaseModel):
     """Structured container model for LLM responses during analysis."""
 

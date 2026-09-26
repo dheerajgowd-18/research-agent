@@ -48,12 +48,13 @@ def _format_sources_for_prompt(sources: list[Source]) -> str:
 
 def create_analyst_node(
     llm: BaseChatModel | None = None,
-) -> Callable[[ResearchState], dict[str, list[Finding]]]:
+) -> Callable[[ResearchState], dict[str, Any]]:
     """Factory to create an analyst node with an optional injected LLM.
 
     Contract:
         Input: state['question'] (str), state['sources'] (list[Source])
-        Output: {'findings': list[Finding]}
+        Output: {'findings': list[Finding], 'evidence': list[Evidence], 'claims': list[Claim]}
+
 
     Args:
         llm: Optional BaseChatModel instance. If None, initialized via get_chat_model().
@@ -82,7 +83,7 @@ def create_analyst_node(
         # Handle empty sources cleanly
         if not sources:
             logger.warning("[ANALYST] No sources available in state; returning 0 findings.")
-            return {"findings": []}
+            return {"findings": [], "evidence": [], "claims": []}
 
         # Resolve LLM instance (lazy initialization if not injected)
         model = llm or get_chat_model()
@@ -128,8 +129,26 @@ def create_analyst_node(
         # Enforce source traceability and reject invented source IDs
         validate_finding_sources(findings, sources)
 
-        logger.info("[Analyst] findings=%d", len(findings))
-        return {"findings": findings}
+        # Generate atomic Evidence snapshots and testable Claims
+        from verified_research.models.traceability import (
+            generate_claims_and_evidence_from_findings,
+            validate_traceability,
+        )
+
+        evidence, claims = generate_claims_and_evidence_from_findings(findings, sources)
+        validate_traceability(claims, evidence, sources)
+
+        logger.info(
+            "[Analyst] findings=%d evidence=%d claims=%d",
+            len(findings),
+            len(evidence),
+            len(claims),
+        )
+        return {
+            "findings": findings,
+            "evidence": evidence,
+            "claims": claims,
+        }
 
     return analyst_node
 
