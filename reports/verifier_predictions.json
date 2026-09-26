@@ -1,0 +1,282 @@
+[
+  {
+    "id": "eval_001",
+    "category": "direct_support",
+    "claim": "Acme Corp reported $4.2B in annual revenue for fiscal year 2023.",
+    "evidence": "According to its annual regulatory filing, Acme Corp reported $4.2B in annual revenue for fiscal year 2023.",
+    "expected": "SUPPORTED",
+    "predicted": "SUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The evidence states that Acme Corp reported $4.2B in annual revenue for fiscal year 2023, which matches the claim verbatim. No discrepancies in amounts, entity, or year are present. Therefore the evidence fully supports the claim.",
+    "evidence_ids": [
+      "ev_eval_001"
+    ]
+  },
+  {
+    "id": "eval_002",
+    "category": "direct_support",
+    "claim": "The James Webb Space Telescope operates at the Sun-Earth L2 Lagrange point.",
+    "evidence": "The James Webb Space Telescope is stationed in an operational orbit around the second Sun-Earth Lagrange point (L2).",
+    "expected": "SUPPORTED",
+    "predicted": "SUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The evidence states that the James Webb Space Telescope is stationed in an operational orbit around the second Sun\u2011Earth Lagrange point (L2), which directly confirms that it operates at that point. The claim and evidence refer to the same location and use equivalent terminology, with no contradictions or omissions.",
+    "evidence_ids": [
+      "ev_eval_002"
+    ]
+  },
+  {
+    "id": "eval_003",
+    "category": "paraphrase",
+    "claim": "European antitrust authorities sanctioned the technology conglomerate following an anticompetitive practices inquiry.",
+    "evidence": "The European Commission imposed a major fine on the tech giant after concluding an extensive investigation into market monopolization.",
+    "expected": "SUPPORTED",
+    "predicted": "SUPPORTED",
+    "correct": true,
+    "confidence": 0.95,
+    "reasoning": "The evidence states that the European Commission, an antitrust authority, imposed a major fine on the tech giant after concluding an extensive investigation into market monopolization. This directly matches the claim that European antitrust authorities sanctioned the technology conglomerate following an anticompetitive practices inquiry. The entities, action, and context align, providing full support.",
+    "evidence_ids": [
+      "ev_eval_003"
+    ]
+  },
+  {
+    "id": "eval_004",
+    "category": "paraphrase",
+    "claim": "The therapeutic candidate demonstrated a favorable safety profile across initial human cohorts.",
+    "evidence": "In Phase 1 clinical testing, human subjects exhibited negligible adverse events and tolerated the compound exceptionally well.",
+    "expected": "SUPPORTED",
+    "predicted": "SUPPORTED",
+    "correct": true,
+    "confidence": 0.95,
+    "reasoning": "The evidence states that in Phase 1 clinical testing, human subjects exhibited negligible adverse events and tolerated the compound exceptionally well. This directly indicates a favorable safety profile in the initial human cohorts, matching the claim. No contradictions or missing elements are present.",
+    "evidence_ids": [
+      "ev_eval_004"
+    ]
+  },
+  {
+    "id": "eval_005",
+    "category": "partial_support",
+    "claim": "The cloud platform launched regional data centers in Frankfurt, Tokyo, and Sydney.",
+    "evidence": "The cloud provider announced the official opening of regional data centers in Frankfurt and Tokyo.",
+    "expected": "PARTIAL",
+    "predicted": "PARTIAL",
+    "correct": true,
+    "confidence": 0.95,
+    "reasoning": "The evidence states that the cloud provider opened regional data centers in Frankfurt and Tokyo, but it does not mention a data center in Sydney. Therefore the evidence supports only part of the claim (Frankfurt and Tokyo) and does not fully support the claim that all three locations were launched.",
+    "evidence_ids": [
+      "ev_eval_005"
+    ]
+  },
+  {
+    "id": "eval_006",
+    "category": "partial_support",
+    "claim": "The autonomous vehicle sensor suite integrates LiDAR, radar, and thermal infrared cameras for nocturnal navigation.",
+    "evidence": "The vehicle navigation hardware architecture includes forward-facing LiDAR and 77 GHz radar modules.",
+    "expected": "PARTIAL",
+    "predicted": "PARTIAL",
+    "correct": true,
+    "confidence": 0.95,
+    "reasoning": "The evidence states that the vehicle includes forward\u2011facing LiDAR and 77\u202fGHz radar modules, confirming the presence of LiDAR and radar. However, it does not mention thermal infrared cameras or any nocturnal navigation capability. Therefore the evidence only partially supports the multi\u2011part claim.",
+    "evidence_ids": [
+      "ev_eval_006"
+    ]
+  },
+  {
+    "id": "eval_007",
+    "category": "contradiction",
+    "claim": "The Phase 3 oncology trial met its primary endpoint of improving overall survival.",
+    "evidence": "The clinical trial failed to achieve statistical significance on its primary endpoint of overall survival compared to standard chemotherapy.",
+    "expected": "UNSUPPORTED",
+    "predicted": "UNSUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The evidence states that the trial did not achieve statistical significance on the primary endpoint of overall survival, directly contradicting the claim that the trial met its primary endpoint of improving overall survival.",
+    "evidence_ids": [
+      "ev_eval_007"
+    ]
+  },
+  {
+    "id": "eval_008",
+    "category": "contradiction",
+    "claim": "Global semiconductor production expanded by 12% in the second quarter.",
+    "evidence": "Worldwide semiconductor manufacturing output contracted by 12% during Q2 due to severe supply chain bottlenecks.",
+    "expected": "UNSUPPORTED",
+    "predicted": "UNSUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The claim asserts a 12% expansion in global semiconductor production during Q2. The evidence states that worldwide semiconductor manufacturing output contracted by 12% in the same period. The direction of the change (expansion vs contraction) is opposite, directly contradicting the claim. Therefore the evidence does not support the claim.",
+    "evidence_ids": [
+      "ev_eval_008"
+    ]
+  },
+  {
+    "id": "eval_009",
+    "category": "irrelevant_evidence",
+    "claim": "The spacecraft propulsion system uses xenon ion thrusters for orbital maneuvers.",
+    "evidence": "The solar array wings provide 12 kilowatts of electrical power to the satellite communications payload.",
+    "expected": "UNSUPPORTED",
+    "predicted": "UNSUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The evidence describes the solar array providing 12 kW to the communications payload, with no mention of the propulsion system, xenon ion thrusters, or orbital maneuvers. Therefore it does not support the claim.",
+    "evidence_ids": [
+      "ev_eval_009"
+    ]
+  },
+  {
+    "id": "eval_010",
+    "category": "irrelevant_evidence",
+    "claim": "The patient cohort exhibited elevated biomarkers indicating acute cardiac inflammation.",
+    "evidence": "Participants in the clinical dietary study consumed 2,000 calories daily comprising 40% carbohydrates and 30% healthy fats.",
+    "expected": "UNSUPPORTED",
+    "predicted": "UNSUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The evidence describes the caloric composition of a dietary study and contains no information about biomarkers, cardiac inflammation, or any clinical measurements. Therefore it does not support the claim that the patient cohort exhibited elevated biomarkers indicating acute cardiac inflammation.",
+    "evidence_ids": [
+      "ev_eval_010"
+    ]
+  },
+  {
+    "id": "eval_011",
+    "category": "numeric_mismatch",
+    "claim": "The transformer model achieved an 89.4% accuracy score on the multi-task reasoning benchmark.",
+    "evidence": "On the multi-task reasoning benchmark, the evaluated transformer architecture scored 79.4% accuracy.",
+    "expected": "UNSUPPORTED",
+    "predicted": "UNSUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The evidence states that the transformer scored 79.4% accuracy, which is different from the claimed 89.4%. The evidence directly contradicts the claim, so it does not support it.",
+    "evidence_ids": [
+      "ev_eval_011"
+    ]
+  },
+  {
+    "id": "eval_012",
+    "category": "numeric_mismatch",
+    "claim": "The investment syndicate completed a $150M Series B financing round.",
+    "evidence": "The startup secured $15M in Series B funding led by prominent institutional venture partners.",
+    "expected": "UNSUPPORTED",
+    "predicted": "UNSUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The claim asserts a $150\u202fmillion Series\u202fB round, whereas the evidence reports only $15\u202fmillion. The amounts differ by a factor of ten, so the evidence does not substantiate the claim.",
+    "evidence_ids": [
+      "ev_eval_012"
+    ]
+  },
+  {
+    "id": "eval_013",
+    "category": "temporal_mismatch",
+    "claim": "Dr. Elena Vance currently directs the Institute for Advanced Theoretical Physics.",
+    "evidence": "Dr. Elena Vance served as director of the Institute for Advanced Theoretical Physics from 2012 until her retirement in 2019.",
+    "expected": "UNSUPPORTED",
+    "predicted": "UNSUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The evidence states that Dr. Elena Vance served as director from 2012 until her retirement in 2019, implying she no longer holds that position. The claim asserts she currently directs the institute, which is contradicted by the evidence. Therefore the evidence does not support the claim.",
+    "evidence_ids": [
+      "ev_eval_013"
+    ]
+  },
+  {
+    "id": "eval_014",
+    "category": "temporal_mismatch",
+    "claim": "The bilateral trade pact between both nations entered into force in January 2021.",
+    "evidence": "The bilateral trade pact was ratified by parliament in January 2024, after negotiations that stalled in 2021.",
+    "expected": "UNSUPPORTED",
+    "predicted": "UNSUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The evidence states the pact was ratified in January\u202f2024, not January\u202f2021, directly contradicting the claim that it entered into force in 2021. Therefore the claim is not supported by the evidence.",
+    "evidence_ids": [
+      "ev_eval_014"
+    ]
+  },
+  {
+    "id": "eval_015",
+    "category": "entity_mismatch",
+    "claim": "DeepMind developed the AlphaFold structural biology prediction system.",
+    "evidence": "OpenAI introduced the GPT-4 multi-modal model capable of complex text and image analysis.",
+    "expected": "UNSUPPORTED",
+    "predicted": "UNSUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The evidence discusses OpenAI and GPT\u20114, which is unrelated to DeepMind or AlphaFold. It does not mention AlphaFold, DeepMind, or any development of a structural biology prediction system. Therefore the evidence does not support the claim.",
+    "evidence_ids": [
+      "ev_eval_015"
+    ]
+  },
+  {
+    "id": "eval_016",
+    "category": "entity_mismatch",
+    "claim": "Merck finalized the commercial acquisition of Prometheus Biosciences.",
+    "evidence": "Pfizer finalized the strategic purchase of Arena Pharmaceuticals to bolster its immunology pipeline.",
+    "expected": "UNSUPPORTED",
+    "predicted": "UNSUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The evidence discusses Pfizer acquiring Arena Pharmaceuticals, which neither mentions Merck nor Prometheus Biosciences. Therefore it does not support the claim that Merck finalized an acquisition of Prometheus Biosciences.",
+    "evidence_ids": [
+      "ev_eval_016"
+    ]
+  },
+  {
+    "id": "eval_017",
+    "category": "scope_mismatch",
+    "claim": "The monoclonal antibody neutralizes all influenza A virus subtypes.",
+    "evidence": "In vitro neutralization assays demonstrated that the monoclonal antibody effectively neutralizes H1N1 and H3N2 subtypes of influenza A.",
+    "expected": "PARTIAL",
+    "predicted": "PARTIAL",
+    "correct": true,
+    "confidence": 0.95,
+    "reasoning": "The evidence reports neutralization of only the H1N1 and H3N2 subtypes, which are two specific influenza A subtypes. The claim asserts that the antibody neutralizes all influenza A subtypes. Since the evidence does not address other subtypes (e.g., H5N1, H7N9, etc.) and therefore does not cover the full scope of the claim, it only partially supports the claim.",
+    "evidence_ids": [
+      "ev_eval_017"
+    ]
+  },
+  {
+    "id": "eval_018",
+    "category": "scope_mismatch",
+    "claim": "The experimental battery definitely eliminates thermal runaway risk across all operating temperatures.",
+    "evidence": "Laboratory tests suggest the ceramic solid-state electrolyte may reduce thermal degradation at ambient room temperature.",
+    "expected": "UNSUPPORTED",
+    "predicted": "UNSUPPORTED",
+    "correct": true,
+    "confidence": 0.95,
+    "reasoning": "The claim asserts that the experimental battery \"definitely eliminates thermal runaway risk across all operating temperatures.\" The evidence states that laboratory tests suggest the ceramic solid\u2011state electrolyte may reduce thermal degradation at ambient room temperature. This evidence only addresses a single temperature condition (ambient) and uses tentative language (\u201cmay reduce\u201d), not a definitive elimination of risk. Therefore the evidence does not support the claim, nor does it support a narrower or partial version of the claim. The claim is unsupported.",
+    "evidence_ids": [
+      "ev_eval_018"
+    ]
+  },
+  {
+    "id": "eval_019",
+    "category": "negation",
+    "claim": "The archaeological survey detected traces of human habitation beneath the sediment layer.",
+    "evidence": "Extensive geophysical radar scans showed no indication whatsoever of anthropogenic structures or human presence within the sediment.",
+    "expected": "UNSUPPORTED",
+    "predicted": "UNSUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The evidence states that geophysical radar scans found no indication of anthropogenic structures or human presence within the sediment, directly contradicting the claim that traces of human habitation were detected. Therefore the claim is not supported by the evidence.",
+    "evidence_ids": [
+      "ev_eval_019"
+    ]
+  },
+  {
+    "id": "eval_020",
+    "category": "negation",
+    "claim": "The updated compiler optimization pass did not degrade application runtime latency.",
+    "evidence": "Benchmarking revealed that activating the new optimization pass increased average execution latency by 14%.",
+    "expected": "UNSUPPORTED",
+    "predicted": "UNSUPPORTED",
+    "correct": true,
+    "confidence": 0.99,
+    "reasoning": "The evidence states that enabling the new optimization pass increased average execution latency by 14%, which directly contradicts the claim that the pass did not degrade latency. Therefore the claim is not supported by the evidence.",
+    "evidence_ids": [
+      "ev_eval_020"
+    ]
+  }
+]
