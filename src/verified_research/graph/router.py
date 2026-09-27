@@ -5,6 +5,7 @@ from typing import Literal
 from verified_research.config.settings import (
     DEFAULT_MAX_HUMAN_RESEARCH_CYCLES,
     DEFAULT_MAX_ITERATIONS,
+    DEFAULT_MAX_SUPERVISOR_STEPS,
 )
 from verified_research.graph.state import ResearchState
 
@@ -136,4 +137,51 @@ def route_after_sufficiency(
         reasoning,
     )
     return "research"
+
+
+def route_after_supervisor(
+    state: ResearchState,
+    max_steps: int = DEFAULT_MAX_SUPERVISOR_STEPS,
+) -> Literal["research", "verify", "human_review", "finish"]:
+    """Determine which specialized worker node should execute next based on supervisor decision.
+
+    Safety Rules:
+        1. If supervisor_steps >= max_steps:
+           -> 'finish' (hard limit preventing runaway supervisor cycles)
+        2. If supervisor_decision is missing or next_worker is not in allowed workers:
+           -> 'finish' (safe fallback preventing unvalidated routing)
+        3. Otherwise:
+           -> decision.next_worker ('research', 'verify', 'human_review', or 'finish')
+
+    Args:
+        state: Current graph state containing 'supervisor_steps' and 'supervisor_decision'.
+        max_steps: Hard step boundary (defaults to DEFAULT_MAX_SUPERVISOR_STEPS = 8).
+
+    Returns:
+        One of 'research', 'verify', 'human_review', or 'finish'.
+    """
+    steps = state.get("supervisor_steps", 0)
+    if steps >= max_steps:
+        logger.warning(
+            "[Router:Supervisor] Supervisor steps reached limit (%d >= %d). next=finish",
+            steps,
+            max_steps,
+        )
+        return "finish"
+
+    decision = state.get("supervisor_decision")
+    if decision is None:
+        logger.warning("[Router:Supervisor] No supervisor_decision in state. next=finish")
+        return "finish"
+
+    worker = decision.next_worker
+    if worker not in ("research", "verify", "human_review", "finish"):
+        logger.error(
+            "[Router:Supervisor] Unrecognized worker '%s' in supervisor decision. next=finish",
+            worker,
+        )
+        return "finish"
+
+    logger.info("[Router:Supervisor] Routing to worker: '%s'", worker)
+    return worker
 
