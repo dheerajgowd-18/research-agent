@@ -1,9 +1,30 @@
-"""Parent StateGraph orchestrating research and evidence-grounded verification."""
+"""Parent StateGraph orchestrating research, claim verification, and human-in-the-loop review."""
 
-from typing import Callable
+from typing import Any, Callable
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from verified_research.graph.state import ResearchState
+
+
+def _wrap_research_subgraph(
+    subgraph: CompiledStateGraph | Callable,
+) -> Callable[[ResearchState], dict[str, Any]]:
+    """Wrap the research subgraph to manage human-initiated cycle counting at parent level."""
+
+    def research_node(state: ResearchState) -> dict[str, Any]:
+        result = (
+            subgraph.invoke(state)
+            if hasattr(subgraph, "invoke")
+            else subgraph(state)
+        )
+        # If this pass was triggered by human selecting 'research_more', increment human_research_cycles
+        review = state.get("human_review")
+        if review and review.action == "research_more":
+            current_cycles = state.get("human_research_cycles", 0)
+            result["human_research_cycles"] = current_cycles + 1
+        return result
+
+    return research_node
 
 
 def build_research_graph(
@@ -13,8 +34,10 @@ def build_research_graph(
     custom_analyst: Callable | None = None,
     custom_critic: Callable | None = None,
     custom_router: Callable | None = None,
+    custom_human_review: Callable | None = None,
+    custom_human_router: Callable | None = None,
 ) -> StateGraph:
-    """Construct the parent StateGraph orchestrating research and claim verification.
+    """Construct the parent StateGraph orchestrating research, verification, and human review.
 
     Parent Graph Architecture:
         START
@@ -23,10 +46,13 @@ def build_research_graph(
           ↓
        verifier (evidence-grounded claim verifier node)
           ↓
-         END
-
-    The parent graph treats the iterative research loop as a single logical unit ('research')
-    followed by the evidence-grounded claim verifier ('verifier').
+       human_review (pauses graph via LangGraph interrupt)
+          ↓
+       route_after_human_review
+         ├── approve       → END
+         ├── edit          → END
+         ├── research_more → research (if human_research_cycles < MAX_HUMAN_RESEARCH_CYCLES)
+         └── reject        → END
 
     Args:
         custom_subgraph: Optional pre-compiled research subgraph. If None, builds
@@ -36,6 +62,8 @@ def build_research_graph(
         custom_analyst: Optional analyst node passed to default subgraph builder.
         custom_critic: Optional critic node passed to default subgraph builder.
         custom_router: Optional router function passed to default subgraph builder.
+        custom_human_review: Optional human review node override.
+        custom_human_router: Optional human review router function override.
 
     Returns:
         Configured parent StateGraph instance ready for compilation.
@@ -71,14 +99,39 @@ def build_research_graph(
 
         verifier = verifier_node
 
+    if custom_human_review is not None:
+        human_review = custom_human_review
+    else:
+        from verified_research.agents.human_review import human_review_node
+
+        human_review = human_review_node
+
+    if custom_human_router is not None:
+        human_router = custom_human_router
+    else:
+        from verified_research.graph.router import route_after_human_review
+
+        human_router = route_after_human_review
+
+    research_node = _wrap_research_subgraph(subgraph)
+
     builder = StateGraph(ResearchState)
 
-    builder.add_node("research", subgraph)
+    builder.add_node("research", research_node)
     builder.add_node("verifier", verifier)
+    builder.add_node("human_review", human_review)
 
     builder.add_edge(START, "research")
     builder.add_edge("research", "verifier")
-    builder.add_edge("verifier", END)
+    builder.add_edge("verifier", "human_review")
+    builder.add_conditional_edges(
+        "human_review",
+        human_router,
+        {
+            "research": "research",
+            "end": END,
+        },
+    )
 
     return builder
 
@@ -90,8 +143,11 @@ def create_research_graph(
     custom_analyst: Callable | None = None,
     custom_critic: Callable | None = None,
     custom_router: Callable | None = None,
+    custom_human_review: Callable | None = None,
+    custom_human_router: Callable | None = None,
+    checkpointer: Any | None = None,
 ) -> CompiledStateGraph:
-    """Construct and compile the parent research and verification pipeline graph.
+    """Construct and compile the parent research, verification, and HITL pipeline graph.
 
     Args:
         custom_subgraph: Optional pre-compiled research subgraph.
@@ -100,6 +156,9 @@ def create_research_graph(
         custom_analyst: Optional analyst node override.
         custom_critic: Optional critic node override.
         custom_router: Optional router function override.
+        custom_human_review: Optional human review node override.
+        custom_human_router: Optional human review router function override.
+        checkpointer: Optional LangGraph checkpointer (e.g. MemorySaver) required for resume.
 
     Returns:
         CompiledStateGraph executable via .invoke() or .stream().
@@ -111,5 +170,7 @@ def create_research_graph(
         custom_analyst=custom_analyst,
         custom_critic=custom_critic,
         custom_router=custom_router,
+        custom_human_review=custom_human_review,
+        custom_human_router=custom_human_router,
     )
-    return builder.compile()
+    return builder.compile(checkpointer=checkpointer)

@@ -166,6 +166,8 @@ class TestResearchGraphExecution:
         nodes = list(builder.nodes.keys())
         assert "research" in nodes
         assert "verifier" in nodes
-        assert len(nodes) == 2
+        assert "human_review" in nodes
+        assert len(nodes) == 3
+
 
 
