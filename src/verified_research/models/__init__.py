@@ -11,6 +11,8 @@ from verified_research.models.research import (
     ResearchReuseDecision,
     ReuseDecisionType,
     Source,
+    SupervisorDecision,
+    SupervisorWorkerType,
     VerdictType,
     VerificationResult,
 )
@@ -39,6 +41,8 @@ __all__ = [
     "HumanReview",
     "ReuseDecisionType",
     "ResearchReuseDecision",
+    "SupervisorWorkerType",
+    "SupervisorDecision",
     "TraceabilityError",
     "UnknownEvidenceError",
     "UnknownSourceError",

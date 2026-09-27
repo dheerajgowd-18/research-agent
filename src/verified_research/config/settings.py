@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     search_max_results: int = Field(default=5, alias="SEARCH_MAX_RESULTS")
     max_iterations: int = Field(default=3, alias="MAX_ITERATIONS")
     max_human_research_cycles: int = Field(default=2, alias="MAX_HUMAN_RESEARCH_CYCLES")
+    max_supervisor_steps: int = Field(default=8, alias="MAX_SUPERVISOR_STEPS")
 
     # LLM Configuration
     llm_provider: Literal["groq", "openai", "fake"] = Field(
@@ -43,6 +44,7 @@ class Settings(BaseSettings):
 
 DEFAULT_MAX_ITERATIONS = 3
 DEFAULT_MAX_HUMAN_RESEARCH_CYCLES = 2
+DEFAULT_MAX_SUPERVISOR_STEPS = 8
 DEFAULT_CHECKPOINT_DB_PATH = "checkpoints.db"
 
 

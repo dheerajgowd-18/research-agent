@@ -292,5 +292,29 @@ class ResearchReuseDecision(BaseModel):
     )
 
 
+SupervisorWorkerType = Literal["research", "verify", "human_review", "finish"]
+
+
+class SupervisorDecision(BaseModel):
+    """Structured decision produced by the Supervisor orchestrator.
+
+    Attributes:
+        next_worker: The target worker node to execute next ('research', 'verify', 'human_review', 'finish').
+        reasoning: Explicit rationale justifying the orchestration decision.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    next_worker: SupervisorWorkerType = Field(
+        ...,
+        description="The specialized worker to invoke next, or 'finish' to conclude orchestration.",
+    )
+    reasoning: str = Field(
+        ...,
+        min_length=1,
+        description="Explicit justification detailing why this worker was chosen based on current state.",
+    )
+
+
 
 
