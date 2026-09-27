@@ -17,6 +17,15 @@ from verified_research.agents.human_review import (
     validate_edited_claims,
 )
 from verified_research.agents.researcher import create_researcher_node, researcher_node
+from verified_research.agents.sufficiency import (
+    HeuristicSufficiencyService,
+    LLMSufficiencyService,
+    SufficiencyService,
+    create_evaluate_sufficiency_node,
+    create_reuse_analyst_node,
+    evaluate_sufficiency_node,
+    reuse_analyst_node,
+)
 from verified_research.agents.verifier import (
     ClaimVerifierService,
     VerifierService,
@@ -41,5 +50,12 @@ __all__ = [
     "VerifierService",
     "validate_finding_sources",
     "InvalidSourceReferenceError",
+    "SufficiencyService",
+    "HeuristicSufficiencyService",
+    "LLMSufficiencyService",
+    "evaluate_sufficiency_node",
+    "create_evaluate_sufficiency_node",
+    "reuse_analyst_node",
+    "create_reuse_analyst_node",
 ]
 
