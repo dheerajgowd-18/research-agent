@@ -22,6 +22,8 @@ def _wrap_research_subgraph(
         if review and review.action == "research_more":
             current_cycles = state.get("human_research_cycles", 0)
             result["human_research_cycles"] = current_cycles + 1
+            result["human_review"] = None
+            result["verification_results"] = []
         return result
 
     return research_node

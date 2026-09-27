@@ -160,18 +160,22 @@ def route_after_supervisor(
     Returns:
         One of 'research', 'verify', 'human_review', or 'finish'.
     """
-    steps = state.get("supervisor_steps", 0)
-    if steps >= max_steps:
-        logger.warning(
-            "[Router:Supervisor] Supervisor steps reached limit (%d >= %d). next=finish",
-            steps,
-            max_steps,
-        )
-        return "finish"
-
     decision = state.get("supervisor_decision")
     if decision is None:
         logger.warning("[Router:Supervisor] No supervisor_decision in state. next=finish")
+        return "finish"
+
+    if decision.next_worker == "finish":
+        logger.info("[Router:Supervisor] Supervisor decided to finish. next=finish")
+        return "finish"
+
+    steps = state.get("supervisor_steps", 0)
+    if steps > max_steps:
+        logger.warning(
+            "[Router:Supervisor] Supervisor steps exceeded limit (%d > %d). next=finish",
+            steps,
+            max_steps,
+        )
         return "finish"
 
     worker = decision.next_worker

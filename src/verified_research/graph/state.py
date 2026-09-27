@@ -72,7 +72,7 @@ class ResearchState(TypedDict):
     evidence: NotRequired[list[Evidence]]
     claims: NotRequired[list[Claim]]
     verification_results: NotRequired[list[VerificationResult]]
-    human_review: NotRequired[HumanReview]
+    human_review: NotRequired[HumanReview | None]
     human_research_cycles: NotRequired[int]
     human_feedback: NotRequired[str | None]
     max_human_cycles_reached: NotRequired[bool]
