@@ -37,9 +37,14 @@ class Settings(BaseSettings):
         default="verified-research-agent", alias="LANGCHAIN_PROJECT"
     )
 
+    # Persistence / Checkpoint Configuration
+    checkpoint_db_path: str = Field(default="checkpoints.db", alias="CHECKPOINT_DB_PATH")
+
 
 DEFAULT_MAX_ITERATIONS = 3
 DEFAULT_MAX_HUMAN_RESEARCH_CYCLES = 2
+DEFAULT_CHECKPOINT_DB_PATH = "checkpoints.db"
+
 
 
 
