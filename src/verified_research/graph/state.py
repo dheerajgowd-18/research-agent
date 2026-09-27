@@ -10,6 +10,7 @@ from verified_research.models.research import (
     SupervisorDecision,
     VerificationResult,
 )
+from verified_research.reliability.models import ErrorInfo
 
 
 class ResearchState(TypedDict):
@@ -79,5 +80,7 @@ class ResearchState(TypedDict):
     supervisor_steps: NotRequired[int]
     supervisor_decision: NotRequired[SupervisorDecision]
     supervisor_termination_reason: NotRequired[str | None]
+    errors: NotRequired[list[ErrorInfo]]
+    last_error: NotRequired[ErrorInfo | None]
 
 

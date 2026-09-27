@@ -48,20 +48,24 @@ def _format_sources_for_prompt(sources: list[Source]) -> str:
 
 def create_analyst_node(
     llm: BaseChatModel | None = None,
+    retry_policy: Any | None = None,
 ) -> Callable[[ResearchState], dict[str, Any]]:
-    """Factory to create an analyst node with an optional injected LLM.
+    """Factory to create an analyst node with an optional injected LLM and retry policy.
 
     Contract:
         Input: state['question'] (str), state['sources'] (list[Source])
         Output: {'findings': list[Finding], 'evidence': list[Evidence], 'claims': list[Claim]}
 
-
     Args:
         llm: Optional BaseChatModel instance. If None, initialized via get_chat_model().
+        retry_policy: Optional RetryPolicy for LLM invocation reliability.
 
     Returns:
         A callable node function conforming to LangGraph node specification.
     """
+    from verified_research.reliability.policy import RetryPolicy, execute_with_retry
+
+    active_policy = retry_policy or RetryPolicy()
 
     def analyst_node(state: ResearchState) -> dict[str, list[Finding]]:
         """LangGraph node that synthesizes findings from question and sources.
@@ -113,13 +117,22 @@ def create_analyst_node(
             "with its supporting source_ids."
         )
 
-        try:
+        def _do_synthesis() -> Any:
             structured_model = model.with_structured_output(AnalystOutput)
-            result = structured_model.invoke(
+            return structured_model.invoke(
                 [
                     SystemMessage(content=system_instruction),
                     HumanMessage(content=user_prompt),
                 ]
+            )
+
+        try:
+            result = execute_with_retry(
+                operation=_do_synthesis,
+                policy=active_policy,
+                component="analyst",
+                operation_name="llm_synthesis",
+                reraise_original=True,
             )
         except Exception as e:
             logger.error("[ANALYST] LLM execution or structured output parsing failed: %s", e)

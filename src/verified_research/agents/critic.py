@@ -1,7 +1,7 @@
 """Critic node implementation for research evaluation and refinement recommendations."""
 
 import logging
-from typing import Callable
+from typing import Any, Callable
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from verified_research.config.llm import get_chat_model
@@ -30,8 +30,9 @@ def _format_sources_summary_for_critic(sources: list[Source]) -> str:
 
 def create_critic_node(
     llm: BaseChatModel | None = None,
+    retry_policy: Any | None = None,
 ) -> Callable[[ResearchState], dict[str, Critique]]:
-    """Factory to create a critic node with an optional injected LLM.
+    """Factory to create a critic node with an optional injected LLM and retry policy.
 
     Contract:
         Input: state['question'] (str), state['sources'] (list[Source]), state['findings'] (list[Finding])
@@ -39,10 +40,14 @@ def create_critic_node(
 
     Args:
         llm: Optional BaseChatModel instance. If None, initialized via get_chat_model().
+        retry_policy: Optional RetryPolicy for LLM invocation reliability.
 
     Returns:
         A callable node function conforming to LangGraph node specification.
     """
+    from verified_research.reliability.policy import RetryPolicy, execute_with_retry
+
+    active_policy = retry_policy or RetryPolicy()
 
     def critic_node(state: ResearchState) -> dict[str, Critique]:
         """LangGraph node that evaluates findings and determines if more research is required.
@@ -110,13 +115,22 @@ def create_critic_node(
             "Evaluate the quality of the findings and provide your structured critique."
         )
 
-        try:
+        def _do_critique() -> Any:
             structured_model = model.with_structured_output(Critique)
-            result = structured_model.invoke(
+            return structured_model.invoke(
                 [
                     SystemMessage(content=system_instruction),
                     HumanMessage(content=user_content),
                 ]
+            )
+
+        try:
+            result = execute_with_retry(
+                operation=_do_critique,
+                policy=active_policy,
+                component="critic",
+                operation_name="llm_critique",
+                reraise_original=True,
             )
         except Exception as e:
             logger.error("[CRITIC] LLM structured evaluation failed: %s", e)

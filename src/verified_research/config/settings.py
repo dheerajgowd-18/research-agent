@@ -41,11 +41,23 @@ class Settings(BaseSettings):
     # Persistence / Checkpoint Configuration
     checkpoint_db_path: str = Field(default="checkpoints.db", alias="CHECKPOINT_DB_PATH")
 
+    # Reliability Configuration
+    retry_max_attempts: int = Field(default=3, alias="RETRY_MAX_ATTEMPTS")
+    retry_base_delay: float = Field(default=1.0, alias="RETRY_BASE_DELAY")
+    retry_max_delay: float = Field(default=60.0, alias="RETRY_MAX_DELAY")
+    retry_backoff_factor: float = Field(default=2.0, alias="RETRY_BACKOFF_FACTOR")
+    retry_jitter: bool = Field(default=True, alias="RETRY_JITTER")
+
 
 DEFAULT_MAX_ITERATIONS = 3
 DEFAULT_MAX_HUMAN_RESEARCH_CYCLES = 2
 DEFAULT_MAX_SUPERVISOR_STEPS = 8
 DEFAULT_CHECKPOINT_DB_PATH = "checkpoints.db"
+DEFAULT_RETRY_MAX_ATTEMPTS = 3
+DEFAULT_RETRY_BASE_DELAY = 1.0
+DEFAULT_RETRY_MAX_DELAY = 60.0
+DEFAULT_RETRY_BACKOFF_FACTOR = 2.0
+DEFAULT_RETRY_JITTER = True
 
 
 

@@ -22,6 +22,9 @@ CHECKPOINT_ALLOWED_TYPES: tuple[tuple[str, str], ...] = (
     ("verified_research.models.research", "HumanReview"),
     ("verified_research.models.research", "ResearchReuseDecision"),
     ("verified_research.models.research", "SupervisorDecision"),
+    ("verified_research.reliability.models", "ErrorInfo"),
+    ("verified_research.reliability.models", "ErrorCategory"),
+    ("verified_research.reliability.models", "OperationMetadata"),
 )
 
 

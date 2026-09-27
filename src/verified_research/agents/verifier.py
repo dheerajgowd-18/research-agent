@@ -1,7 +1,7 @@
 """Evidence-grounded claim verifier node and verification service."""
 
 import logging
-from typing import Callable, Protocol, runtime_checkable
+from typing import Any, Callable, Protocol, runtime_checkable
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from verified_research.config.llm import get_chat_model
@@ -24,8 +24,15 @@ class VerifierService(Protocol):
 class ClaimVerifierService:
     """LLM-based verifier service performing evidence-grounded entailment checks."""
 
-    def __init__(self, llm: BaseChatModel | None = None) -> None:
+    def __init__(
+        self,
+        llm: BaseChatModel | None = None,
+        retry_policy: Any | None = None,
+    ) -> None:
+        from verified_research.reliability.policy import RetryPolicy
+
         self.llm = llm
+        self.retry_policy = retry_policy or RetryPolicy()
 
     def _get_model(self) -> BaseChatModel:
         if self.llm is not None:
@@ -50,6 +57,8 @@ class ClaimVerifierService:
         Returns:
             A VerificationResult detailing verdict, confidence, reasoning, and evidence IDs.
         """
+        from verified_research.reliability.policy import execute_with_retry
+
         model = self._get_model()
 
         system_instruction = (
@@ -84,13 +93,22 @@ class ClaimVerifierService:
             "Evaluate whether the supplied evidence supports the claim according to the strict criteria."
         )
 
-        try:
+        def _do_verification() -> Any:
             structured_model = model.with_structured_output(VerificationResult)
-            result = structured_model.invoke(
+            return structured_model.invoke(
                 [
                     SystemMessage(content=system_instruction),
                     HumanMessage(content=user_content),
                 ]
+            )
+
+        try:
+            result = execute_with_retry(
+                operation=_do_verification,
+                policy=self.retry_policy,
+                component="verifier",
+                operation_name="llm_verification",
+                reraise_original=True,
             )
         except Exception as e:
             logger.error("[VERIFIER] LLM verification failed for claim '%s': %s", claim.claim_id, e)
