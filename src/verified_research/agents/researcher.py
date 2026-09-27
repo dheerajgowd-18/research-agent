@@ -61,9 +61,14 @@ def create_researcher_node(
         existing_urls = {s.url for s in existing_sources}
 
         critique = state.get("critique")
+        human_feedback = state.get("human_feedback")
         queries_to_search: list[str] = []
 
-        if current_iteration == 1 or critique is None or not critique.recommended_queries:
+        if human_feedback and human_feedback.strip() and current_iteration == 1:
+            # Targeted search based on human feedback from review
+            logger.info("[RESEARCHER] executing query from human feedback: '%s'", human_feedback.strip())
+            queries_to_search.append(human_feedback.strip())
+        elif current_iteration == 1 or critique is None or not critique.recommended_queries:
             # First pass or no specific critic guidance: search original question
             queries_to_search.append(clean_question)
         else:
