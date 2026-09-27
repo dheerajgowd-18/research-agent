@@ -62,6 +62,13 @@ def create_researcher_node(
 
         critique = state.get("critique")
         human_feedback = state.get("human_feedback")
+        reuse_decision = state.get("reuse_decision")
+        follow_up = state.get("follow_up_question")
+        target_question = (
+            follow_up.strip()
+            if follow_up and follow_up.strip()
+            else clean_question
+        )
         queries_to_search: list[str] = []
 
         if human_feedback and human_feedback.strip() and current_iteration == 1:
@@ -69,8 +76,12 @@ def create_researcher_node(
             logger.info("[RESEARCHER] executing query from human feedback: '%s'", human_feedback.strip())
             queries_to_search.append(human_feedback.strip())
         elif current_iteration == 1 or critique is None or not critique.recommended_queries:
-            # First pass or no specific critic guidance: search original question
-            queries_to_search.append(clean_question)
+            # First pass or no specific critic guidance: search target research objective
+            queries_to_search.append(target_question)
+            if reuse_decision and reuse_decision.missing_topics:
+                for mt in reuse_decision.missing_topics:
+                    if mt and mt.strip() and mt.strip().lower() not in target_question.lower():
+                        queries_to_search.append(f"{target_question} {mt.strip()}")
         else:
             # Subsequent pass: execute targeted searches guided by critic feedback
             # Bound search queries to top 2 to avoid unbounded calls

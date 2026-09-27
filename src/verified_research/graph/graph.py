@@ -36,23 +36,31 @@ def build_research_graph(
     custom_router: Callable | None = None,
     custom_human_review: Callable | None = None,
     custom_human_router: Callable | None = None,
+    custom_sufficiency_service: Any | None = None,
+    custom_sufficiency_evaluator: Callable | None = None,
+    custom_sufficiency_router: Callable | None = None,
+    custom_reuse_analyst: Callable | None = None,
 ) -> StateGraph:
     """Construct the parent StateGraph orchestrating research, verification, and human review.
 
     Parent Graph Architecture:
         START
           ↓
-       research (encapsulated research/critique subgraph)
+        evaluate_sufficiency (evaluates follow-up query against existing evidence)
           ↓
-       verifier (evidence-grounded claim verifier node)
-          ↓
-       human_review (pauses graph via LangGraph interrupt)
-          ↓
-       route_after_human_review
-         ├── approve       → END
-         ├── edit          → END
-         ├── research_more → research (if human_research_cycles < MAX_HUMAN_RESEARCH_CYCLES)
-         └── reject        → END
+        route_after_sufficiency
+          ├── reuse_synthesis → verifier (synthesizes claims from existing evidence)
+          └── research        → verifier (encapsulated research/critique subgraph)
+                                   ↓
+                                verifier (evidence-grounded claim verifier node)
+                                   ↓
+                                human_review (pauses graph via LangGraph interrupt)
+                                   ↓
+                                route_after_human_review
+                                  ├── approve       → END
+                                  ├── edit          → END
+                                  ├── research_more → research (if human_research_cycles < MAX_HUMAN_RESEARCH_CYCLES)
+                                  └── reject        → END
 
     Args:
         custom_subgraph: Optional pre-compiled research subgraph. If None, builds
@@ -64,6 +72,10 @@ def build_research_graph(
         custom_router: Optional router function passed to default subgraph builder.
         custom_human_review: Optional human review node override.
         custom_human_router: Optional human review router function override.
+        custom_sufficiency_service: Optional sufficiency evaluation service protocol implementation.
+        custom_sufficiency_evaluator: Optional sufficiency evaluator node override.
+        custom_sufficiency_router: Optional sufficiency routing function override.
+        custom_reuse_analyst: Optional reuse analyst node override.
 
     Returns:
         Configured parent StateGraph instance ready for compilation.
@@ -79,6 +91,33 @@ def build_research_graph(
             custom_critic=custom_critic,
             custom_router=custom_router,
         )
+
+    if custom_sufficiency_evaluator is not None:
+        sufficiency_evaluator = custom_sufficiency_evaluator
+    elif custom_sufficiency_service is not None:
+        from verified_research.agents.sufficiency import create_evaluate_sufficiency_node
+
+        sufficiency_evaluator = create_evaluate_sufficiency_node(
+            sufficiency_service=custom_sufficiency_service
+        )
+    else:
+        from verified_research.agents.sufficiency import evaluate_sufficiency_node
+
+        sufficiency_evaluator = evaluate_sufficiency_node
+
+    if custom_sufficiency_router is not None:
+        sufficiency_router = custom_sufficiency_router
+    else:
+        from verified_research.graph.router import route_after_sufficiency
+
+        sufficiency_router = route_after_sufficiency
+
+    if custom_reuse_analyst is not None:
+        reuse_analyst = custom_reuse_analyst
+    else:
+        from verified_research.agents.sufficiency import reuse_analyst_node
+
+        reuse_analyst = reuse_analyst_node
 
     if custom_verifier is not None:
         import inspect
@@ -117,12 +156,23 @@ def build_research_graph(
 
     builder = StateGraph(ResearchState)
 
+    builder.add_node("evaluate_sufficiency", sufficiency_evaluator)
     builder.add_node("research", research_node)
+    builder.add_node("reuse_synthesis", reuse_analyst)
     builder.add_node("verifier", verifier)
     builder.add_node("human_review", human_review)
 
-    builder.add_edge(START, "research")
+    builder.add_edge(START, "evaluate_sufficiency")
+    builder.add_conditional_edges(
+        "evaluate_sufficiency",
+        sufficiency_router,
+        {
+            "research": "research",
+            "reuse_synthesis": "reuse_synthesis",
+        },
+    )
     builder.add_edge("research", "verifier")
+    builder.add_edge("reuse_synthesis", "verifier")
     builder.add_edge("verifier", "human_review")
     builder.add_conditional_edges(
         "human_review",
@@ -145,6 +195,10 @@ def create_research_graph(
     custom_router: Callable | None = None,
     custom_human_review: Callable | None = None,
     custom_human_router: Callable | None = None,
+    custom_sufficiency_service: Any | None = None,
+    custom_sufficiency_evaluator: Callable | None = None,
+    custom_sufficiency_router: Callable | None = None,
+    custom_reuse_analyst: Callable | None = None,
     checkpointer: Any | None = None,
 ) -> CompiledStateGraph:
     """Construct and compile the parent research, verification, and HITL pipeline graph.
@@ -158,6 +212,10 @@ def create_research_graph(
         custom_router: Optional router function override.
         custom_human_review: Optional human review node override.
         custom_human_router: Optional human review router function override.
+        custom_sufficiency_service: Optional sufficiency evaluation service protocol implementation.
+        custom_sufficiency_evaluator: Optional sufficiency evaluator node override.
+        custom_sufficiency_router: Optional sufficiency routing function override.
+        custom_reuse_analyst: Optional reuse analyst node override.
         checkpointer: Optional LangGraph checkpointer (e.g. MemorySaver) required for resume.
 
     Returns:
@@ -172,5 +230,10 @@ def create_research_graph(
         custom_router=custom_router,
         custom_human_review=custom_human_review,
         custom_human_router=custom_human_router,
+        custom_sufficiency_service=custom_sufficiency_service,
+        custom_sufficiency_evaluator=custom_sufficiency_evaluator,
+        custom_sufficiency_router=custom_sufficiency_router,
+        custom_reuse_analyst=custom_reuse_analyst,
     )
     return builder.compile(checkpointer=checkpointer)
+

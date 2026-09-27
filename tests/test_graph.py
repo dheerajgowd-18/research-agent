@@ -164,10 +164,12 @@ class TestResearchGraphExecution:
     def test_graph_node_structure(self):
         builder = build_research_graph()
         nodes = list(builder.nodes.keys())
+        assert "evaluate_sufficiency" in nodes
         assert "research" in nodes
+        assert "reuse_synthesis" in nodes
         assert "verifier" in nodes
         assert "human_review" in nodes
-        assert len(nodes) == 3
+        assert len(nodes) == 5
 
 
 

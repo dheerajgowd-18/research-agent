@@ -229,7 +229,7 @@ def create_evaluate_sufficiency_node(
             active_question = state.get("question", "").strip()
 
         if not active_question:
-            raise ValueError("Sufficiency evaluation requires a non-empty question in state.")
+            raise ValueError("Sufficiency evaluation requires a non-empty 'question' in state.")
 
         sources = state.get("sources", [])
         evidence = state.get("evidence", [])

@@ -74,11 +74,17 @@ def create_analyst_node(
                 findings: list[Finding]
         """
         question = state.get("question")
-        if not question or not question.strip():
+        follow_up = state.get("follow_up_question")
+        active_question = (
+            follow_up.strip()
+            if follow_up and follow_up.strip()
+            else (question.strip() if question else "")
+        )
+        if not active_question:
             raise ValueError("Analyst node requires a non-empty 'question' in state.")
 
         sources = state.get("sources", [])
-        logger.info("[ANALYST] received %d sources for question: '%s'", len(sources), question)
+        logger.info("[ANALYST] received %d sources for question: '%s'", len(sources), active_question)
 
         # Handle empty sources cleanly
         if not sources:
@@ -100,7 +106,7 @@ def create_analyst_node(
 
         sources_context = _format_sources_for_prompt(sources)
         user_prompt = (
-            f"Research Question: {question}\n\n"
+            f"Research Question: {active_question}\n\n"
             f"Retrieved Sources:\n"
             f"{sources_context}\n\n"
             "Synthesize structured findings answering the question. Associate each finding "

@@ -56,10 +56,16 @@ def create_critic_node(
                 critique: Critique
         """
         question = state.get("question")
-        if not question or not question.strip():
+        follow_up = state.get("follow_up_question")
+        active_question = (
+            follow_up.strip()
+            if follow_up and follow_up.strip()
+            else (question.strip() if question else "")
+        )
+        if not active_question:
             raise ValueError("Critic node requires a non-empty 'question' in state.")
 
-        clean_question = question.strip()
+        clean_question = active_question
         sources = state.get("sources", [])
         findings = state.get("findings", [])
 
