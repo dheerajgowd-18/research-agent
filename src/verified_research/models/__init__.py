@@ -8,6 +8,8 @@ from verified_research.models.research import (
     Finding,
     HumanActionType,
     HumanReview,
+    ResearchReuseDecision,
+    ReuseDecisionType,
     Source,
     VerdictType,
     VerificationResult,
@@ -35,6 +37,8 @@ __all__ = [
     "VerificationResult",
     "HumanActionType",
     "HumanReview",
+    "ReuseDecisionType",
+    "ResearchReuseDecision",
     "TraceabilityError",
     "UnknownEvidenceError",
     "UnknownSourceError",
@@ -45,3 +49,4 @@ __all__ = [
     "calculate_citation_coverage",
     "generate_claims_and_evidence_from_findings",
 ]
+

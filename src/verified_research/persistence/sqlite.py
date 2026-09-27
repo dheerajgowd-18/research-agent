@@ -20,6 +20,7 @@ CHECKPOINT_ALLOWED_TYPES: tuple[tuple[str, str], ...] = (
     ("verified_research.models.research", "Critique"),
     ("verified_research.models.research", "VerificationResult"),
     ("verified_research.models.research", "HumanReview"),
+    ("verified_research.models.research", "ResearchReuseDecision"),
 )
 
 

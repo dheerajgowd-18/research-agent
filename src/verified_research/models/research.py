@@ -263,4 +263,34 @@ class HumanReview(BaseModel):
         return self
 
 
+ReuseDecisionType = Literal["REUSE", "RESEARCH_MORE"]
+
+
+class ResearchReuseDecision(BaseModel):
+    """Structured evaluation of whether existing research is sufficient for a follow-up question.
+
+    Attributes:
+        decision: 'REUSE' if existing evidence/findings are sufficient, else 'RESEARCH_MORE'.
+        reasoning: Explicit justification detailing why existing research is sufficient or deficient.
+        missing_topics: Specific topics, temporal ranges, or entities missing from current research.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    decision: ReuseDecisionType = Field(
+        ...,
+        description="Whether existing research is sufficient (REUSE) or new research is needed (RESEARCH_MORE).",
+    )
+    reasoning: str = Field(
+        ...,
+        min_length=1,
+        description="Explicit reasoning detailing why existing evidence is sufficient or insufficient.",
+    )
+    missing_topics: list[str] = Field(
+        default_factory=list,
+        description="List of specific gaps, temporal requirements, or topics not covered in existing research.",
+    )
+
+
+
 

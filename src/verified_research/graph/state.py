@@ -5,6 +5,7 @@ from verified_research.models.research import (
     Evidence,
     Finding,
     HumanReview,
+    ResearchReuseDecision,
     Source,
     VerificationResult,
 )
@@ -14,24 +15,31 @@ class ResearchState(TypedDict):
     """LangGraph state schema for verified research pipeline.
 
     Contract & State Ownership Boundary:
-        1. Research Subgraph Internal State:
-           - question: str
+        1. Conversation / Session Context:
+           - question: str (current substantive research question)
+           - follow_up_question: str | None (optional follow-up query submitted to ongoing session)
+           - previous_questions: list[str] (history of previously researched questions in this thread)
+           - reuse_decision: ResearchReuseDecision (structured sufficiency evaluation: REUSE vs RESEARCH_MORE)
+        2. Research Subgraph Internal State:
            - sources: list[Source]
            - findings: list[Finding]
            - critique: Critique
            - research_iteration: int (subgraph-internal loop counter: researcher -> analyst -> critic)
-        2. Evidence & Verification State:
+        3. Evidence & Verification State:
            - evidence: list[Evidence]
            - claims: list[Claim]
            - verification_results: list[VerificationResult]
-        3. Parent / HITL Orchestration State:
+        4. Parent / HITL Orchestration State:
            - human_review: HumanReview (structured review decision from human)
            - human_research_cycles: int (counter of human-requested research passes; separate from research_iteration)
            - human_feedback: str | None (targeted guidance for follow-up research cycles)
            - max_human_cycles_reached: bool (indicates human research cycle limit has been reached)
 
     Attributes:
-        question: The substantive research question provided at graph initiation.
+        question: The substantive research question currently active in the graph.
+        follow_up_question: Explicit follow-up query submitted to an existing session.
+        previous_questions: Chronological list of previously researched questions in the thread.
+        reuse_decision: Structured decision whether existing research is sufficient or more is needed.
         sources: List of normalized Source objects retrieved during research.
         findings: List of synthesized Finding objects with source attributions.
         critique: Structured evaluation output assessing research sufficiency.
@@ -46,6 +54,9 @@ class ResearchState(TypedDict):
     """
 
     question: str
+    follow_up_question: NotRequired[str | None]
+    previous_questions: NotRequired[list[str]]
+    reuse_decision: NotRequired[ResearchReuseDecision]
     sources: NotRequired[list[Source]]
     findings: NotRequired[list[Finding]]
     critique: NotRequired[Critique]
@@ -57,4 +68,5 @@ class ResearchState(TypedDict):
     human_research_cycles: NotRequired[int]
     human_feedback: NotRequired[str | None]
     max_human_cycles_reached: NotRequired[bool]
+
 
