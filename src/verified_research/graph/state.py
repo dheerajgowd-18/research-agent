@@ -7,6 +7,7 @@ from verified_research.models.research import (
     HumanReview,
     ResearchReuseDecision,
     Source,
+    SupervisorDecision,
     VerificationResult,
 )
 
@@ -34,6 +35,10 @@ class ResearchState(TypedDict):
            - human_research_cycles: int (counter of human-requested research passes; separate from research_iteration)
            - human_feedback: str | None (targeted guidance for follow-up research cycles)
            - max_human_cycles_reached: bool (indicates human research cycle limit has been reached)
+        5. Supervisor Orchestration State:
+           - supervisor_steps: int (counter of supervisor loop transitions; separate from iterations & cycles)
+           - supervisor_decision: SupervisorDecision (structured decision directing worker execution)
+           - supervisor_termination_reason: str | None (explicit explanation if stopped safely or capped)
 
     Attributes:
         question: The substantive research question currently active in the graph.
@@ -51,6 +56,9 @@ class ResearchState(TypedDict):
         human_research_cycles: Counter of human-requested research passes (bounded by MAX_HUMAN_RESEARCH_CYCLES).
         human_feedback: Human guidance or instructions for next research pass.
         max_human_cycles_reached: Flag indicating whether human research iteration cap was reached.
+        supervisor_steps: Counter of completed supervisor transitions (bounded by MAX_SUPERVISOR_STEPS).
+        supervisor_decision: Most recent structured supervisor decision.
+        supervisor_termination_reason: Explicit termination rationale when supervisor halts execution.
     """
 
     question: str
@@ -68,5 +76,8 @@ class ResearchState(TypedDict):
     human_research_cycles: NotRequired[int]
     human_feedback: NotRequired[str | None]
     max_human_cycles_reached: NotRequired[bool]
+    supervisor_steps: NotRequired[int]
+    supervisor_decision: NotRequired[SupervisorDecision]
+    supervisor_termination_reason: NotRequired[str | None]
 
 
