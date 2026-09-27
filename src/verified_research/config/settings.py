@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     tavily_api_key: str | None = Field(default=None, alias="TAVILY_API_KEY")
     search_max_results: int = Field(default=5, alias="SEARCH_MAX_RESULTS")
     max_iterations: int = Field(default=3, alias="MAX_ITERATIONS")
+    max_human_research_cycles: int = Field(default=2, alias="MAX_HUMAN_RESEARCH_CYCLES")
 
     # LLM Configuration
     llm_provider: Literal["groq", "openai", "fake"] = Field(
@@ -38,6 +39,8 @@ class Settings(BaseSettings):
 
 
 DEFAULT_MAX_ITERATIONS = 3
+DEFAULT_MAX_HUMAN_RESEARCH_CYCLES = 2
+
 
 
 @lru_cache(maxsize=1)

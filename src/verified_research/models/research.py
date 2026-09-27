@@ -1,5 +1,6 @@
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field
+from typing_extensions import Self
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 
@@ -223,5 +224,43 @@ class VerificationResult(BaseModel):
         min_length=1,
         description="List of evidence IDs supplied for this evaluation.",
     )
+
+
+HumanActionType = Literal["approve", "edit", "research_more", "reject"]
+
+
+class HumanReview(BaseModel):
+    """Structured human review input and decision record.
+
+    Attributes:
+        action: Structured decision action ('approve', 'edit', 'research_more', 'reject').
+        feedback: Optional textual guidance or instructions (e.g. for follow-up research passes).
+        edited_claims: Optional list of validated Claim instances (required if action is 'edit').
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    action: HumanActionType = Field(
+        ...,
+        description="Review action: approve, edit, research_more, or reject.",
+    )
+    feedback: str | None = Field(
+        default=None,
+        description="Optional human guidance or feedback for research cycles.",
+    )
+    edited_claims: list[Claim] | None = Field(
+        default=None,
+        description="List of edited Claim objects required when action is 'edit'.",
+    )
+
+    @model_validator(mode="after")
+    def validate_action_fields(self) -> Self:
+        if self.action == "edit":
+            if not self.edited_claims:
+                raise ValueError("Action 'edit' requires a non-empty list of 'edited_claims'.")
+        elif self.edited_claims is not None:
+            raise ValueError(f"Action '{self.action}' cannot include 'edited_claims'.")
+        return self
+
 
 
