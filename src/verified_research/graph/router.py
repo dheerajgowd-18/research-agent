@@ -104,3 +104,36 @@ def route_after_human_review(
     # Fallback safe termination
     return "end"
 
+
+def route_after_sufficiency(
+    state: ResearchState,
+) -> Literal["research", "reuse_synthesis"]:
+    """Determine whether to re-enter research or synthesize from existing evidence.
+
+    Deterministic routing rules:
+        1. If reuse_decision exists and decision == 'REUSE':
+           -> 'reuse_synthesis' (synthesize follow-up claims from existing evidence)
+        2. Otherwise (decision == 'RESEARCH_MORE' or missing):
+           -> 'research' (enter research subgraph for additional evidence)
+
+    Args:
+        state: Current graph state containing 'reuse_decision'.
+
+    Returns:
+        'reuse_synthesis' to reuse evidence, or 'research' to run research subgraph.
+    """
+    decision = state.get("reuse_decision")
+    if decision is not None and decision.decision == "REUSE":
+        logger.info(
+            "[Router:Sufficiency] Decision is REUSE (reasoning: %s). next=reuse_synthesis",
+            decision.reasoning,
+        )
+        return "reuse_synthesis"
+
+    reasoning = decision.reasoning if decision else "No reuse decision present"
+    logger.info(
+        "[Router:Sufficiency] Decision is RESEARCH_MORE (reasoning: %s). next=research",
+        reasoning,
+    )
+    return "research"
+
