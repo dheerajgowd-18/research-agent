@@ -10,6 +10,12 @@ from verified_research.agents.critic import (
     create_critic_node,
     critic_node,
 )
+from verified_research.agents.human_review import (
+    build_review_payload,
+    create_human_review_node,
+    human_review_node,
+    validate_edited_claims,
+)
 from verified_research.agents.researcher import create_researcher_node, researcher_node
 from verified_research.agents.verifier import (
     ClaimVerifierService,
@@ -27,8 +33,13 @@ __all__ = [
     "create_critic_node",
     "verifier_node",
     "create_verifier_node",
+    "human_review_node",
+    "create_human_review_node",
+    "build_review_payload",
+    "validate_edited_claims",
     "ClaimVerifierService",
     "VerifierService",
     "validate_finding_sources",
     "InvalidSourceReferenceError",
 ]
+
