@@ -26,6 +26,15 @@ from verified_research.agents.sufficiency import (
     evaluate_sufficiency_node,
     reuse_analyst_node,
 )
+from verified_research.agents.supervisor import (
+    DeterministicSupervisorPolicy,
+    InvariantViolationError,
+    LLMSupervisorPolicy,
+    SupervisorPolicy,
+    create_supervisor_node,
+    supervisor_node,
+    validate_supervisor_decision,
+)
 from verified_research.agents.verifier import (
     ClaimVerifierService,
     VerifierService,
@@ -57,5 +66,12 @@ __all__ = [
     "create_evaluate_sufficiency_node",
     "reuse_analyst_node",
     "create_reuse_analyst_node",
+    "SupervisorPolicy",
+    "DeterministicSupervisorPolicy",
+    "LLMSupervisorPolicy",
+    "validate_supervisor_decision",
+    "create_supervisor_node",
+    "supervisor_node",
+    "InvariantViolationError",
 ]
 
