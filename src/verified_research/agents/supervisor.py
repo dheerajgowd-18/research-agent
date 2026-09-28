@@ -432,7 +432,10 @@ def create_supervisor_node(
         updates["supervisor_decision"] = decision
 
         if decision.next_worker == "finish":
-            if current_steps + 1 >= max_steps:
+            review = eval_state.get("human_review")
+            if review is not None and review.action == "reject":
+                updates["supervisor_termination_reason"] = "REJECTED"
+            elif current_steps + 1 >= max_steps:
                 updates["supervisor_termination_reason"] = "MAX_SUPERVISOR_STEPS_REACHED"
             else:
                 updates["supervisor_termination_reason"] = "COMPLETED"
