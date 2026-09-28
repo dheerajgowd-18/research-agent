@@ -3,47 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verified Research Agent — Observability Console</title>
+  <title>Verified Research Agent — Research Workspace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #090a0f;
-      --bg-subtle: #0e111a;
-      --surface: #131722;
-      --surface-elevated: #181d2c;
-      --surface-border: #23283b;
-      --surface-border-subtle: #1c2130;
-      --surface-border-hover: #333a52;
+      /* Light Mode Color System */
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --bg-muted: #e2e8f0;
       
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
+      --border-hairline: #e2e8f0;
+      --border-subtle: #cbd5e1;
+      --border-hover: #94a3b8;
+      --border-focus: #2563eb;
       
-      --accent: #3b82f6;
-      --accent-muted: rgba(59, 130, 246, 0.15);
-      --accent-hover: #2563eb;
+      --text-main: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
       
-      --success: #10b981;
-      --success-muted: rgba(16, 185, 129, 0.12);
-      --success-border: rgba(16, 185, 129, 0.3);
+      /* Primary Brand / Accent */
+      --accent-primary: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-subtle: #eff6ff;
+      --accent-border: #bfdbfe;
       
-      --warning: #f59e0b;
-      --warning-muted: rgba(245, 158, 11, 0.12);
-      --warning-border: rgba(245, 158, 11, 0.3);
+      /* Semantic States */
+      --success-main: #059669;
+      --success-subtle: #ecfdf5;
+      --success-border: #a7f3d0;
       
-      --danger: #f43f5e;
-      --danger-muted: rgba(244, 63, 94, 0.12);
-      --danger-border: rgba(244, 63, 94, 0.3);
+      --warning-main: #d97706;
+      --warning-subtle: #fffbeb;
+      --warning-border: #fde68a;
       
-      --purple: #a855f7;
-      --purple-muted: rgba(168, 85, 247, 0.12);
-      --purple-border: rgba(168, 85, 247, 0.3);
+      --danger-main: #dc2626;
+      --danger-subtle: #fef2f2;
+      --danger-border: #fecaca;
 
-      --radius-sm: 6px;
-      --radius: 10px;
-      --radius-lg: 14px;
+      --indigo-main: #4f46e5;
+      --indigo-subtle: #eef2ff;
+      --indigo-border: #c7d2fe;
+      
+      /* Elevations & Radius */
+      --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+      --shadow-sheet: -4px 0 24px rgba(15, 23, 42, 0.08);
+      
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+      --radius-xl: 12px;
       
       --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -53,1963 +68,2596 @@
 
     body {
       font-family: var(--font-sans);
-      background-color: var(--bg);
-      color: var(--text);
+      background-color: var(--bg-page);
+      color: var(--text-main);
       line-height: 1.5;
-      padding: 0;
-      margin: 0;
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Layout Container */
-    .app-shell {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 20px 28px 60px;
+    /* Top Global Navigation Bar */
+    header.top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-hairline);
+      height: 56px;
+      padding: 0 24px;
       display: flex;
-      flex-direction: column;
-      gap: 20px;
+      align-items: center;
+      justify-content: space-between;
     }
 
-    /* Top Navigation / Header */
-    header.top-nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 20px;
-      background: var(--surface);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius-lg);
-      backdrop-filter: blur(8px);
-    }
-    .brand-wrap {
+    .nav-left {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
     }
-    .brand-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: var(--radius-sm);
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 0.9375rem;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-icon-box {
+      width: 28px;
+      height: 28px;
+      background: var(--text-main);
+      color: #ffffff;
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-size: 1rem;
-      color: #fff;
-      box-shadow: 0 0 16px rgba(59, 130, 246, 0.35);
     }
-    .brand-titles h1 {
-      font-size: 1.125rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--text);
+
+    .brand-icon-box svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .nav-breadcrumbs {
       display: flex;
       align-items: center;
       gap: 8px;
-    }
-    .version-pill {
-      font-size: 0.6875rem;
-      font-family: var(--font-mono);
-      font-weight: 600;
-      padding: 2px 7px;
-      border-radius: 9999px;
-      background: var(--accent-muted);
-      color: #60a5fa;
-      border: 1px solid rgba(59, 130, 246, 0.3);
-    }
-    .brand-titles p {
-      font-size: 0.75rem;
-      color: var(--text-dim);
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      border-left: 1px solid var(--border-hairline);
+      padding-left: 16px;
     }
 
-    .nav-controls {
+    .thread-pill {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .thread-pill:hover {
+      background: var(--bg-muted);
+      border-color: var(--border-subtle);
+    }
+
+    .nav-right {
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    /* Status Beacon Badge */
-    .status-badge {
+    .status-indicator {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      border-radius: 9999px;
+      gap: 6px;
       font-size: 0.75rem;
       font-weight: 600;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      text-transform: uppercase;
       letter-spacing: 0.04em;
-      text-transform: uppercase;
-      font-family: var(--font-mono);
-      border: 1px solid transparent;
-      transition: all 0.2s ease;
     }
-    .status-beacon {
-      width: 8px;
-      height: 8px;
+
+    .dot-pulse {
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      display: inline-block;
     }
 
-    .status-idle { background: rgba(148, 163, 184, 0.1); color: var(--text-muted); border-color: var(--surface-border); }
-    .status-idle .status-beacon { background: var(--text-dim); }
-
-    .status-running { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); }
-    .status-running .status-beacon { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; animation: beaconPulse 1.5s infinite; }
-
-    .status-waiting_for_human { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border-color: rgba(245, 158, 11, 0.4); }
-    .status-waiting_for_human .status-beacon { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; animation: beaconPulse 1.2s infinite; }
-
-    .status-resuming { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border-color: rgba(168, 85, 247, 0.4); }
-    .status-resuming .status-beacon { background: #a855f7; box-shadow: 0 0 10px #a855f7; animation: beaconPulse 1.5s infinite; }
-
-    .status-completed { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.4); }
-    .status-completed .status-beacon { background: #10b981; box-shadow: 0 0 8px #10b981; }
-
-    .status-failed { background: rgba(244, 63, 94, 0.15); color: #fda4af; border-color: rgba(244, 63, 94, 0.4); }
-    .status-failed .status-beacon { background: #f43f5e; box-shadow: 0 0 8px #f43f5e; }
-
-    .status-rejected { background: rgba(100, 116, 139, 0.15); color: #cbd5e1; border-color: rgba(244, 63, 94, 0.3); }
-    .status-rejected .status-beacon { background: #64748b; }
-
-    @keyframes beaconPulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.35); opacity: 0.55; }
+    .status-indicator.connected {
+      background: var(--success-subtle);
+      color: var(--success-main);
+      border-color: var(--success-border);
+    }
+    .status-indicator.connected .dot-pulse {
+      background: var(--success-main);
+      box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
     }
 
-    /* Meta Badges */
-    .meta-chip {
+    .status-indicator.reconnecting {
+      background: var(--warning-subtle);
+      color: var(--warning-main);
+      border-color: var(--warning-border);
+    }
+    .status-indicator.reconnecting .dot-pulse {
+      background: var(--warning-main);
+    }
+
+    .status-indicator.idle {
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      border-color: var(--border-hairline);
+    }
+    .status-indicator.idle .dot-pulse {
+      background: var(--text-dim);
+    }
+
+    .timer-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    .langsmith-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      background: var(--bg-subtle);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius-sm);
+      gap: 5px;
       font-size: 0.75rem;
-      font-family: var(--font-mono);
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      position: relative;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
     }
-    .meta-chip:hover {
-      border-color: var(--surface-border-hover);
-      color: var(--text);
-    }
-    .timer-badge {
-      color: #38bdf8;
-      font-weight: 600;
+    .langsmith-badge svg {
+      width: 14px;
+      height: 14px;
+      color: var(--indigo-main);
     }
 
-    /* Reconnection Bar in Header */
-    .reconnect-form {
+    /* Main Workspace Shell */
+    .workspace-shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 24px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Command / Query Input Area */
+    .command-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-xl);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .command-panel:focus-within {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .input-row {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 12px;
     }
-    .reconnect-input {
-      padding: 6px 10px;
-      font-size: 0.75rem;
-      font-family: var(--font-mono);
-      background: var(--bg-subtle);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      width: 150px;
+
+    .search-icon-wrap {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
     }
-    .reconnect-input:focus {
+
+    .command-input {
+      flex: 1;
+      border: none;
       outline: none;
-      border-color: var(--accent);
-    }
-
-    /* Primary Cards & Common UI */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius);
-      padding: 20px;
-      position: relative;
-    }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .card-title {
-      font-size: 0.875rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-dim);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .card-title svg {
-      width: 16px;
-      height: 16px;
-      color: var(--text-muted);
-    }
-
-    /* Buttons */
-    button {
       font-family: var(--font-sans);
-      font-size: 0.8125rem;
-      font-weight: 600;
-      padding: 8px 16px;
-      border-radius: var(--radius-sm);
-      border: 1px solid transparent;
-      cursor: pointer;
+      font-size: 1.0625rem;
+      font-weight: 500;
+      color: var(--text-main);
+      background: transparent;
+    }
+
+    .command-input::placeholder {
+      color: var(--text-dim);
+      font-weight: 400;
+    }
+
+    .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
+      padding: 8px 16px;
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      border: 1px solid transparent;
       transition: all 0.15s ease;
+      white-space: nowrap;
     }
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-      filter: grayscale(40%);
-    }
+
     .btn-primary {
-      background: var(--accent);
-      color: #fff;
+      background: var(--accent-primary);
+      color: #ffffff;
     }
     .btn-primary:hover:not(:disabled) {
       background: var(--accent-hover);
-      box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
     }
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
     .btn-secondary {
-      background: var(--surface-elevated);
-      color: var(--text);
-      border-color: var(--surface-border);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      border-color: var(--border-hairline);
     }
-    .btn-secondary:hover:not(:disabled) {
-      background: var(--surface-border);
-      border-color: var(--surface-border-hover);
+    .btn-secondary:hover {
+      background: var(--bg-subtle);
+      border-color: var(--border-subtle);
     }
+
     .btn-success {
-      background: var(--success);
-      color: #052e16;
-      font-weight: 700;
+      background: var(--success-main);
+      color: #ffffff;
     }
-    .btn-success:hover:not(:disabled) {
-      box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    .btn-success:hover {
+      background: #047857;
     }
-    .btn-warning {
-      background: var(--warning);
-      color: #451a03;
-      font-weight: 700;
-    }
-    .btn-warning:hover:not(:disabled) {
-      box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
-    }
+
     .btn-danger {
-      background: var(--danger);
-      color: #fff;
+      background: var(--danger-main);
+      color: #ffffff;
     }
-    .btn-danger:hover:not(:disabled) {
-      box-shadow: 0 0 12px rgba(244, 63, 94, 0.4);
+    .btn-danger:hover {
+      background: #b91c1c;
     }
+
     .btn-sm {
-      padding: 5px 10px;
+      padding: 4px 10px;
       font-size: 0.75rem;
     }
 
-    /* Command / Query Bar */
-    .command-bar {
+    .preset-suggestions {
       display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background: linear-gradient(180deg, var(--surface) 0%, var(--bg-subtle) 100%);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-    }
-    .input-wrapper {
-      display: flex;
-      gap: 12px;
-      position: relative;
-    }
-    .query-input {
-      flex: 1;
-      padding: 14px 18px;
-      font-size: 1rem;
-      background: var(--bg);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius);
-      color: var(--text);
-      font-family: var(--font-sans);
-      transition: border-color 0.15s ease;
-    }
-    .query-input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    }
-    .btn-launch {
-      padding: 0 28px;
-      font-size: 0.9375rem;
-      border-radius: var(--radius);
-    }
-    .sample-chips {
-      display: flex;
-      flex-wrap: wrap;
       align-items: center;
+      flex-wrap: wrap;
       gap: 8px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-hairline);
     }
-    .chip-label {
+
+    .preset-label {
       font-size: 0.75rem;
       font-weight: 600;
-      color: var(--text-dim);
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-    .chip {
-      padding: 5px 12px;
+
+    .preset-chip {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      color: var(--text-secondary);
+      font-size: 0.8125rem;
+      padding: 3px 10px;
       border-radius: 9999px;
-      background: var(--surface-elevated);
-      border: 1px solid var(--surface-border);
-      color: var(--text-muted);
-      font-size: 0.75rem;
       cursor: pointer;
       transition: all 0.15s ease;
     }
-    .chip:hover {
-      background: var(--surface-border);
-      color: var(--text);
-      border-color: var(--surface-border-hover);
+
+    .preset-chip:hover {
+      background: var(--bg-muted);
+      color: var(--text-main);
+      border-color: var(--border-subtle);
     }
 
-    /* Live Architecture Graph Visualizer */
-    .arch-card {
-      padding: 20px;
-      overflow: hidden;
-    }
-    .arch-canvas-wrap {
-      width: 100%;
-      overflow-x: auto;
-      padding: 10px 0;
-    }
-    .arch-svg {
-      width: 100%;
-      min-width: 900px;
-      height: 220px;
-      display: block;
-    }
-    .arch-node {
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    .arch-node:hover {
-      filter: brightness(1.15);
-    }
-    .node-box {
-      fill: var(--surface-elevated);
-      stroke: var(--surface-border);
-      stroke-width: 1.5;
-      rx: 8;
-      transition: all 0.3s ease;
-    }
-    .node-title {
-      font-family: var(--font-sans);
-      font-size: 13px;
-      font-weight: 700;
-      fill: var(--text);
-    }
-    .node-sub {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      fill: var(--text-dim);
-    }
-    .node-badge {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-    }
-    .node-status-idle .node-box { stroke: var(--surface-border); fill: var(--surface-elevated); }
-    .node-status-idle .node-badge { fill: var(--text-dim); }
-
-    .node-status-running .node-box {
-      stroke: var(--accent);
-      stroke-width: 2.5;
-      fill: rgba(59, 130, 246, 0.15);
-      filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.45));
-    }
-    .node-status-running .node-badge { fill: #60a5fa; }
-
-    .node-status-completed .node-box {
-      stroke: var(--success);
-      stroke-width: 1.5;
-      fill: rgba(16, 185, 129, 0.1);
-    }
-    .node-status-completed .node-badge { fill: var(--success); }
-
-    .node-status-waiting .node-box {
-      stroke: var(--warning);
-      stroke-width: 2;
-      fill: rgba(245, 158, 11, 0.15);
-      filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.4));
-    }
-    .node-status-waiting .node-badge { fill: var(--warning); }
-
-    .node-status-failed .node-box {
-      stroke: var(--danger);
-      stroke-width: 2;
-      fill: rgba(244, 63, 94, 0.15);
-    }
-    .node-status-failed .node-badge { fill: var(--danger); }
-
-    /* SVG Connecting Edge Lines */
-    .arch-edge {
-      stroke: var(--surface-border);
-      stroke-width: 2;
-      fill: none;
-      transition: stroke 0.3s ease;
-    }
-    .arch-edge-active {
-      stroke: var(--accent);
-      stroke-width: 2.5;
-      stroke-dasharray: 6 4;
-      animation: edgeFlow 1s linear infinite;
-    }
-    @keyframes edgeFlow {
-      from { stroke-dashoffset: 20; }
-      to { stroke-dashoffset: 0; }
+    /* Investigation Header & Metadata Strip */
+    .investigation-header {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-xl);
+      padding: 20px 24px;
+      box-shadow: var(--shadow-xs);
     }
 
-    /* Data Flow Metrics Bar */
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+    .investigation-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
       gap: 16px;
     }
-    @media (max-width: 900px) {
-      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .investigation-title {
+      font-size: 1.375rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+      line-height: 1.3;
     }
-    .metric-card {
-      background: var(--surface);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius);
-      padding: 16px 20px;
+
+    .investigation-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Inline Metadata Strip (Dividers, NOT cards!) */
+    .metadata-strip {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-hairline);
+      font-size: 0.8125rem;
+    }
+
+    .metadata-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+    }
+
+    .metadata-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .metadata-value {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .metadata-divider {
+      width: 1px;
+      height: 14px;
+      background: var(--border-hairline);
+    }
+
+    /* State Badges */
+    .state-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .state-badge.state-idle { background: var(--bg-subtle); color: var(--text-muted); border: 1px solid var(--border-hairline); }
+    .state-badge.state-running, .state-badge.state-resuming { background: var(--accent-subtle); color: var(--accent-primary); border: 1px solid var(--accent-border); }
+    .state-badge.state-waiting_for_human { background: var(--warning-subtle); color: var(--warning-main); border: 1px solid var(--warning-border); }
+    .state-badge.state-completed { background: var(--success-subtle); color: var(--success-main); border: 1px solid var(--success-border); }
+    .state-badge.state-failed, .state-badge.state-rejected { background: var(--danger-subtle); color: var(--danger-main); border: 1px solid var(--danger-border); }
+
+    /* Human-in-the-Loop Review Console */
+    .hitl-banner {
+      background: #fffdfa;
+      border: 1px solid #fed7aa;
+      border-left: 4px solid #ea580c;
+      border-radius: var(--radius-lg);
+      padding: 18px 22px;
+      box-shadow: var(--shadow-sm);
+      animation: fadeIn 0.2s ease-in;
+    }
+
+    .hitl-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .hitl-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hitl-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #9a3412;
+    }
+
+    .hitl-description {
+      font-size: 0.875rem;
+      color: #7c2d12;
+      margin-bottom: 14px;
+      line-height: 1.45;
+    }
+
+    .hitl-claims-review {
+      background: #ffffff;
+      border: 1px solid #fed7aa;
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 16px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
+      max-height: 240px;
+      overflow-y: auto;
     }
-    .metric-title {
-      font-size: 0.75rem;
+
+    .hitl-claim-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      background: #fff7ed;
+      border: 1px solid #ffedd5;
+    }
+
+    .hitl-claim-text {
+      font-size: 0.8125rem;
+      color: #431407;
+      line-height: 1.4;
+    }
+
+    .hitl-actions-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* Workspace Tabs */
+    .workspace-tabs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border-bottom: 1px solid var(--border-hairline);
+      padding-bottom: 0;
+      margin-top: 4px;
+    }
+
+    .tab-item {
+      padding: 10px 16px;
+      font-size: 0.875rem;
       font-weight: 600;
-      color: var(--text-dim);
+      color: var(--text-muted);
+      border: none;
+      background: transparent;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+
+    .tab-item:hover {
+      color: var(--text-main);
+    }
+
+    .tab-item.active {
+      color: var(--accent-primary);
+      border-bottom-color: var(--accent-primary);
+    }
+
+    .tab-count {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      padding: 1px 6px;
+      border-radius: 9999px;
+      border: 1px solid var(--border-hairline);
+    }
+
+    .tab-item.active .tab-count {
+      background: var(--accent-subtle);
+      color: var(--accent-primary);
+      border-color: var(--accent-border);
+    }
+
+    /* Tab Panes */
+    .tab-pane {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+      animation: fadeIn 0.15s ease-out;
+    }
+
+    .tab-pane.active {
+      display: flex;
+    }
+
+    /* Tab 1: Final Report (Hero) */
+    .report-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-xl);
+      padding: 32px 36px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .report-header-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-hairline);
+    }
+
+    .report-status-flag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--success-main);
+    }
+
+    .report-title {
+      font-size: 1.625rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+      margin-bottom: 16px;
+    }
+
+    .report-summary-callout {
+      background: var(--accent-subtle);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+
+    .report-summary-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+
+    .report-summary-text {
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .report-body-text {
+      font-size: 1rem;
+      color: var(--text-main);
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    .report-body-text p {
+      margin-bottom: 14px;
+    }
+
+    /* Citation Pills [1] */
+    .citation-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: var(--accent-primary);
+      background: var(--accent-subtle);
+      border: 1px solid var(--accent-border);
+      padding: 0 4px;
+      margin: 0 2px;
+      border-radius: 3px;
+      cursor: pointer;
+      text-decoration: none;
+      vertical-align: super;
+      transition: all 0.15s ease;
+    }
+
+    .citation-pill:hover {
+      background: var(--accent-primary);
+      color: #ffffff;
+    }
+
+    .report-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .report-section-block {
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      padding: 18px 22px;
+      background: var(--bg-surface);
+    }
+
+    .report-section-heading {
+      font-size: 1.0625rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .report-section-content {
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Report Grounded Invariants Footer */
+    .report-guarantee {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      margin-top: 24px;
+    }
+
+    .report-guarantee-icon {
+      color: var(--success-main);
+      flex-shrink: 0;
+    }
+
+    .report-guarantee-text {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    /* Tab 2: Claims Explorer (Expandable Rows) */
+    .claims-table-wrap {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xs);
+      overflow: hidden;
+    }
+
+    .claims-header-row {
+      display: grid;
+      grid-template-columns: 90px 1fr 140px 110px 48px;
+      align-items: center;
+      padding: 12px 20px;
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border-hairline);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-    .metric-val {
-      font-size: 1.75rem;
-      font-weight: 700;
-      font-family: var(--font-mono);
-      color: var(--text);
-    }
-    .metric-sub {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .breakdown-bar {
-      display: flex;
-      height: 6px;
-      width: 100%;
-      background: var(--bg-subtle);
-      border-radius: 9999px;
-      overflow: hidden;
-      margin-top: 6px;
-    }
-    .bar-seg { height: 100%; transition: width 0.3s ease; }
-    .bar-supported { background: var(--success); }
-    .bar-partial { background: var(--warning); }
-    .bar-unsupported { background: var(--danger); }
 
-    /* Main Console Workspace Grid */
-    .workspace-grid {
+    .claim-row {
+      border-bottom: 1px solid var(--border-hairline);
+      transition: background 0.1s ease;
+    }
+
+    .claim-row:last-child {
+      border-bottom: none;
+    }
+
+    .claim-main-row {
       display: grid;
-      grid-template-columns: 1.4fr 1fr;
-      gap: 20px;
-      align-items: start;
-    }
-    @media (max-width: 1050px) {
-      .workspace-grid { grid-template-columns: 1fr; }
-    }
-
-    /* Execution Timeline / Live Event Stream */
-    .stream-panel {
-      display: flex;
-      flex-direction: column;
-      min-height: 480px;
-    }
-    .filter-tabs {
-      display: flex;
+      grid-template-columns: 90px 1fr 140px 110px 48px;
       align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--surface-border-subtle);
-    }
-    .tab-btn {
-      padding: 4px 10px;
-      font-size: 0.6875rem;
-      font-family: var(--font-mono);
-      font-weight: 600;
-      background: var(--bg-subtle);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius-sm);
-      color: var(--text-dim);
+      padding: 14px 20px;
       cursor: pointer;
     }
-    .tab-btn:hover { color: var(--text); border-color: var(--surface-border-hover); }
-    .tab-btn.active {
-      background: var(--accent-muted);
-      color: #60a5fa;
-      border-color: rgba(59, 130, 246, 0.4);
+
+    .claim-main-row:hover {
+      background: #fbfcfe;
     }
-    .stream-scroll {
-      flex: 1;
-      max-height: 520px;
-      overflow-y: auto;
-      background: var(--bg);
-      border: 1px solid var(--surface-border-subtle);
-      border-radius: var(--radius-sm);
-      padding: 8px;
+
+    .claim-id-badge {
       font-family: var(--font-mono);
       font-size: 0.75rem;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      font-weight: 600;
+      color: var(--text-muted);
     }
-    .stream-empty {
-      color: var(--text-dim);
-      text-align: center;
-      padding: 40px 16px;
+
+    .claim-text-col {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-main);
+      padding-right: 16px;
+      line-height: 1.45;
     }
-    .event-row {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 8px 10px;
+
+    .verdict-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      padding: 2px 7px;
       border-radius: var(--radius-sm);
-      background: var(--surface-elevated);
-      border: 1px solid var(--surface-border-subtle);
-      transition: background 0.15s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
-    .event-row:hover { background: #1c2233; }
-    .event-top {
+
+    .verdict-tag.verdict-SUPPORTED {
+      background: var(--success-subtle);
+      color: var(--success-main);
+      border: 1px solid var(--success-border);
+    }
+    .verdict-tag.verdict-PARTIAL {
+      background: var(--warning-subtle);
+      color: var(--warning-main);
+      border: 1px solid var(--warning-border);
+    }
+    .verdict-tag.verdict-UNSUPPORTED {
+      background: var(--danger-subtle);
+      color: var(--danger-main);
+      border: 1px solid var(--danger-border);
+    }
+    .verdict-tag.verdict-PENDING {
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      border: 1px solid var(--border-hairline);
+    }
+
+    .conf-meter-wrap {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .event-time {
-      color: var(--text-dim);
-      font-size: 0.6875rem;
-      min-width: 60px;
-    }
-    .event-node {
-      font-weight: 600;
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-size: 0.6875rem;
-      text-transform: uppercase;
-      background: var(--bg-subtle);
-      color: var(--text-muted);
-      border: 1px solid var(--surface-border);
-    }
-    .node-supervisor { color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); }
-    .node-researcher { color: #34d399; border-color: rgba(52, 211, 153, 0.3); }
-    .node-analyst { color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); }
-    .node-critic { color: #f472b6; border-color: rgba(244, 114, 182, 0.3); }
-    .node-verifier { color: #818cf8; border-color: rgba(129, 140, 248, 0.3); }
-    .node-human_review { color: #c084fc; border-color: rgba(192, 132, 252, 0.3); }
 
-    .event-badge {
-      font-size: 0.6875rem;
-      font-weight: 600;
-      padding: 1px 6px;
-      border-radius: 4px;
-    }
-    .ev-run_started { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
-    .ev-node_started { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
-    .ev-supervisor_decision { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; }
-    .ev-research_update { background: rgba(52, 211, 153, 0.2); color: #6ee7b7; }
-    .ev-source_found { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-    .ev-analysis_update { background: rgba(251, 191, 36, 0.2); color: #fde68a; }
-    .ev-critic_update { background: rgba(244, 114, 182, 0.2); color: #fbcfe8; }
-    .ev-verification_update { background: rgba(129, 140, 248, 0.2); color: #c7d2fe; }
-    .ev-retry { background: rgba(245, 158, 11, 0.25); color: #fde047; }
-    .ev-human_review_required { background: rgba(192, 132, 252, 0.25); color: #e9d5ff; font-weight: 700; }
-    .ev-human_review_resumed { background: rgba(168, 85, 247, 0.25); color: #e9d5ff; }
-    .ev-node_completed { background: rgba(148, 163, 184, 0.1); color: #94a3b8; }
-    .ev-run_completed { background: rgba(16, 185, 129, 0.25); color: #6ee7b7; font-weight: 700; }
-    .ev-run_failed { background: rgba(244, 63, 94, 0.25); color: #fda4af; font-weight: 700; }
-    .ev-run_rejected { background: rgba(100, 116, 139, 0.25); color: #cbd5e1; }
-
-    .event-body {
+    .conf-number {
+      font-family: var(--font-mono);
       font-size: 0.75rem;
-      color: var(--text-muted);
-      word-break: break-word;
-      padding-left: 2px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      width: 32px;
     }
-    .event-payload-btn {
-      font-size: 0.625rem;
+
+    .conf-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: var(--border-hairline);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .conf-bar-fill {
+      height: 100%;
+      background: var(--accent-primary);
+      border-radius: 3px;
+    }
+
+    .row-expand-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+    }
+
+    .claim-row.expanded .row-expand-icon {
+      transform: rotate(180deg);
+    }
+
+    .claim-expanded-details {
+      display: none;
+      padding: 16px 20px 20px 110px;
+      background: #fbfcfe;
+      border-top: 1px solid var(--border-hairline);
+      font-size: 0.8125rem;
+    }
+
+    .claim-row.expanded .claim-expanded-details {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .expanded-rationale-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      line-height: 1.5;
+    }
+
+    .evidence-quote-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      background: #ffffff;
+      border: 1px solid var(--border-hairline);
+      border-left: 3px solid var(--accent-primary);
+      line-height: 1.45;
+      font-style: italic;
+    }
+
+    /* Tab 3: Sources Explorer */
+    .sources-table-wrap {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xs);
+      overflow: hidden;
+    }
+
+    .sources-header-row {
+      display: grid;
+      grid-template-columns: 100px 180px 1fr 100px 80px;
+      align-items: center;
+      padding: 12px 20px;
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border-hairline);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .source-data-row {
+      display: grid;
+      grid-template-columns: 100px 180px 1fr 100px 80px;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-hairline);
+      font-size: 0.8125rem;
+    }
+
+    .source-data-row:last-child {
+      border-bottom: none;
+    }
+
+    .source-domain-pill {
+      display: inline-flex;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: var(--bg-subtle);
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-hairline);
+    }
+
+    /* Tab 4: Architecture Visualizer */
+    .arch-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      box-shadow: var(--shadow-xs);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .arch-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .arch-title {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .arch-subtitle {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .svg-canvas-wrap {
+      width: 100%;
+      background: #fbfcfe;
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: auto;
+    }
+
+    .arch-node {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .arch-node:hover rect {
+      stroke: var(--accent-primary) !important;
+      stroke-width: 2px !important;
+    }
+
+    .arch-node.active rect {
+      stroke: var(--accent-primary) !important;
+      stroke-width: 2.5px !important;
+      filter: drop-shadow(0 2px 8px rgba(37, 99, 235, 0.2));
+    }
+
+    /* Tab 5: Live Execution Trace */
+    .trace-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xs);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .trace-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border-hairline);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .trace-filters {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      font-family: var(--font-sans);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .filter-btn:hover {
+      background: var(--bg-surface);
+      color: var(--text-main);
+    }
+
+    .filter-btn.active {
+      background: var(--bg-surface);
+      color: var(--accent-primary);
+      border-color: var(--border-hairline);
+      box-shadow: var(--shadow-xs);
+    }
+
+    .trace-stream-list {
+      display: flex;
+      flex-direction: column;
+      max-height: 600px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+
+    .trace-event-row {
+      display: flex;
+      flex-direction: column;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border-hairline);
+      gap: 4px;
+      transition: background 0.1s ease;
+    }
+
+    .trace-event-row:hover {
+      background: #fbfcfe;
+    }
+
+    .trace-meta-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .trace-time {
       color: var(--text-dim);
+    }
+
+    .trace-node-badge {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-hairline);
+      text-transform: uppercase;
+    }
+
+    .trace-event-badge {
+      font-size: 0.6875rem;
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+
+    .trace-message-line {
+      color: var(--text-main);
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .trace-payload-toggle {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
       cursor: pointer;
       text-decoration: underline;
       align-self: flex-start;
       margin-top: 2px;
     }
-    .event-payload {
-      margin-top: 4px;
-      padding: 6px;
-      background: #0b0d14;
-      border-radius: 4px;
-      font-size: 0.6875rem;
-      color: #94a3b8;
-      white-space: pre-wrap;
-      display: none;
-    }
 
-    /* Side / Inspector Panel */
-    .inspector-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .stat-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .stat-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .trace-payload-json {
+      display: none;
+      margin-top: 6px;
       padding: 8px 12px;
       background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
       border-radius: var(--radius-sm);
-      border: 1px solid var(--surface-border-subtle);
-      font-size: 0.8125rem;
+      overflow-x: auto;
+      font-size: 0.6875rem;
+      color: var(--text-secondary);
     }
-    .stat-label { color: var(--text-dim); }
-    .stat-value { font-family: var(--font-mono); font-weight: 600; color: var(--text); }
 
-    /* Research Loop & Critic Panel */
-    .critic-score-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
+    /* Node Inspector Sheet (Slide-over drawer) */
+    .sheet-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.25);
+      backdrop-filter: blur(2px);
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
     }
-    .score-circle {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
+
+    .sheet-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sheet-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 480px;
+      max-width: 90vw;
+      height: 100vh;
+      background: var(--bg-surface);
+      box-shadow: var(--shadow-sheet);
+      z-index: 51;
+      transform: translateX(100%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sheet-panel.open {
+      transform: translateX(0);
+    }
+
+    .sheet-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-hairline);
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+    }
+
+    .sheet-title {
       font-size: 1.125rem;
       font-weight: 700;
-      font-family: var(--font-mono);
-      background: var(--surface-elevated);
-      border: 3px solid var(--accent);
-      color: #60a5fa;
+      color: var(--text-main);
     }
-    .score-meta { display: flex; flex-direction: column; gap: 2px; }
-    .score-title { font-size: 0.8125rem; font-weight: 600; color: var(--text); }
-    .score-sub { font-size: 0.75rem; color: var(--text-dim); }
 
-    /* Human Review Console (HITL Section) */
-    #hitlSection {
-      border: 1px solid var(--warning-border);
-      background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, var(--surface) 100%);
-      box-shadow: 0 0 24px rgba(245, 158, 11, 0.12);
-    }
-    .hitl-banner {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      margin-bottom: 16px;
-    }
-    .hitl-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--warning-muted);
-      border: 1px solid var(--warning-border);
+    .sheet-close-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: var(--text-muted);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--warning);
-      flex-shrink: 0;
-    }
-    .hitl-text h3 {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #fef3c7;
-      margin-bottom: 4px;
-    }
-    .hitl-text p {
-      font-size: 0.8125rem;
-      color: var(--text-muted);
-    }
-    .hitl-actions-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid var(--surface-border);
-    }
-
-    /* Modal / Expandable Dialogs */
-    .dialog-box {
-      margin-top: 16px;
-      padding: 16px;
-      background: var(--surface-elevated);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius);
-      display: none;
-    }
-    .dialog-box.open { display: block; }
-    .dialog-title {
-      font-size: 0.875rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-      color: var(--text);
-    }
-    .dialog-input {
-      width: 100%;
-      padding: 10px 12px;
-      background: var(--bg);
-      border: 1px solid var(--surface-border);
+      padding: 4px;
       border-radius: var(--radius-sm);
-      color: var(--text);
-      font-family: var(--font-sans);
-      font-size: 0.875rem;
-      margin-bottom: 10px;
     }
 
-    /* Claims & Grounding Explorer */
-    .claims-list {
+    .sheet-close-btn:hover {
+      background: var(--bg-subtle);
+      color: var(--text-main);
+    }
+
+    .sheet-body {
+      padding: 24px;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 20px;
     }
-    .claim-card {
-      background: var(--surface-elevated);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius);
-      padding: 16px;
+
+    .sheet-section {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      transition: border-color 0.15s ease;
+      gap: 8px;
     }
-    .claim-card:hover { border-color: var(--surface-border-hover); }
-    .claim-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-    .claim-id {
-      font-family: var(--font-mono);
-      font-size: 0.6875rem;
-      color: var(--text-dim);
-      font-weight: 600;
-    }
-    .verdict-tag {
-      font-family: var(--font-mono);
-      font-size: 0.6875rem;
+
+    .sheet-section-title {
+      font-size: 0.75rem;
       font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 4px;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-    .verdict-SUPPORTED { background: var(--success-muted); color: var(--success); border: 1px solid var(--success-border); }
-    .verdict-PARTIAL { background: var(--warning-muted); color: var(--warning); border: 1px solid var(--warning-border); }
-    .verdict-UNSUPPORTED { background: var(--danger-muted); color: var(--danger); border: 1px solid var(--danger-border); }
 
-    .claim-text {
-      font-size: 0.875rem;
-      color: var(--text);
-      line-height: 1.5;
-    }
-    .confidence-wrap {
+    .sheet-invariant-item {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 8px;
-      font-size: 0.75rem;
-      color: var(--text-dim);
-    }
-    .conf-meter {
-      flex: 1;
-      height: 4px;
-      background: var(--bg);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .conf-fill { height: 100%; background: var(--accent); }
-    .claim-reasoning {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      background: var(--bg-subtle);
-      padding: 8px 10px;
-      border-radius: var(--radius-sm);
-      border-left: 2px solid var(--accent);
-    }
-    .evidence-quote {
-      font-size: 0.75rem;
-      color: #94a3b8;
-      background: #0d1017;
-      padding: 8px 10px;
-      border-radius: var(--radius-sm);
-      border: 1px dashed var(--surface-border);
-      font-style: italic;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
     }
 
-    /* Sources Explorer */
-    .sources-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    .sheet-invariant-item svg {
+      width: 16px;
+      height: 16px;
+      color: var(--success-main);
+      flex-shrink: 0;
+      margin-top: 1px;
     }
-    .source-item {
-      padding: 12px 14px;
-      background: var(--surface-elevated);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius-sm);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .source-top {
-      display: flex;
-      justify-content: space-between;
+
+    /* Modal Dialogs */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.3);
+      backdrop-filter: blur(2px);
+      z-index: 60;
+      display: none;
       align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
-    .source-title {
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 580px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      animation: modalScale 0.15s ease-out;
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-hairline);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 1.0625rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .modal-body {
+      padding: 20px 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-hairline);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      background: var(--bg-subtle);
+      border-bottom-left-radius: var(--radius-xl);
+      border-bottom-right-radius: var(--radius-xl);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
       font-size: 0.8125rem;
       font-weight: 600;
-      color: #38bdf8;
-      text-decoration: none;
-    }
-    .source-title:hover { text-decoration: underline; }
-    .source-id {
-      font-family: var(--font-mono);
-      font-size: 0.6875rem;
-      color: var(--text-dim);
-    }
-    .source-snippet {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      color: var(--text-secondary);
     }
 
-    /* Completed Executive Summary */
-    .summary-card {
-      border-color: var(--success-border);
-      background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, var(--surface) 100%);
+    .form-control {
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      padding: 8px 12px;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      background: var(--bg-surface);
+      outline: none;
+      transition: border-color 0.15s ease;
     }
-    .summary-text {
-      font-size: 0.9375rem;
-      line-height: 1.6;
-      color: var(--text);
+
+    .form-control:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
     /* Toast Notification */
-    .toast {
+    .toast-container {
       position: fixed;
       bottom: 24px;
       right: 24px;
-      padding: 10px 16px;
-      background: var(--surface-elevated);
-      border: 1px solid var(--surface-border-hover);
-      border-radius: var(--radius-sm);
-      font-size: 0.8125rem;
-      color: var(--text);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-      opacity: 0;
-      transform: translateY(12px);
-      transition: all 0.2s ease;
-      pointer-events: none;
-      z-index: 9999;
+      z-index: 70;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
-    .toast.show {
+
+    .toast-pill {
+      background: var(--text-main);
+      color: #ffffff;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast-pill.show {
       opacity: 1;
       transform: translateY(0);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes modalScale {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Empty States */
+    .empty-state-box {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      background: var(--bg-surface);
+      border: 1px dashed var(--border-hairline);
+      border-radius: var(--radius-xl);
     }
   </style>
 </head>
 <body>
 
-<div class="app-shell">
-  <!-- Section 1: Header & Nav -->
+  <!-- Top Global Navigation Bar -->
   <header class="top-nav">
-    <div class="brand-wrap">
-      <div class="brand-icon">VR</div>
-      <div class="brand-titles">
-        <h1>Verified Research Agent <span class="version-pill">LangSmith Observability</span></h1>
-        <p>Evidence-grounded multi-worker LangGraph supervisor & verification system</p>
+    <div class="nav-left">
+      <div class="brand-mark">
+        <div class="brand-icon-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <span>Verified Research Agent</span>
+      </div>
+      <div class="nav-breadcrumbs">
+        <span>Workspace</span>
+        <span>/</span>
+        <div class="thread-pill" id="threadIdPill" onclick="copyThreadId()" title="Click to copy Thread ID">
+          <span id="threadIdDisplay">No active thread</span>
+          <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+        </div>
       </div>
     </div>
 
-    <div class="nav-controls">
-      <!-- Status Badge -->
-      <div id="statusBadge" class="status-badge status-idle">
-        <span class="status-beacon"></span>
-        <span id="statusLabel">IDLE</span>
+    <div class="nav-right">
+      <div class="status-indicator idle" id="connectionBadge">
+        <span class="dot-pulse"></span>
+        <span id="connectionLabel">Idle</span>
       </div>
-
-      <!-- Active Thread Badge -->
-      <div id="threadBadge" class="meta-chip" onclick="copyThreadId()" title="Click to copy Thread ID">
-        <span id="threadIdDisplay">no_session</span>
-        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-      </div>
-
-      <!-- Elapsed Timer -->
-      <div class="meta-chip timer-badge" id="elapsedTimer">00:00.0s</div>
-
-      <!-- Session Reconnect Form -->
-      <form class="reconnect-form" onsubmit="handleReconnect(event)">
-        <input type="text" id="reconnectInput" class="reconnect-input" placeholder="research_id..." />
-        <button type="submit" class="btn-secondary btn-sm">Restore</button>
-      </form>
+      <div class="timer-badge" id="elapsedTimer">00:00.0s</div>
+      <button class="btn btn-secondary btn-sm" onclick="openRestoreModal()">Restore Session</button>
+      <a href="https://smith.langchain.com" target="_blank" rel="noopener noreferrer" class="langsmith-badge" title="Telemetry traced via LangSmith">
+        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <span>LangSmith</span>
+      </a>
     </div>
   </header>
 
-  <!-- Section 2: Command Bar & Sample Prompts -->
-  <section class="command-bar">
-    <div class="input-wrapper">
-      <input type="text" id="questionInput" class="query-input" placeholder="Enter a complex research inquiry (e.g. enterprise RAG threat models, context limits, retrieval vulnerabilities)..." onkeydown="if(event.key==='Enter') startResearch()" />
-      <button id="startBtn" class="btn-primary btn-launch" onclick="startResearch()">
-        <span>Launch Investigation</span>
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-      </button>
-    </div>
-    <div class="sample-chips">
-      <span class="chip-label">Quick Queries:</span>
-      <button class="chip" onclick="setQuery('What are enterprise RAG security risks, vector poison attacks, and defense mitigations?')">Enterprise RAG Security</button>
-      <button class="chip" onclick="setQuery('What causes needle-in-a-haystack retrieval degradation in long-context LLMs?')">Long-Context Limits</button>
-      <button class="chip" onclick="setQuery('How does iterative multi-agent critique improve factual verification accuracy?')">Multi-Agent Critique</button>
-      <button class="chip" onclick="setQuery('What are the empirical trade-offs between dense semantic retrieval and sparse BM25 indexing?')">Dense vs BM25</button>
-    </div>
-  </section>
+  <!-- Workspace Shell -->
+  <main class="workspace-shell">
 
-  <!-- Section 3: Live LangGraph Architecture Visualizer (Connected Nodes) -->
-  <section class="card arch-card">
-    <div class="card-header">
-      <span class="card-title">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-        LangGraph Supervisor Architecture
-      </span>
-      <span id="activeWorkerLabel" class="meta-chip">Idle</span>
-    </div>
-
-    <div class="arch-canvas-wrap">
-      <svg class="arch-svg" viewBox="0 0 920 200">
-        <defs>
-          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 1 L 9 5 L 0 9 z" fill="#333a52" />
-          </marker>
-          <marker id="arrow-active" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 1 L 9 5 L 0 9 z" fill="#3b82f6" />
-          </marker>
-        </defs>
-
-        <!-- Edges -->
-        <!-- START to Supervisor -->
-        <path id="edge-start-sup" class="arch-edge" d="M 65 100 L 135 100" marker-end="url(#arrow)" />
-        <!-- Supervisor to Research Subgraph -->
-        <path id="edge-sup-res" class="arch-edge" d="M 235 75 C 280 40, 310 40, 355 40" marker-end="url(#arrow)" />
-        <!-- Research Subgraph back to Supervisor -->
-        <path id="edge-res-sup" class="arch-edge" d="M 355 55 C 310 55, 270 70, 235 85" marker-end="url(#arrow)" />
-        <!-- Supervisor to Verifier -->
-        <path id="edge-sup-ver" class="arch-edge" d="M 235 100 L 495 100" marker-end="url(#arrow)" />
-        <!-- Verifier back to Supervisor -->
-        <path id="edge-ver-sup" class="arch-edge" d="M 495 110 C 370 125, 320 120, 235 110" marker-end="url(#arrow)" />
-        <!-- Supervisor to Human Review -->
-        <path id="edge-sup-hitl" class="arch-edge" d="M 235 120 C 280 160, 480 160, 635 160" marker-end="url(#arrow)" />
-        <!-- Human Review back to Supervisor -->
-        <path id="edge-hitl-sup" class="arch-edge" d="M 635 170 C 470 185, 280 170, 235 125" marker-end="url(#arrow)" />
-        <!-- Supervisor to Finish/End -->
-        <path id="edge-sup-end" class="arch-edge" d="M 235 90 C 400 20, 700 20, 785 90" marker-end="url(#arrow)" />
-
-        <!-- Nodes -->
-        <!-- START Node -->
-        <g id="node-start" class="arch-node">
-          <circle cx="45" cy="100" r="18" fill="#181d2c" stroke="#23283b" stroke-width="1.5" />
-          <text x="45" y="103" text-anchor="middle" font-size="9" font-family="var(--font-mono)" font-weight="700" fill="#94a3b8">START</text>
-        </g>
-
-        <!-- Supervisor Node -->
-        <g id="node-supervisor" class="arch-node node-status-idle" transform="translate(135, 60)" onclick="filterStreamNode('supervisor')">
-          <rect class="node-box" width="100" height="80" />
-          <text class="node-title" x="50" y="30" text-anchor="middle">Supervisor</text>
-          <text class="node-sub" x="50" y="46" text-anchor="middle">Routing Brain</text>
-          <text class="node-badge" x="50" y="66" text-anchor="middle">QUEUED</text>
-        </g>
-
-        <!-- Research Subgraph Node -->
-        <g id="node-research" class="arch-node node-status-idle" transform="translate(355, 10)" onclick="filterStreamNode('research')">
-          <rect class="node-box" width="115" height="70" />
-          <text class="node-title" x="57" y="24" text-anchor="middle">Research</text>
-          <text class="node-sub" x="57" y="38" text-anchor="middle">Researcher/Analyst/Critic</text>
-          <text class="node-badge" x="57" y="56" text-anchor="middle">QUEUED</text>
-        </g>
-
-        <!-- Verifier Node -->
-        <g id="node-verifier" class="arch-node node-status-idle" transform="translate(495, 65)" onclick="filterStreamNode('verifier')">
-          <rect class="node-box" width="110" height="70" />
-          <text class="node-title" x="55" y="25" text-anchor="middle">Verifier</text>
-          <text class="node-sub" x="55" y="40" text-anchor="middle">Evidence Grounding</text>
-          <text class="node-badge" x="55" y="58" text-anchor="middle">QUEUED</text>
-        </g>
-
-        <!-- Human Review Node -->
-        <g id="node-human_review" class="arch-node node-status-idle" transform="translate(635, 125)" onclick="filterStreamNode('human_review')">
-          <rect class="node-box" width="115" height="65" />
-          <text class="node-title" x="57" y="24" text-anchor="middle">Human Review</text>
-          <text class="node-sub" x="57" y="38" text-anchor="middle">HITL Interrupt</text>
-          <text class="node-badge" x="57" y="54" text-anchor="middle">QUEUED</text>
-        </g>
-
-        <!-- END Node -->
-        <g id="node-finish" class="arch-node node-status-idle" transform="translate(785, 70)" onclick="filterStreamNode('')">
-          <circle cx="25" cy="30" r="22" fill="#181d2c" stroke="#23283b" stroke-width="1.5" class="finish-circle" />
-          <text x="25" y="34" text-anchor="middle" font-size="10" font-family="var(--font-mono)" font-weight="700" fill="#94a3b8">END</text>
-        </g>
-      </svg>
-    </div>
-  </section>
-
-  <!-- Section 4: Data Flow Pipeline Bar -->
-  <section class="metrics-grid">
-    <div class="metric-card">
-      <span class="metric-title">Sources Gathered</span>
-      <span class="metric-val" id="metricSources">0</span>
-      <span class="metric-sub" id="metricSourcesSub">0 external domains indexed</span>
-    </div>
-    <div class="metric-card">
-      <span class="metric-title">Evidence Extracted</span>
-      <span class="metric-val" id="metricEvidence">0</span>
-      <span class="metric-sub" id="metricEvidenceSub">0 verbatim passages extracted</span>
-    </div>
-    <div class="metric-card">
-      <span class="metric-title">Claims Formulated</span>
-      <span class="metric-val" id="metricClaims">0</span>
-      <span class="metric-sub" id="metricClaimsSub">0 factual propositions synthesized</span>
-    </div>
-    <div class="metric-card">
-      <span class="metric-title">Grounding Verification</span>
-      <span class="metric-val" id="metricVerified">0%</span>
-      <div class="breakdown-bar">
-        <div id="barSupported" class="bar-seg bar-supported" style="width: 0%"></div>
-        <div id="barPartial" class="bar-seg bar-partial" style="width: 0%"></div>
-        <div id="barUnsupported" class="bar-seg bar-unsupported" style="width: 0%"></div>
+    <!-- 1. Command Panel & Input Bar -->
+    <section class="command-panel">
+      <div class="input-row">
+        <div class="search-icon-wrap">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <input 
+          type="text" 
+          id="questionInput" 
+          class="command-input" 
+          placeholder="Ask a deep technical question to research, verify, and ground..." 
+          autocomplete="off"
+          onkeydown="if(event.key === 'Enter') startResearch();"
+        />
+        <button class="btn btn-primary" id="startBtn" onclick="startResearch()">
+          <span id="startBtnText">Investigate</span>
+        </button>
       </div>
-      <span class="metric-sub" id="metricVerifiedSub">0 supported • 0 partial • 0 unsupported</span>
-    </div>
-  </section>
 
-  <!-- Section 10 & 11: Human Review Console (HITL Banner & Action Controls) -->
-  <section id="hitlSection" class="card" style="display: none;">
-    <div class="hitl-banner">
-      <div class="hitl-icon">
-        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      <div class="preset-suggestions">
+        <span class="preset-label">Presets:</span>
+        <span class="preset-chip" onclick="setQuery('What were Apple Q4 2024 financial highlights?')">Apple Q4 2024 Financials</span>
+        <span class="preset-chip" onclick="setQuery('What are the latest breakthroughs in solid-state lithium battery commercialization?')">Solid-State Batteries</span>
+        <span class="preset-chip" onclick="setQuery('Compare synthetic data vs RLHF in modern LLM pre-training')">Synthetic Data vs RLHF</span>
+        <span class="preset-chip" onclick="setQuery('What causes turbulence in aviation and how can neural operators predict it?')">Turbulence Neural Operators</span>
       </div>
-      <div class="hitl-text">
-        <h3>Human-in-the-Loop Review Required</h3>
-        <p>Supervisor has paused graph execution at checkpoint. Inspect the synthesized claims and verification evidence below before selecting an authoritative action.</p>
-      </div>
-    </div>
+    </section>
 
-    <!-- Review Items Context Snapshot -->
-    <div id="hitlContextSummary" class="stat-list" style="margin-bottom: 12px;"></div>
-
-    <div class="hitl-actions-bar">
-      <button class="btn-success" onclick="submitHitlAction('approve')">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-        Approve & Complete
-      </button>
-      <button class="btn-secondary" onclick="toggleDialog('editDialog')">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-        Edit Claims
-      </button>
-      <button class="btn-warning" onclick="toggleDialog('researchMoreDialog')">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        Research More
-      </button>
-      <button class="btn-danger" onclick="toggleDialog('rejectDialog')">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        Reject Run
-      </button>
-    </div>
-
-    <!-- Edit Claims Dialog -->
-    <div id="editDialog" class="dialog-box">
-      <div class="dialog-title">Edit Claims (Client-validated against available Evidence IDs)</div>
-      <div id="editClaimsContainer" style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;"></div>
-      <div style="display:flex; gap:8px;">
-        <button class="btn-primary btn-sm" onclick="saveEditedClaims()">Submit Edited Claims</button>
-        <button class="btn-secondary btn-sm" onclick="toggleDialog('editDialog')">Cancel</button>
-      </div>
-    </div>
-
-    <!-- Research More Dialog -->
-    <div id="researchMoreDialog" class="dialog-box">
-      <div class="dialog-title">Guide Further Research</div>
-      <p style="font-size:0.75rem; color:var(--text-dim); margin-bottom:8px;">Provide specific guidance or missing topics for the research subgraph to investigate:</p>
-      <input type="text" id="researchMoreFeedback" class="dialog-input" placeholder="e.g., Focus on concrete prompt injection attack trees and defense benchmarks..." />
-      <div style="display:flex; gap:8px;">
-        <button class="btn-warning btn-sm" onclick="submitResearchMore()">Launch Next Cycle</button>
-        <button class="btn-secondary btn-sm" onclick="toggleDialog('researchMoreDialog')">Cancel</button>
-      </div>
-    </div>
-
-    <!-- Reject Dialog -->
-    <div id="rejectDialog" class="dialog-box">
-      <div class="dialog-title">Reject Research Run</div>
-      <p style="font-size:0.75rem; color:var(--text-dim); margin-bottom:8px;">State the reason for rejecting this research synthesis:</p>
-      <input type="text" id="rejectFeedback" class="dialog-input" placeholder="e.g., Unacceptable factual grounding or hallucinations present..." />
-      <div style="display:flex; gap:8px;">
-        <button class="btn-danger btn-sm" onclick="submitReject()">Confirm Rejection</button>
-        <button class="btn-secondary btn-sm" onclick="toggleDialog('rejectDialog')">Cancel</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 12: Completed State Summary View -->
-  <section id="completedSection" class="card summary-card" style="display: none;">
-    <div class="card-header">
-      <span class="card-title" style="color: var(--success);">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        Research Investigation Completed
-      </span>
-      <div style="display:flex; gap:8px;">
-        <button class="btn-secondary btn-sm" onclick="copyMarkdownReport()">Copy Markdown Report</button>
-        <button class="btn-secondary btn-sm" onclick="downloadJsonState()">Download JSON</button>
-      </div>
-    </div>
-    <div class="summary-text" id="completedSummaryText"></div>
-  </section>
-
-  <!-- Section 13: Failed / Error State Recovery -->
-  <section id="failedSection" class="card" style="display:none; border-color:var(--danger-border); background:rgba(244,63,94,0.06);">
-    <div class="card-header">
-      <span class="card-title" style="color: var(--danger);">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        Execution Failed
-      </span>
-      <button class="btn-danger btn-sm" onclick="retryRun()">Retry Run</button>
-    </div>
-    <p id="failedErrorText" style="font-family:var(--font-mono); font-size:0.8125rem; color:#fecaca;"></p>
-  </section>
-
-  <!-- Main Workspace Grid: Timeline (Left) & Inspector/Findings (Right) -->
-  <div class="workspace-grid">
-    <!-- Left Column: Section 5 Live Execution Timeline -->
-    <div class="card stream-panel">
-      <div class="card-header">
-        <span class="card-title">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          Live Execution Timeline
-        </span>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span id="eventCountBadge" class="meta-chip">0 events</span>
-          <button class="btn-secondary btn-sm" onclick="toggleAutoScroll()" id="autoScrollBtn">Auto-scroll: ON</button>
+    <!-- 2. Active Investigation Header & Divider Metadata Strip -->
+    <section class="investigation-header" id="investigationHeader" style="display:none;">
+      <div class="investigation-top">
+        <h1 class="investigation-title" id="displayQuestion">Investigation Question</h1>
+        <div class="investigation-actions">
+          <button class="btn btn-secondary btn-sm" onclick="copyMarkdownReport()" title="Copy entire verified report as Markdown">Copy Report</button>
+          <button class="btn btn-secondary btn-sm" onclick="downloadJsonState()" title="Download raw checkpoint state JSON">Export JSON</button>
         </div>
       </div>
 
-      <!-- Filter Tabs -->
-      <div class="filter-tabs">
-        <button class="tab-btn active" onclick="setFilter('all')">ALL</button>
-        <button class="tab-btn" onclick="setFilter('supervisor')">SUPERVISOR</button>
-        <button class="tab-btn" onclick="setFilter('researcher')">RESEARCHER</button>
-        <button class="tab-btn" onclick="setFilter('analyst')">ANALYST</button>
-        <button class="tab-btn" onclick="setFilter('critic')">CRITIC</button>
-        <button class="tab-btn" onclick="setFilter('verifier')">VERIFIER</button>
-        <button class="tab-btn" onclick="setFilter('human_review')">HUMAN REVIEW</button>
-      </div>
-
-      <div class="stream-scroll" id="eventsList">
-        <div class="stream-empty">No active execution. Launch an investigation or restore a session to inspect events.</div>
-      </div>
-    </div>
-
-    <!-- Right Column: Inspector + Critic + Claims + Sources -->
-    <div class="inspector-panel">
-      <!-- Section 6: Run Inspector Panel -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            Run Inspector
-          </span>
+      <div class="metadata-strip">
+        <div class="metadata-item">
+          <span class="metadata-label">Status:</span>
+          <span class="state-badge state-idle" id="statusBadge">Idle</span>
         </div>
-        <div class="stat-list">
-          <div class="stat-item">
-            <span class="stat-label">Supervisor Steps</span>
-            <span class="stat-value" id="statSteps">0 / 8</span>
+        <div class="metadata-divider"></div>
+        <div class="metadata-item">
+          <span class="metadata-label">Supervisor:</span>
+          <span class="metadata-value" id="statSteps">0 / 8 steps</span>
+        </div>
+        <div class="metadata-divider"></div>
+        <div class="metadata-item">
+          <span class="metadata-label">Research Iteration:</span>
+          <span class="metadata-value" id="statIterations">0 / 2</span>
+        </div>
+        <div class="metadata-divider"></div>
+        <div class="metadata-item">
+          <span class="metadata-label">Human Review Cycles:</span>
+          <span class="metadata-value" id="statHumanCycles">0 / 3</span>
+        </div>
+        <div class="metadata-divider"></div>
+        <div class="metadata-item">
+          <span class="metadata-label">Sources:</span>
+          <span class="metadata-value" id="statSourcesCount">0 indexed</span>
+        </div>
+        <div class="metadata-divider"></div>
+        <div class="metadata-item">
+          <span class="metadata-label">Claims Grounded:</span>
+          <span class="metadata-value" id="statClaimsCount">0 claims (0% verified)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Human-in-the-Loop Review Console (Visible on Interrupt) -->
+    <section class="hitl-banner" id="hitlSection" style="display:none;">
+      <div class="hitl-header">
+        <div class="hitl-title-wrap">
+          <svg width="20" height="20" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <span class="hitl-title">Human-in-the-Loop Verification Required</span>
+        </div>
+        <span class="state-badge state-waiting_for_human">INTERRUPTED</span>
+      </div>
+      <p class="hitl-description">
+        The research graph has paused at the human review checkpoint. Review the distilled claims and verifier verdicts below before authorizing the grounded Writer agent to synthesize the final response.
+      </p>
+
+      <div class="hitl-claims-review" id="hitlClaimsContainer">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="hitl-actions-bar">
+        <button class="btn btn-secondary btn-sm" onclick="openRejectModal()">Reject Session</button>
+        <button class="btn btn-secondary btn-sm" onclick="openResearchMoreModal()">Request Re-research</button>
+        <button class="btn btn-secondary btn-sm" onclick="openEditClaimsModal()">Edit Claims & Evidence</button>
+        <button class="btn btn-success btn-sm" onclick="submitHitlAction('approve')">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          Approve & Synthesize Report
+        </button>
+      </div>
+    </section>
+
+    <!-- 4. Workspace Navigation Tabs -->
+    <nav class="workspace-tabs">
+      <button class="tab-item active" onclick="switchTab('tabReport')">
+        <span>Final Report</span>
+        <span class="tab-count" id="badgeReportState">Draft</span>
+      </button>
+      <button class="tab-item" onclick="switchTab('tabClaims')">
+        <span>Claims & Evidence</span>
+        <span class="tab-count" id="badgeClaimsCount">0</span>
+      </button>
+      <button class="tab-item" onclick="switchTab('tabSources')">
+        <span>Sources Explorer</span>
+        <span class="tab-count" id="badgeSourcesCount">0</span>
+      </button>
+      <button class="tab-item" onclick="switchTab('tabArchitecture')">
+        <span>Architecture Visualizer</span>
+      </button>
+      <button class="tab-item" onclick="switchTab('tabTrace')">
+        <span>Live Execution Trace</span>
+        <span class="tab-count" id="badgeTraceCount">0</span>
+      </button>
+    </nav>
+
+    <!-- 5. Tab Content Panes -->
+
+    <!-- Pane 1: Final Report (Hero) -->
+    <div id="tabReport" class="tab-pane active">
+      <div class="report-card" id="reportContentWrap">
+        <div id="reportEmptyState" class="empty-state-box">
+          <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin:0 auto 12px; color:var(--text-dim);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <div style="font-weight:600; color:var(--text-main); margin-bottom:4px;">No Final Report Synthesized Yet</div>
+          <div>Start an investigation above. Once claims are verified and approved, the Writer agent will compile a fully grounded report with exact citations.</div>
+        </div>
+
+        <div id="reportActiveView" style="display:none;">
+          <div class="report-header-meta">
+            <div class="report-status-flag">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              <span>Verified & Grounded by Writer Agent</span>
+            </div>
+            <span class="metadata-label" id="reportDate"></span>
           </div>
-          <div class="stat-item">
-            <span class="stat-label">Human Cycles</span>
-            <span class="stat-value" id="statHumanCycles">0 / 3</span>
+
+          <h1 class="report-title" id="reportTitle">Verified Research Report</h1>
+
+          <div class="report-summary-callout">
+            <div class="report-summary-title">Executive Summary</div>
+            <div class="report-summary-text" id="reportSummary">Summary content will appear here.</div>
           </div>
-          <div class="stat-item">
-            <span class="stat-label">Research Iterations</span>
-            <span class="stat-value" id="statIterations">0 / 2</span>
+
+          <div class="report-body-text" id="reportAnswer">
+            <!-- Full answer with inline citations [1] -->
           </div>
-          <div class="stat-item">
-            <span class="stat-label">Termination Reason</span>
-            <span class="stat-value" id="statTermination">-</span>
+
+          <div class="report-sections" id="reportSectionsContainer">
+            <!-- Structured sections -->
+          </div>
+
+          <!-- Strict Verification Guarantee Banner -->
+          <div class="report-guarantee">
+            <div class="report-guarantee-icon">
+              <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+            <div class="report-guarantee-text">
+              <strong>Strict Verification Guarantee:</strong> Every claim referenced in this report has undergone automated adversarial fact verification against retrieved web sources and passed human oversight before synthesis. Zero external statements are introduced.
+            </div>
           </div>
         </div>
-        <div id="supervisorReasoningWrap" style="margin-top:12px; display:none;">
-          <div style="font-size:0.6875rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px;">Supervisor Reasoning</div>
-          <div id="supervisorReasoningText" style="font-size:0.75rem; color:var(--text-muted); background:var(--bg-subtle); padding:8px; border-radius:var(--radius-sm); border:1px solid var(--surface-border-subtle);"></div>
+      </div>
+    </div>
+
+    <!-- Pane 2: Claims & Grounding Explorer -->
+    <div id="tabClaims" class="tab-pane">
+      <div class="claims-table-wrap">
+        <div class="claims-header-row">
+          <span>Claim ID</span>
+          <span>Synthesized Atomic Claim</span>
+          <span>Verifier Status</span>
+          <span>Confidence</span>
+          <span></span>
+        </div>
+        <div id="claimsTableBody">
+          <div class="empty-state-box" style="border:none;">No atomic claims extracted yet.</div>
         </div>
       </div>
+    </div>
 
-      <!-- Section 7: Research Loop & Critic Panel -->
-      <div class="card" id="criticCard" style="display:none;">
-        <div class="card-header">
-          <span class="card-title">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            Critic & Loop Quality
-          </span>
-          <span class="meta-chip" id="criticDecisionBadge">Passed</span>
+    <!-- Pane 3: Sources Explorer -->
+    <div id="tabSources" class="tab-pane">
+      <div class="sources-table-wrap">
+        <div class="sources-header-row">
+          <span>Source ID</span>
+          <span>Domain</span>
+          <span>Title & Snippet</span>
+          <span>Citations</span>
+          <span>Action</span>
         </div>
-        <div class="critic-score-row">
-          <div class="score-circle" id="criticScore">0</div>
-          <div class="score-meta">
-            <span class="score-title">Information Coverage Score</span>
-            <span class="score-sub" id="criticFeedbackText">Quality meets synthesis threshold</span>
+        <div id="sourcesTableBody">
+          <div class="empty-state-box" style="border:none;">No external web sources retrieved yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pane 4: Architecture Visualizer -->
+    <div id="tabArchitecture" class="tab-pane">
+      <div class="arch-panel">
+        <div class="arch-header">
+          <div>
+            <div class="arch-title">State Machine Architecture</div>
+            <div class="arch-subtitle">Interactive LangGraph pipeline. Click any node to inspect invariants, state, and execution history.</div>
           </div>
+          <span class="state-badge state-idle" id="activeNodeBadge">Idle</span>
         </div>
-        <div id="criticMissingWrap" style="display:none; margin-top:8px;">
-          <span style="font-size:0.6875rem; font-weight:600; color:var(--text-dim); text-transform:uppercase;">Missing Topics Identified:</span>
-          <div id="criticMissingChips" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;"></div>
+
+        <div class="svg-canvas-wrap">
+          <svg viewBox="0 0 960 220" width="100%" height="220" style="max-width:960px;">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 8 5 L 0 9 z" fill="#94a3b8" />
+              </marker>
+              <marker id="arrow-active" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 8 5 L 0 9 z" fill="#2563eb" />
+              </marker>
+            </defs>
+
+            <!-- Connecting Edges -->
+            <path d="M 70 110 L 130 110" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)" />
+            <path d="M 250 110 L 310 110" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)" />
+            <path d="M 430 110 L 490 110" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)" />
+            <path d="M 610 110 L 670 110" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)" />
+            <path d="M 790 110 L 850 110" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)" />
+
+            <!-- Dynamic Cycle Return Edge (Research -> Supervisor) -->
+            <path d="M 370 70 C 370 20, 190 20, 190 70" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow)" />
+
+            <!-- START Node -->
+            <g class="arch-node" onclick="openNodeInspector('start')">
+              <circle cx="45" cy="110" r="24" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" />
+              <text x="45" y="114" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">START</text>
+            </g>
+
+            <!-- SUPERVISOR Node -->
+            <g class="arch-node" id="node-supervisor" onclick="openNodeInspector('supervisor')">
+              <rect x="130" y="75" width="120" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+              <text x="190" y="104" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Supervisor</text>
+              <text x="190" y="124" text-anchor="middle" font-size="10" fill="#64748b" class="node-state-text">Orchestrator</text>
+            </g>
+
+            <!-- RESEARCH SUBGRAPH Node -->
+            <g class="arch-node" id="node-research" onclick="openNodeInspector('research')">
+              <rect x="310" y="75" width="120" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+              <text x="370" y="100" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Research Subgraph</text>
+              <text x="370" y="118" text-anchor="middle" font-size="9.5" fill="#64748b">Researcher · Analyst</text>
+              <text x="370" y="132" text-anchor="middle" font-size="9.5" fill="#64748b">· Critic</text>
+            </g>
+
+            <!-- VERIFIER Node -->
+            <g class="arch-node" id="node-verifier" onclick="openNodeInspector('verifier')">
+              <rect x="490" y="75" width="120" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+              <text x="550" y="104" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Verifier</text>
+              <text x="550" y="124" text-anchor="middle" font-size="10" fill="#64748b" class="node-state-text">NLI Fact Check</text>
+            </g>
+
+            <!-- HUMAN REVIEW Node -->
+            <g class="arch-node" id="node-human_review" onclick="openNodeInspector('human_review')">
+              <rect x="670" y="75" width="120" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+              <text x="730" y="104" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Human Review</text>
+              <text x="730" y="124" text-anchor="middle" font-size="10" fill="#64748b" class="node-state-text">HITL Interrupt</text>
+            </g>
+
+            <!-- WRITER Node -->
+            <g class="arch-node" id="node-writer" onclick="openNodeInspector('writer')">
+              <rect x="850" y="75" width="100" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+              <text x="900" y="104" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Writer</text>
+              <text x="900" y="124" text-anchor="middle" font-size="10" fill="#64748b" class="node-state-text">Grounded Report</text>
+            </g>
+          </svg>
         </div>
       </div>
+    </div>
 
-      <!-- Section 8: Claims & Evidence Cards -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            Synthesized Claims & Grounding
-          </span>
-          <span id="claimsCountBadge" class="meta-chip">0 claims</span>
+    <!-- Pane 5: Live Execution Trace -->
+    <div id="tabTrace" class="tab-pane">
+      <div class="trace-panel">
+        <div class="trace-toolbar">
+          <div class="trace-filters">
+            <button class="filter-btn active" onclick="setTraceFilter('all')">All Events</button>
+            <button class="filter-btn" onclick="setTraceFilter('supervisor')">Supervisor</button>
+            <button class="filter-btn" onclick="setTraceFilter('research')">Research</button>
+            <button class="filter-btn" onclick="setTraceFilter('verifier')">Verifier</button>
+            <button class="filter-btn" onclick="setTraceFilter('human_review')">Human Review</button>
+            <button class="filter-btn" onclick="setTraceFilter('writer')">Writer</button>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="autoScrollToggleBtn" onclick="toggleAutoScroll()">Auto-scroll: ON</button>
         </div>
-        <div class="claims-list" id="claimsContainer">
-          <div style="font-size:0.75rem; color:var(--text-dim); text-align:center; padding:20px;">No claims synthesized yet.</div>
+        <div class="trace-stream-list" id="traceStreamList">
+          <div class="empty-state-box" style="border:none;">No stream events captured yet.</div>
         </div>
       </div>
+    </div>
 
-      <!-- Section 9: Source Explorer -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
-            Retrieved Sources Explorer
-          </span>
-          <span id="sourcesCountBadge" class="meta-chip">0 sources</span>
-        </div>
-        <div class="sources-list" id="sourcesContainer">
-          <div style="font-size:0.75rem; color:var(--text-dim); text-align:center; padding:20px;">No external sources indexed yet.</div>
-        </div>
+  </main>
+
+  <!-- Slide-Over Sheet: Node Inspector -->
+  <div class="sheet-backdrop" id="sheetBackdrop" onclick="closeNodeInspector()"></div>
+  <aside class="sheet-panel" id="sheetPanel">
+    <div class="sheet-header">
+      <div>
+        <div class="sheet-title" id="sheetNodeTitle">Node Inspector</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);" id="sheetNodeSubtitle">LangGraph Node Execution Details</div>
+      </div>
+      <button class="sheet-close-btn" onclick="closeNodeInspector()">&times;</button>
+    </div>
+    <div class="sheet-body">
+      <div class="sheet-section">
+        <div class="sheet-section-title">Core Responsibility</div>
+        <div style="font-size:0.875rem; color:var(--text-secondary); line-height:1.5;" id="sheetNodeDesc">Description here.</div>
+      </div>
+
+      <div class="sheet-section">
+        <div class="sheet-section-title">Architectural Invariants</div>
+        <div id="sheetNodeInvariants" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+
+      <div class="sheet-section">
+        <div class="sheet-section-title">Latest Node Output / State</div>
+        <pre class="trace-payload-json" style="display:block; max-height:260px;" id="sheetNodeState">{}</pre>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Modal Dialog: Edit Claims (HITL) -->
+  <div class="modal-backdrop" id="modalEditClaims">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Edit Distilled Claims & Evidence Grounding</div>
+        <button class="sheet-close-btn" onclick="closeModal('modalEditClaims')">&times;</button>
+      </div>
+      <div class="modal-body" id="modalEditClaimsBody">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modalEditClaims')">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="saveEditedClaims()">Save & Resume Execution</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Toast Feedback -->
-<div id="toast" class="toast"></div>
+  <!-- Modal Dialog: Request Re-Research (HITL) -->
+  <div class="modal-backdrop" id="modalResearchMore">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Direct Additional Web Research</div>
+        <button class="sheet-close-btn" onclick="closeModal('modalResearchMore')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Research Guidance & Feedback</label>
+          <textarea id="researchMoreInput" class="form-control" rows="4" placeholder="Specify angles, missing figures, or specific domains to investigate..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modalResearchMore')">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="submitResearchMore()">Submit & Continue Loop</button>
+      </div>
+    </div>
+  </div>
 
-<script>
-  // State variables
-  let activeThreadId = null;
-  let activeEventSource = null;
-  let currentEvents = [];
-  let currentFilter = 'all';
-  let autoScroll = true;
-  let runStartTime = null;
-  let timerInterval = null;
-  let currentState = null;
+  <!-- Modal Dialog: Reject Session (HITL) -->
+  <div class="modal-backdrop" id="modalReject">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Reject Research Session</div>
+        <button class="sheet-close-btn" onclick="closeModal('modalReject')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.875rem; color:var(--text-secondary);">
+          Are you sure you want to reject this investigation? The workflow will transition to rejected state and discontinue synthesis.
+        </p>
+        <div class="form-group">
+          <label class="form-label">Rejection Reason (Optional)</label>
+          <input type="text" id="rejectReasonInput" class="form-control" placeholder="Insufficient factual support, out of scope, etc." />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modalReject')">Cancel</button>
+        <button class="btn btn-danger btn-sm" onclick="submitReject()">Confirm Rejection</button>
+      </div>
+    </div>
+  </div>
 
-  // On page load, initialize from hash or local storage
-  window.addEventListener('DOMContentLoaded', () => {
-    const hashThread = window.location.hash.replace('#thread=', '').trim();
-    const storedThread = localStorage.getItem('active_thread_id');
-    const tid = hashThread || storedThread;
-    if (tid && tid.startsWith('research_')) {
-      restoreSession(tid);
+  <!-- Modal Dialog: Restore Session -->
+  <div class="modal-backdrop" id="modalRestore">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Restore Research Session</div>
+        <button class="sheet-close-btn" onclick="closeModal('modalRestore')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Enter Thread ID</label>
+          <input type="text" id="restoreThreadInput" class="form-control" placeholder="e.g. research_20260928_120000_abc" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modalRestore')">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="submitRestore()">Restore</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Core JavaScript Application Logic -->
+  <script>
+    // Application State
+    let activeThreadId = null;
+    let activeEventSource = null;
+    let currentEvents = [];
+    let currentFilter = 'all';
+    let autoScroll = true;
+    let runStartTime = null;
+    let timerInterval = null;
+    let currentState = null;
+
+    // Node Invariant Definitions for Inspector
+    const NODE_METADATA = {
+      start: {
+        title: "START Node",
+        subtitle: "Graph Entrypoint",
+        desc: "Initializes ResearchState with user question and configuration.",
+        invariants: [
+          "Thread ID is cryptographically assigned or validated.",
+          "Supervisor iteration counters are zeroed.",
+          "SQLite checkpointer stores initial graph snapshot."
+        ]
+      },
+      supervisor: {
+        title: "Supervisor Node",
+        subtitle: "Orchestration & Routing Policy",
+        desc: "Acts as the central decision-maker. Inspects current state and determines whether to invoke the research subgraph, verifier, request human review, invoke the writer, or conclude execution.",
+        invariants: [
+          "Max 8 supervisor steps per execution session.",
+          "Max 2 research iterations allowed.",
+          "Max 3 human research cycles.",
+          "Routes to Verifier immediately after research concludes.",
+          "Cannot invoke Writer before human review approval."
+        ]
+      },
+      research: {
+        title: "Research Subgraph",
+        subtitle: "Researcher · Analyst · Critic",
+        desc: "Executes targeted multi-source web retrieval (Researcher), atomic claim and evidence extraction (Analyst), and quality/coverage critique (Critic).",
+        invariants: [
+          "Every claim extracted must reference >= 1 valid evidence ID.",
+          "Evidence must contain verbatim text quote and source URL.",
+          "Critic quality score evaluates synthesis readiness."
+        ]
+      },
+      verifier: {
+        title: "Verifier Node",
+        subtitle: "Adversarial NLI Verification",
+        desc: "Performs strict natural language inference of each atomic claim strictly against its linked evidence text.",
+        invariants: [
+          "Assigns SUPPORTED, PARTIAL, or UNSUPPORTED verdict.",
+          "Computes confidence score (0.0 to 1.0).",
+          "Generates grounded rationale explaining why evidence supports or refutes."
+        ]
+      },
+      human_review: {
+        title: "Human Review Node",
+        subtitle: "Human-in-the-Loop Checkpoint",
+        desc: "Interrupts graph execution when supervisor deems human approval necessary, or after verification. Resumes only with authoritative user input.",
+        invariants: [
+          "Halts graph execution using LangGraph __interrupt__.",
+          "State persists cleanly in SQLite across process boundaries.",
+          "Supports approve, edit claims, request re-research, or reject actions."
+        ]
+      },
+      writer: {
+        title: "Writer Node",
+        subtitle: "Grounded Synthesis",
+        desc: "Compiles verified claims into an authoritative, grounded final report with exact citations [1]. Introduces zero hallucinated or external facts.",
+        invariants: [
+          "Only runs AFTER human review approval or edit.",
+          "Only uses approved / verified claims.",
+          "Every statement must map to evidence and source citations.",
+          "Produces structured FinalReport (summary, answer, sections, citations)."
+        ]
+      }
+    };
+
+    // On Load Lifecycle
+    window.addEventListener('DOMContentLoaded', () => {
+      const hashThread = window.location.hash.replace('#thread=', '').trim();
+      const storedThread = localStorage.getItem('active_thread_id');
+      const tid = hashThread || storedThread;
+      if (tid && tid.startsWith('research_')) {
+        restoreSession(tid);
+      }
+    });
+
+    // UI Feedback Helpers
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const pill = document.createElement('div');
+      pill.className = 'toast-pill';
+      pill.innerHTML = `
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>${msg}</span>
+      `;
+      container.appendChild(pill);
+      setTimeout(() => pill.classList.add('show'), 10);
+      setTimeout(() => {
+        pill.classList.remove('show');
+        setTimeout(() => pill.remove(), 250);
+      }, 3000);
     }
-  });
 
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2400);
-  }
-
-  function setQuery(q) {
-    document.getElementById('questionInput').value = q;
-  }
-
-  function copyThreadId() {
-    if (!activeThreadId) return;
-    navigator.clipboard.writeText(activeThreadId).then(() => {
-      showToast(`Copied Thread ID: ${activeThreadId}`);
-    });
-  }
-
-  function toggleAutoScroll() {
-    autoScroll = !autoScroll;
-    const btn = document.getElementById('autoScrollBtn');
-    btn.textContent = `Auto-scroll: ${autoScroll ? 'ON' : 'OFF'}`;
-  }
-
-  function toggleDialog(id) {
-    const el = document.getElementById(id);
-    el.classList.toggle('open');
-  }
-
-  function setFilter(node) {
-    currentFilter = node;
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.textContent.toLowerCase() === (node === 'human_review' ? 'human review' : node));
-    });
-    renderEvents();
-  }
-
-  function filterStreamNode(node) {
-    setFilter(node ? node : 'all');
-  }
-
-  // Timer logic
-  function startTimer() {
-    clearInterval(timerInterval);
-    runStartTime = Date.now();
-    timerInterval = setInterval(() => {
-      const elapsed = Date.now() - runStartTime;
-      const secs = (elapsed / 1000).toFixed(1);
-      const m = Math.floor(secs / 60).toString().padStart(2, '0');
-      const s = (secs % 60).toFixed(1).padStart(4, '0');
-      document.getElementById('elapsedTimer').textContent = `${m}:${s}s`;
-    }, 100);
-  }
-
-  function stopTimer() {
-    clearInterval(timerInterval);
-  }
-
-  // Update Status Badge
-  function updateStatus(status) {
-    const badge = document.getElementById('statusBadge');
-    const label = document.getElementById('statusLabel');
-    badge.className = `status-badge status-${status}`;
-    label.textContent = status.replace(/_/g, ' ');
-
-    if (status === 'running' || status === 'resuming') {
-      document.getElementById('startBtn').disabled = true;
-      if (!runStartTime) startTimer();
-    } else {
-      document.getElementById('startBtn').disabled = false;
-      stopTimer();
+    function setQuery(q) {
+      document.getElementById('questionInput').value = q;
+      document.getElementById('questionInput').focus();
     }
 
-    // HITL Section visibility
-    document.getElementById('hitlSection').style.display = status === 'waiting_for_human' ? 'block' : 'none';
-    document.getElementById('completedSection').style.display = status === 'completed' ? 'block' : 'none';
-    document.getElementById('failedSection').style.display = status === 'failed' ? 'block' : 'none';
+    function copyThreadId() {
+      if (!activeThreadId) return;
+      navigator.clipboard.writeText(activeThreadId).then(() => {
+        showToast(`Copied Thread ID: ${activeThreadId}`);
+      });
+    }
 
-    // Update Architecture node states
-    updateArchNodes(status);
-  }
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      
+      const pane = document.getElementById(tabId);
+      if (pane) pane.classList.add('active');
 
-  function updateArchNodes(status, activeNode = null) {
-    // Reset all nodes
-    const nodes = ['supervisor', 'research', 'verifier', 'human_review'];
-    nodes.forEach(n => {
-      const g = document.getElementById(`node-${n}`);
-      if (g) {
-        g.setAttribute('class', 'arch-node node-status-idle');
-        const b = g.querySelector('.node-badge');
-        if (b) b.textContent = 'QUEUED';
-      }
-    });
+      const btnIndex = ['tabReport', 'tabClaims', 'tabSources', 'tabArchitecture', 'tabTrace'].indexOf(tabId);
+      const buttons = document.querySelectorAll('.tab-item');
+      if (buttons[btnIndex]) buttons[btnIndex].classList.add('active');
+    }
 
-    if (status === 'running') {
-      const target = activeNode || 'supervisor';
-      const targetEl = document.getElementById(`node-${target}`);
-      if (targetEl) {
-        targetEl.setAttribute('class', 'arch-node node-status-running');
-        const b = targetEl.querySelector('.node-badge');
-        if (b) b.textContent = 'ACTIVE';
+    function toggleAutoScroll() {
+      autoScroll = !autoScroll;
+      document.getElementById('autoScrollToggleBtn').textContent = `Auto-scroll: ${autoScroll ? 'ON' : 'OFF'}`;
+    }
+
+    // Timer Controls
+    function startTimer() {
+      clearInterval(timerInterval);
+      runStartTime = Date.now();
+      timerInterval = setInterval(() => {
+        const elapsed = Date.now() - runStartTime;
+        const secs = (elapsed / 1000).toFixed(1);
+        const m = Math.floor(secs / 60).toString().padStart(2, '0');
+        const s = (secs % 60).toFixed(1).padStart(4, '0');
+        document.getElementById('elapsedTimer').textContent = `${m}:${s}s`;
+      }, 100);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
+    // Status Updates
+    function updateStatus(status) {
+      const badge = document.getElementById('statusBadge');
+      badge.className = `state-badge state-${status}`;
+      badge.textContent = status.replace(/_/g, ' ');
+
+      const connBadge = document.getElementById('connectionBadge');
+      const connLabel = document.getElementById('connectionLabel');
+
+      if (status === 'running' || status === 'resuming') {
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('startBtnText').textContent = 'Running...';
+        connBadge.className = 'status-indicator connected';
+        connLabel.textContent = 'Streaming';
+        if (!runStartTime) startTimer();
+      } else if (status === 'waiting_for_human') {
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('startBtnText').textContent = 'Investigate';
+        connBadge.className = 'status-indicator reconnecting';
+        connLabel.textContent = 'Awaiting Review';
+        stopTimer();
+      } else {
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('startBtnText').textContent = 'Investigate';
+        connBadge.className = 'status-indicator idle';
+        connLabel.textContent = 'Concluded';
+        stopTimer();
       }
-      document.getElementById('activeWorkerLabel').textContent = `Active: ${target}`;
-    } else if (status === 'waiting_for_human') {
-      const g = document.getElementById('node-human_review');
-      if (g) {
-        g.setAttribute('class', 'arch-node node-status-waiting');
-        const b = g.querySelector('.node-badge');
-        if (b) b.textContent = 'INTERRUPTED';
-      }
-      document.getElementById('activeWorkerLabel').textContent = 'Waiting for Human';
-    } else if (status === 'completed') {
+
+      // HITL Banner Visibility
+      document.getElementById('hitlSection').style.display = status === 'waiting_for_human' ? 'block' : 'none';
+
+      // Update Node Highlight in SVG
+      updateSvgNodeHighlight(status);
+    }
+
+    function updateSvgNodeHighlight(status, activeNode = null) {
+      const nodes = ['supervisor', 'research', 'verifier', 'human_review', 'writer'];
       nodes.forEach(n => {
-        const g = document.getElementById(`node-${n}`);
-        if (g) {
-          g.setAttribute('class', 'arch-node node-status-completed');
-          const b = g.querySelector('.node-badge');
-          if (b) b.textContent = 'DONE';
-        }
-      });
-      document.getElementById('activeWorkerLabel').textContent = 'Execution Concluded';
-    } else if (status === 'failed') {
-      document.getElementById('activeWorkerLabel').textContent = 'Failed';
-    }
-  }
-
-  // Start Research
-  async function startResearch() {
-    const qInput = document.getElementById('questionInput');
-    const question = qInput.value.trim();
-    if (!question || question.length < 3) {
-      showToast('Please enter a valid research question (min 3 chars).');
-      return;
-    }
-
-    // Reset UI
-    currentEvents = [];
-    renderEvents();
-    updateStatus('running');
-    startTimer();
-
-    try {
-      const res = await fetch('/api/research', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
+        const el = document.getElementById(`node-${n}`);
+        if (el) el.classList.remove('active');
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || 'Failed to start research run.');
+      if (status === 'running' || status === 'resuming') {
+        const target = activeNode || 'supervisor';
+        const el = document.getElementById(`node-${target}`);
+        if (el) el.classList.add('active');
+        document.getElementById('activeNodeBadge').className = 'state-badge state-running';
+        document.getElementById('activeNodeBadge').textContent = `ACTIVE: ${target.toUpperCase()}`;
+      } else if (status === 'waiting_for_human') {
+        const el = document.getElementById('node-human_review');
+        if (el) el.classList.add('active');
+        document.getElementById('activeNodeBadge').className = 'state-badge state-waiting_for_human';
+        document.getElementById('activeNodeBadge').textContent = 'INTERRUPTED: HUMAN REVIEW';
+      } else if (status === 'completed') {
+        document.getElementById('activeNodeBadge').className = 'state-badge state-completed';
+        document.getElementById('activeNodeBadge').textContent = 'COMPLETED';
+      } else {
+        document.getElementById('activeNodeBadge').className = 'state-badge state-idle';
+        document.getElementById('activeNodeBadge').textContent = 'IDLE';
+      }
+    }
+
+    // Research Invocation
+    async function startResearch() {
+      const question = document.getElementById('questionInput').value.trim();
+      if (!question || question.length < 3) {
+        showToast('Please enter a valid research question (min 3 chars).');
+        return;
       }
 
-      const data = await res.json();
-      activeThreadId = data.thread_id;
-      localStorage.setItem('active_thread_id', activeThreadId);
-      window.location.hash = `thread=${activeThreadId}`;
-      document.getElementById('threadIdDisplay').textContent = activeThreadId;
-      showToast(`Initiated research session: ${activeThreadId}`);
+      // Reset state & UI
+      currentEvents = [];
+      renderTraceStream();
+      document.getElementById('investigationHeader').style.display = 'block';
+      document.getElementById('displayQuestion').textContent = question;
+      updateStatus('running');
+      startTimer();
 
-      connectSSE(activeThreadId);
-    } catch (err) {
-      updateStatus('failed');
-      document.getElementById('failedErrorText').textContent = err.message;
-      showToast(`Error: ${err.message}`);
-    }
-  }
-
-  // Session Reconnection
-  function handleReconnect(e) {
-    e.preventDefault();
-    const tid = document.getElementById('reconnectInput').value.trim();
-    if (tid) restoreSession(tid);
-  }
-
-  async function restoreSession(tid) {
-    activeThreadId = tid;
-    localStorage.setItem('active_thread_id', tid);
-    window.location.hash = `thread=${tid}`;
-    document.getElementById('threadIdDisplay').textContent = tid;
-    document.getElementById('reconnectInput').value = tid;
-
-    try {
-      const res = await fetch(`/api/research/${tid}`);
-      if (!res.ok) throw new Error('Session not found.');
-      const state = await res.json();
-      currentState = state;
-      applyStateSnapshot(state);
-      connectSSE(tid);
-      showToast(`Session ${tid} recovered.`);
-    } catch (err) {
-      showToast(`Failed to restore ${tid}: ${err.message}`);
-    }
-  }
-
-  // SSE Real-Time Event Stream Connection
-  function connectSSE(tid) {
-    if (activeEventSource) {
-      activeEventSource.close();
-    }
-
-    activeEventSource = new EventSource(`/api/research/${tid}/stream`);
-
-    activeEventSource.onmessage = (e) => {
       try {
-        const evt = JSON.parse(e.data);
-        handleLiveEvent(evt);
+        const res = await fetch('/api/research', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Failed to start research run.');
+        }
+
+        const data = await res.json();
+        activeThreadId = data.thread_id;
+        localStorage.setItem('active_thread_id', activeThreadId);
+        window.location.hash = `thread=${activeThreadId}`;
+        document.getElementById('threadIdDisplay').textContent = activeThreadId;
+        showToast(`Initiated research session: ${activeThreadId}`);
+
+        connectSSE(activeThreadId);
       } catch (err) {
-        console.error('Failed to parse SSE event data', err);
+        updateStatus('failed');
+        showToast(`Error: ${err.message}`);
       }
-    };
-
-    activeEventSource.onerror = (err) => {
-      // Reconnect or inspect status if stopped
-      fetchStateSnapshot(tid);
-    };
-  }
-
-  // Event Dispatcher
-  function handleLiveEvent(evt) {
-    currentEvents.push(evt);
-    document.getElementById('eventCountBadge').textContent = `${currentEvents.length} events`;
-    renderEvents();
-
-    const evType = evt.event_type;
-    const node = evt.node;
-    const data = evt.data || {};
-
-    // Live Architecture node update
-    if (node) updateArchNodes('running', node);
-
-    // Node-specific live updates
-    if (evType === 'supervisor_decision') {
-      document.getElementById('statSteps').textContent = `${data.step || 1} / 8`;
-      if (data.reasoning) {
-        document.getElementById('supervisorReasoningWrap').style.display = 'block';
-        document.getElementById('supervisorReasoningText').textContent = data.reasoning;
-      }
-    } else if (evType === 'research_update') {
-      if (data.sources_count) document.getElementById('metricSources').textContent = data.sources_count;
-      if (data.claims_count) document.getElementById('metricClaims').textContent = data.claims_count;
-    } else if (evType === 'source_found') {
-      appendSourceCard(data);
-    } else if (evType === 'analysis_update') {
-      if (data.claims_count) document.getElementById('metricClaims').textContent = data.claims_count;
-      if (data.claims) renderClaims(data.claims);
-    } else if (evType === 'critic_update') {
-      renderCriticInfo(data.critique);
-    } else if (evType === 'verification_update') {
-      if (data.claim) updateClaimVerification(data.claim);
-      if (data.verification_results) updateAllVerifications(data.verification_results);
-    } else if (evType === 'human_review_required') {
-      updateStatus('waiting_for_human');
-      if (activeEventSource) activeEventSource.close();
-      fetchStateSnapshot(evt.thread_id);
-    } else if (evType === 'human_review_resumed') {
-      updateStatus('resuming');
-    } else if (evType === 'run_completed') {
-      updateStatus('completed');
-      fetchStateSnapshot(evt.thread_id);
-    } else if (evType === 'run_failed') {
-      updateStatus('failed');
-      document.getElementById('failedErrorText').textContent = data.error || 'Execution encountered an unrecoverable error.';
-    } else if (evType === 'run_rejected') {
-      updateStatus('rejected');
     }
-  }
 
-  // Fetch full state snapshot
-  async function fetchStateSnapshot(tid) {
-    try {
-      const res = await fetch(`/api/research/${tid}`);
-      if (res.ok) {
+    // SSE Connection & Stream Consumer
+    function connectSSE(tid) {
+      if (activeEventSource) {
+        activeEventSource.close();
+      }
+
+      activeEventSource = new EventSource(`/api/research/${tid}/stream`);
+
+      activeEventSource.onmessage = (e) => {
+        try {
+          const evt = JSON.parse(e.data);
+          handleLiveEvent(evt);
+        } catch (err) {
+          console.error('Failed to parse SSE event data', err);
+        }
+      };
+
+      activeEventSource.onerror = (err) => {
+        // Fetch snapshot when stream pauses or closes
+        fetchStateSnapshot(tid);
+      };
+    }
+
+    function handleLiveEvent(evt) {
+      currentEvents.push(evt);
+      document.getElementById('badgeTraceCount').textContent = currentEvents.length;
+      renderTraceStream();
+
+      const evType = evt.event_type;
+      const node = evt.node;
+      const data = evt.data || {};
+
+      if (node) updateSvgNodeHighlight('running', node);
+
+      if (evType === 'supervisor_decision') {
+        document.getElementById('statSteps').textContent = `${data.step || 1} / 8 steps`;
+      } else if (evType === 'research_update') {
+        if (data.sources_count) document.getElementById('statSourcesCount').textContent = `${data.sources_count} indexed`;
+        if (data.claims_count) document.getElementById('badgeClaimsCount').textContent = data.claims_count;
+      } else if (evType === 'verification_update') {
+        if (data.verification_results) {
+          fetchStateSnapshot(activeThreadId);
+        }
+      } else if (evType === 'writer_update') {
+        renderFinalReport(data);
+        switchTab('tabReport');
+      } else if (evType === 'human_review_required') {
+        updateStatus('waiting_for_human');
+        if (activeEventSource) activeEventSource.close();
+        fetchStateSnapshot(evt.thread_id);
+      } else if (evType === 'run_completed') {
+        updateStatus('completed');
+        fetchStateSnapshot(evt.thread_id);
+      } else if (evType === 'run_failed') {
+        updateStatus('failed');
+        showToast(data.error || 'Execution encountered an unrecoverable error.');
+      } else if (evType === 'run_rejected') {
+        updateStatus('rejected');
+      }
+    }
+
+    // State Snapshot Management
+    async function fetchStateSnapshot(tid) {
+      try {
+        const res = await fetch(`/api/research/${tid}`);
+        if (res.ok) {
+          const state = await res.json();
+          currentState = state;
+          applyStateSnapshot(state);
+        }
+      } catch (err) {
+        console.error('Error fetching state snapshot:', err);
+      }
+    }
+
+    async function restoreSession(tid) {
+      activeThreadId = tid;
+      localStorage.setItem('active_thread_id', tid);
+      window.location.hash = `thread=${tid}`;
+      document.getElementById('threadIdDisplay').textContent = tid;
+      document.getElementById('investigationHeader').style.display = 'block';
+
+      try {
+        const res = await fetch(`/api/research/${tid}`);
+        if (!res.ok) throw new Error('Session not found.');
         const state = await res.json();
         currentState = state;
         applyStateSnapshot(state);
+        connectSSE(tid);
+        showToast(`Session ${tid} recovered.`);
+      } catch (err) {
+        showToast(`Failed to restore ${tid}: ${err.message}`);
       }
-    } catch (err) {
-      console.error('Error fetching state snapshot:', err);
-    }
-  }
-
-  // Populate UI from full state snapshot
-  function applyStateSnapshot(state) {
-    if (!state) return;
-    updateStatus(state.status);
-
-    if (state.question) {
-      document.getElementById('questionInput').value = state.question;
     }
 
-    // Counters
-    document.getElementById('metricSources').textContent = (state.sources || []).length;
-    document.getElementById('metricSourcesSub').textContent = `${(state.sources || []).length} external sources indexed`;
-    document.getElementById('metricEvidence').textContent = (state.evidence || []).length;
-    document.getElementById('metricEvidenceSub').textContent = `${(state.evidence || []).length} verbatim quotes extracted`;
-    document.getElementById('metricClaims').textContent = (state.claims || []).length;
-    document.getElementById('metricClaimsSub').textContent = `${(state.claims || []).length} atomic claims distilled`;
+    function applyStateSnapshot(state) {
+      if (!state) return;
+      updateStatus(state.status);
 
-    document.getElementById('statSteps').textContent = `${state.supervisor_steps || 0} / 8`;
-    document.getElementById('statHumanCycles').textContent = `${state.human_research_cycles || 0} / 3`;
-    document.getElementById('statIterations').textContent = `${state.research_iteration || 0} / 2`;
-    document.getElementById('statTermination').textContent = state.supervisor_termination_reason || '-';
-
-    if (state.supervisor_decision && state.supervisor_decision.reasoning) {
-      document.getElementById('supervisorReasoningWrap').style.display = 'block';
-      document.getElementById('supervisorReasoningText').textContent = state.supervisor_decision.reasoning;
-    }
-
-    // Render Sources, Claims, Verifications
-    renderSourcesList(state.sources || []);
-    renderClaimsWithGrounding(state.claims || [], state.evidence || [], state.verification_results || []);
-    renderVerificationMetrics(state.verification_results || []);
-
-    // HITL Review Context
-    if (state.status === 'waiting_for_human' && state.review_context) {
-      renderHitlContext(state.review_context);
-      populateEditDialog(state.claims || [], state.evidence || []);
-    }
-
-    // Completed summary
-    if (state.status === 'completed') {
-      const supCount = (state.verification_results || []).filter(v => v.verdict === 'SUPPORTED').length;
-      document.getElementById('completedSummaryText').innerHTML = `
-        <strong>Verified Research Investigation Finalized</strong><br/>
-        Investigated: <em>"${state.question}"</em><br/>
-        Synthesized <strong>${(state.claims || []).length} claims</strong> supported by <strong>${(state.sources || []).length} retrieved sources</strong> and <strong>${(state.evidence || []).length} verbatim evidence passages</strong>.<br/>
-        ${supCount} claims verified as fully SUPPORTED with direct textual grounding.
-      `;
-    }
-  }
-
-  // Render Timeline Events
-  function renderEvents() {
-    const container = document.getElementById('eventsList');
-    const filtered = currentEvents.filter(e => {
-      if (currentFilter === 'all') return true;
-      return (e.node || '').toLowerCase() === currentFilter.toLowerCase();
-    });
-
-    if (filtered.length === 0) {
-      container.innerHTML = '<div class="stream-empty">No events match current filter.</div>';
-      return;
-    }
-
-    container.innerHTML = filtered.map((e, idx) => {
-      const time = e.timestamp ? e.timestamp.split('T')[1].slice(0, 11) : '';
-      const nodeClass = `node-${e.node || 'system'}`;
-      const evClass = `ev-${e.event_type}`;
-      const payloadStr = JSON.stringify(e.data || {}, null, 2);
-
-      let summary = '';
-      if (e.event_type === 'supervisor_decision') {
-        summary = `Next: <strong>${e.data.next_worker}</strong> (Step ${e.data.step}) — ${e.data.reasoning || ''}`;
-      } else if (e.event_type === 'source_found') {
-        summary = `Source: <strong>${e.data.title || e.data.source_id}</strong> (${e.data.url || ''})`;
-      } else if (e.event_type === 'research_update') {
-        summary = `Sources: ${e.data.sources_count || 0}, Claims: ${e.data.claims_count || 0}`;
-      } else if (e.event_type === 'analysis_update') {
-        summary = `Formulated ${e.data.claims_count || 0} claims, ${e.data.findings_count || 0} findings`;
-      } else if (e.event_type === 'critic_update') {
-        const score = e.data.critique ? e.data.critique.quality_score : '';
-        summary = `Quality: <strong>${score}/10</strong> — ${e.data.critique ? e.data.critique.reasoning : ''}`;
-      } else if (e.event_type === 'verification_update') {
-        summary = `Verification update: ${e.data.count || 1} claims evaluated`;
-      } else if (e.event_type === 'retry') {
-        summary = `Transient error retry on <strong>${e.node}</strong> (Attempt ${e.data.attempt}): ${e.data.error || ''}`;
-      } else if (e.event_type === 'human_review_required') {
-        summary = `Execution paused at checkpoint. Awaiting authoritative human review.`;
-      } else if (e.event_type === 'run_completed') {
-        summary = `Completed: ${e.data.claims_count || 0} claims, ${e.data.sources_count || 0} sources.`;
-      } else {
-        summary = e.data.message || JSON.stringify(e.data);
+      if (state.question) {
+        document.getElementById('questionInput').value = state.question;
+        document.getElementById('displayQuestion').textContent = state.question;
       }
 
-      return `
-        <div class="event-row">
-          <div class="event-top">
-            <span class="event-time">${time}</span>
-            <span class="event-node ${nodeClass}">${e.node || 'SYS'}</span>
-            <span class="event-badge ${evClass}">${e.event_type}</span>
+      // Metadata Strip Counters
+      document.getElementById('statSteps').textContent = `${state.supervisor_steps || 0} / 8 steps`;
+      document.getElementById('statIterations').textContent = `${state.research_iteration || 0} / 2`;
+      document.getElementById('statHumanCycles').textContent = `${state.human_research_cycles || 0} / 3`;
+      
+      const sources = state.sources || [];
+      const claims = state.claims || [];
+      const evidence = state.evidence || [];
+      const verifications = state.verification_results || [];
+
+      document.getElementById('statSourcesCount').textContent = `${sources.length} indexed`;
+      document.getElementById('badgeSourcesCount').textContent = sources.length;
+      document.getElementById('badgeClaimsCount').textContent = claims.length;
+
+      const supCount = verifications.filter(v => v.verdict === 'SUPPORTED').length;
+      const pct = claims.length > 0 ? Math.round((supCount / claims.length) * 100) : 0;
+      document.getElementById('statClaimsCount').textContent = `${claims.length} claims (${pct}% verified)`;
+
+      // Render Tables
+      renderClaimsTable(claims, evidence, verifications);
+      renderSourcesTable(sources);
+
+      // Render Final Report if present
+      if (state.final_response) {
+        renderFinalReport(state.final_response);
+      }
+
+      // Render HITL if interrupted
+      if (state.status === 'waiting_for_human' && state.review_context) {
+        renderHitlReview(state.review_context);
+      }
+    }
+
+    // Render Final Report (Writer Hero View)
+    function renderFinalReport(report) {
+      if (!report || !report.answer) return;
+
+      document.getElementById('reportEmptyState').style.display = 'none';
+      document.getElementById('reportActiveView').style.display = 'block';
+      document.getElementById('badgeReportState').textContent = 'Completed';
+      document.getElementById('badgeReportState').className = 'tab-count';
+
+      document.getElementById('reportTitle').textContent = report.title || 'Verified Research Report';
+      document.getElementById('reportSummary').textContent = report.summary || 'Summary unavailable.';
+      document.getElementById('reportDate').textContent = report.generated_at ? new Date(report.generated_at).toLocaleString() : '';
+
+      // Format inline citations [1], [2] to clickable pills
+      let formattedAnswer = (report.answer || '').replace(/\[(\d+)\]/g, (match, p1) => {
+        return `<a href="#source-${p1}" class="citation-pill" onclick="switchTab('tabSources'); highlightSource(${p1});">[${p1}]</a>`;
+      });
+      document.getElementById('reportAnswer').innerHTML = formattedAnswer.replace(/\n\n/g, '<br/><br/>');
+
+      // Structured sections
+      const secContainer = document.getElementById('reportSectionsContainer');
+      const sections = report.sections || [];
+      if (sections.length > 0) {
+        secContainer.innerHTML = sections.map(s => `
+          <div class="report-section-block">
+            <h3 class="report-section-heading">${s.title}</h3>
+            <div class="report-section-content">${(s.content || '').replace(/\[(\d+)\]/g, (match, p1) => `<a href="#source-${p1}" class="citation-pill" onclick="switchTab('tabSources'); highlightSource(${p1});">[${p1}]</a>`)}</div>
           </div>
-          <div class="event-body">${summary}</div>
-          <span class="event-payload-btn" onclick="togglePayload('payload-${idx}')">Inspect Payload</span>
-          <pre id="payload-${idx}" class="event-payload">${payloadStr}</pre>
-        </div>
-      `;
-    }).join('');
-
-    if (autoScroll) {
-      container.scrollTop = container.scrollHeight;
-    }
-  }
-
-  function togglePayload(id) {
-    const el = document.getElementById(id);
-    if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
-  }
-
-  // Render Sources List
-  function renderSourcesList(sources) {
-    const container = document.getElementById('sourcesContainer');
-    document.getElementById('sourcesCountBadge').textContent = `${sources.length} sources`;
-    if (!sources || sources.length === 0) {
-      container.innerHTML = '<div style="font-size:0.75rem; color:var(--text-dim); text-align:center; padding:20px;">No external sources indexed yet.</div>';
-      return;
-    }
-    container.innerHTML = sources.map(s => `
-      <div class="source-item">
-        <div class="source-top">
-          <a class="source-title" href="${s.url}" target="_blank" rel="noopener noreferrer">${s.title || s.url}</a>
-          <span class="source-id">${s.source_id}</span>
-        </div>
-        <div class="source-snippet">${s.content || ''}</div>
-      </div>
-    `).join('');
-  }
-
-  function appendSourceCard(source) {
-    const container = document.getElementById('sourcesContainer');
-    if (container.querySelector('.stream-empty')) container.innerHTML = '';
-    const div = document.createElement('div');
-    div.className = 'source-item';
-    div.innerHTML = `
-      <div class="source-top">
-        <a class="source-title" href="${source.url}" target="_blank" rel="noopener noreferrer">${source.title || source.url}</a>
-        <span class="source-id">${source.source_id}</span>
-      </div>
-      <div class="source-snippet">${source.content || ''}</div>
-    `;
-    container.prepend(div);
-  }
-
-  // Render Claims & Grounding Cards
-  function renderClaimsWithGrounding(claims, evidenceList, verifications) {
-    const container = document.getElementById('claimsContainer');
-    document.getElementById('claimsCountBadge').textContent = `${claims.length} claims`;
-    if (!claims || claims.length === 0) {
-      container.innerHTML = '<div style="font-size:0.75rem; color:var(--text-dim); text-align:center; padding:20px;">No claims synthesized yet.</div>';
-      return;
+        `).join('');
+      } else {
+        secContainer.innerHTML = '';
+      }
     }
 
-    const evMap = {};
-    (evidenceList || []).forEach(e => { evMap[e.evidence_id] = e; });
-    const verMap = {};
-    (verifications || []).forEach(v => { verMap[v.claim_id] = v; });
+    // Render Claims Table (Expandable Rows)
+    function renderClaimsTable(claims, evidenceList, verifications) {
+      const container = document.getElementById('claimsTableBody');
+      if (!claims || claims.length === 0) {
+        container.innerHTML = '<div class="empty-state-box" style="border:none;">No atomic claims extracted yet.</div>';
+        return;
+      }
 
-    container.innerHTML = claims.map(c => {
-      const v = verMap[c.claim_id];
-      const verdict = v ? v.verdict : 'PENDING';
-      const conf = v ? Math.round(v.confidence * 100) : 0;
-      const reasoning = v ? v.reasoning : 'Awaiting claim-level verifier evaluation...';
-      const linkedEvidence = (c.evidence_ids || []).map(eid => evMap[eid]).filter(Boolean);
+      const evMap = {};
+      (evidenceList || []).forEach(e => { evMap[e.evidence_id] = e; });
+      const verMap = {};
+      (verifications || []).forEach(v => { verMap[v.claim_id] = v; });
 
-      return `
-        <div class="claim-card">
-          <div class="claim-header">
-            <span class="claim-id">${c.claim_id}</span>
+      container.innerHTML = claims.map((c, idx) => {
+        const v = verMap[c.claim_id];
+        const verdict = v ? v.verdict : 'PENDING';
+        const conf = v ? Math.round(v.confidence * 100) : 0;
+        const rationale = v ? v.reasoning : 'Awaiting claim-level verifier evaluation...';
+        const linkedEv = (c.evidence_ids || []).map(eid => evMap[eid]).filter(Boolean);
+
+        return `
+          <div class="claim-row" id="claim-row-${idx}">
+            <div class="claim-main-row" onclick="toggleClaimRow(${idx})">
+              <span class="claim-id-badge">${c.claim_id}</span>
+              <span class="claim-text-col">${c.text}</span>
+              <div>
+                <span class="verdict-tag verdict-${verdict}">${verdict}</span>
+              </div>
+              <div class="conf-meter-wrap">
+                <span class="conf-number">${conf}%</span>
+                <div class="conf-bar-bg">
+                  <div class="conf-bar-fill" style="width: ${conf}%;"></div>
+                </div>
+              </div>
+              <div class="row-expand-icon">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
+            </div>
+            <div class="claim-expanded-details">
+              <div class="expanded-rationale-box">
+                <strong style="color:var(--text-main);">Verifier Reasoning:</strong> ${rationale}
+              </div>
+              <div style="font-weight:600; color:var(--text-muted); font-size:0.75rem; text-transform:uppercase;">Linked Evidence Grounding (${linkedEv.length}):</div>
+              ${linkedEv.map(ev => `
+                <div class="evidence-quote-item">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--accent-primary); flex-shrink:0; margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                  <div>
+                    <div>"${ev.text}"</div>
+                    <div style="font-size:0.6875rem; color:var(--accent-primary); font-family:var(--font-mono); margin-top:4px;">Source: ${ev.source_id}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleClaimRow(idx) {
+      const el = document.getElementById(`claim-row-${idx}`);
+      if (el) el.classList.toggle('expanded');
+    }
+
+    // Render Sources Table
+    function renderSourcesTable(sources) {
+      const container = document.getElementById('sourcesTableBody');
+      if (!sources || sources.length === 0) {
+        container.innerHTML = '<div class="empty-state-box" style="border:none;">No external web sources retrieved yet.</div>';
+        return;
+      }
+
+      container.innerHTML = sources.map((s, idx) => {
+        let domain = '';
+        try { domain = new URL(s.url).hostname.replace('www.', ''); } catch (e) { domain = 'external'; }
+
+        return `
+          <div class="source-data-row" id="source-${idx + 1}">
+            <span class="claim-id-badge">${s.source_id}</span>
+            <div><span class="source-domain-pill">${domain}</span></div>
+            <div>
+              <div style="font-weight:600; color:var(--text-main); margin-bottom:2px;">${s.title || s.url}</div>
+              <div style="color:var(--text-muted); font-size:0.75rem; line-height:1.4;">${(s.content || '').slice(0, 140)}...</div>
+            </div>
+            <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-secondary); text-align:center;">
+              Ref [${idx + 1}]
+            </div>
+            <div>
+              <a href="${s.url}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="padding:2px 8px;">Visit &rarr;</a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function highlightSource(index) {
+      const el = document.getElementById(`source-${index}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.style.backgroundColor = '#eff6ff';
+        setTimeout(() => { el.style.backgroundColor = ''; }, 2000);
+      }
+    }
+
+    // Render Execution Trace Feed
+    function setTraceFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase().includes(filter));
+      });
+      renderTraceStream();
+    }
+
+    function renderTraceStream() {
+      const container = document.getElementById('traceStreamList');
+      const filtered = currentEvents.filter(e => {
+        if (currentFilter === 'all') return true;
+        return (e.node || '').toLowerCase() === currentFilter.toLowerCase();
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-state-box" style="border:none;">No events match current filter.</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map((e, idx) => {
+        const time = e.timestamp ? e.timestamp.split('T')[1].slice(0, 11) : '';
+        const payloadStr = JSON.stringify(e.data || {}, null, 2);
+
+        let msg = '';
+        if (e.event_type === 'supervisor_decision') {
+          msg = `Next Worker: <strong>${e.data.next_worker}</strong> (Step ${e.data.step}) — ${e.data.reasoning || ''}`;
+        } else if (e.event_type === 'research_update') {
+          msg = `Sources indexed: ${e.data.sources_count || 0}, Claims synthesized: ${e.data.claims_count || 0}`;
+        } else if (e.event_type === 'verification_update') {
+          msg = `Verification complete: ${e.data.count || 0} claims evaluated against evidence`;
+        } else if (e.event_type === 'writer_update') {
+          msg = `Writer synthesized final grounded report with ${e.data.citations ? e.data.citations.length : 0} citations`;
+        } else if (e.event_type === 'human_review_required') {
+          msg = `Execution halted at checkpoint. Awaiting authoritative human verification.`;
+        } else if (e.event_type === 'run_completed') {
+          msg = `Investigation successfully completed.`;
+        } else {
+          msg = e.data.message || JSON.stringify(e.data);
+        }
+
+        return `
+          <div class="trace-event-row">
+            <div class="trace-meta-line">
+              <span class="trace-time">${time}</span>
+              <span class="trace-node-badge">${e.node || 'SYS'}</span>
+              <span class="trace-event-badge">${e.event_type}</span>
+            </div>
+            <div class="trace-message-line">${msg}</div>
+            <span class="trace-payload-toggle" onclick="toggleTracePayload('trace-payload-${idx}')">Inspect Payload</span>
+            <pre class="trace-payload-json" id="trace-payload-${idx}">${payloadStr}</pre>
+          </div>
+        `;
+      }).join('');
+
+      if (autoScroll) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+
+    function toggleTracePayload(id) {
+      const el = document.getElementById(id);
+      if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // HITL Review Console
+    function renderHitlReview(ctx) {
+      const container = document.getElementById('hitlClaimsContainer');
+      const items = ctx.review_items || [];
+      if (items.length === 0) {
+        container.innerHTML = '<div style="font-size:0.8125rem; color:var(--text-muted);">No claims pending review.</div>';
+        return;
+      }
+
+      container.innerHTML = items.map(item => {
+        const v = item.verification;
+        const verdict = v ? v.verdict : 'PENDING';
+        return `
+          <div class="hitl-claim-item">
+            <div class="hitl-claim-text">
+              <strong>[${item.claim_id}]</strong> ${item.text}
+            </div>
             <span class="verdict-tag verdict-${verdict}">${verdict}</span>
           </div>
-          <div class="claim-text">${c.text}</div>
-          <div class="confidence-wrap">
-            <span>Confidence: ${conf}%</span>
-            <div class="conf-meter"><div class="conf-fill" style="width: ${conf}%"></div></div>
-          </div>
-          <div class="claim-reasoning"><strong>Rationale:</strong> ${reasoning}</div>
-          ${linkedEvidence.map(ev => `
-            <div class="evidence-quote">
-              "${ev.text}" <span style="color:var(--accent); font-style:normal;">[${ev.source_id}]</span>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    }).join('');
-  }
-
-  function renderVerificationMetrics(verifications) {
-    const total = verifications.length;
-    if (total === 0) return;
-    const sup = verifications.filter(v => v.verdict === 'SUPPORTED').length;
-    const part = verifications.filter(v => v.verdict === 'PARTIAL').length;
-    const unsup = verifications.filter(v => v.verdict === 'UNSUPPORTED').length;
-
-    const supPct = Math.round((sup / total) * 100);
-    const partPct = Math.round((part / total) * 100);
-    const unsupPct = Math.round((unsup / total) * 100);
-
-    document.getElementById('metricVerified').textContent = `${supPct}%`;
-    document.getElementById('barSupported').style.width = `${supPct}%`;
-    document.getElementById('barPartial').style.width = `${partPct}%`;
-    document.getElementById('barUnsupported').style.width = `${unsupPct}%`;
-    document.getElementById('metricVerifiedSub').textContent = `${sup} supported • ${part} partial • ${unsup} unsupported`;
-  }
-
-  function renderCriticInfo(critique) {
-    if (!critique) return;
-    const card = document.getElementById('criticCard');
-    card.style.display = 'block';
-    const score = Math.round((critique.quality_score || 0) * 10);
-    document.getElementById('criticScore').textContent = `${score}%`;
-    document.getElementById('criticFeedbackText').textContent = critique.reasoning || '';
-    document.getElementById('criticDecisionBadge').textContent = critique.should_research_again ? 'Loop Needed' : 'Approved';
-
-    if (critique.missing_aspects && critique.missing_aspects.length > 0) {
-      document.getElementById('criticMissingWrap').style.display = 'block';
-      document.getElementById('criticMissingChips').innerHTML = critique.missing_aspects.map(m => `
-        <span class="chip" style="font-size:0.6875rem;">${m}</span>
-      `).join('');
+        `;
+      }).join('');
     }
-  }
 
-  // HITL Review Support
-  function renderHitlContext(ctx) {
-    const container = document.getElementById('hitlContextSummary');
-    if (!ctx || !ctx.review_items) {
-      container.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted);">No review items in interrupt context.</div>';
-      return;
-    }
-    container.innerHTML = ctx.review_items.map(item => `
-      <div class="stat-item" style="flex-direction:column; align-items:flex-start; gap:4px;">
-        <div style="display:flex; justify-content:space-between; width:100%;">
-          <span class="stat-label">${item.claim_id}</span>
-          <span class="verdict-tag verdict-${item.verification ? item.verification.verdict : 'PENDING'}">${item.verification ? item.verification.verdict : 'PENDING'}</span>
-        </div>
-        <div style="font-size:0.8125rem; color:var(--text);">${item.text}</div>
-      </div>
-    `).join('');
-  }
+    async function submitHitlAction(action, payload = {}) {
+      if (!activeThreadId) return;
+      try {
+        updateStatus('resuming');
+        const body = { action, ...payload };
+        const res = await fetch(`/api/research/${activeThreadId}/resume`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
 
-  function populateEditDialog(claims, evidence) {
-    const container = document.getElementById('editClaimsContainer');
-    const validEvidenceIds = (evidence || []).map(e => e.evidence_id);
-
-    container.innerHTML = claims.map((c, i) => `
-      <div style="background:var(--bg); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--surface-border);">
-        <div style="font-size:0.6875rem; color:var(--text-dim); margin-bottom:4px;">Claim ID: ${c.claim_id}</div>
-        <input type="text" id="edit-claim-text-${i}" class="dialog-input" value="${c.text.replace(/"/g, '&quot;')}" style="margin-bottom:6px;" />
-        <div style="font-size:0.6875rem; color:var(--text-dim); margin-bottom:2px;">Evidence IDs (comma-separated, available: ${validEvidenceIds.join(', ')}):</div>
-        <input type="text" id="edit-claim-ev-${i}" class="dialog-input" value="${(c.evidence_ids || []).join(', ')}" />
-      </div>
-    `).join('');
-  }
-
-  async function submitHitlAction(action, payload = {}) {
-    if (!activeThreadId) return;
-    try {
-      updateStatus('resuming');
-      const body = { action, ...payload };
-      const res = await fetch(`/api/research/${activeThreadId}/resume`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || 'Resume request rejected.');
-      }
-
-      showToast(`Action '${action}' submitted. Resuming execution.`);
-      connectSSE(activeThreadId);
-    } catch (err) {
-      showToast(`Resume error: ${err.message}`);
-      updateStatus('waiting_for_human');
-    }
-  }
-
-  function saveEditedClaims() {
-    if (!currentState || !currentState.claims) return;
-    const editedClaims = [];
-    const validEvidence = (currentState.evidence || []).map(e => e.evidence_id);
-
-    for (let i = 0; i < currentState.claims.length; i++) {
-      const orig = currentState.claims[i];
-      const text = document.getElementById(`edit-claim-text-${i}`).value.trim();
-      const evStr = document.getElementById(`edit-claim-ev-${i}`).value.trim();
-      const evIds = evStr ? evStr.split(',').map(s => s.trim()).filter(Boolean) : [];
-
-      // Client-side validation: evidence IDs must exist in available evidence
-      for (const eid of evIds) {
-        if (!validEvidence.includes(eid)) {
-          showToast(`Validation error: Evidence ID '${eid}' does not exist.`);
-          return;
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Resume request rejected.');
         }
+
+        showToast(`Action '${action}' submitted. Resuming workflow.`);
+        connectSSE(activeThreadId);
+      } catch (err) {
+        showToast(`Resume error: ${err.message}`);
+        updateStatus('waiting_for_human');
+      }
+    }
+
+    // Node Inspector Sheet
+    function openNodeInspector(nodeKey) {
+      const meta = NODE_METADATA[nodeKey] || {
+        title: nodeKey.toUpperCase(),
+        subtitle: "Graph Worker",
+        desc: "Graph execution node.",
+        invariants: ["Standard LangGraph node execution invariants apply."]
+      };
+
+      document.getElementById('sheetNodeTitle').textContent = meta.title;
+      document.getElementById('sheetNodeSubtitle').textContent = meta.subtitle;
+      document.getElementById('sheetNodeDesc').textContent = meta.desc;
+
+      const invContainer = document.getElementById('sheetNodeInvariants');
+      invContainer.innerHTML = meta.invariants.map(inv => `
+        <div class="sheet-invariant-item">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          <span>${inv}</span>
+        </div>
+      `).join('');
+
+      // Find last event for this node
+      const nodeEvents = currentEvents.filter(e => (e.node || '').toLowerCase() === nodeKey.toLowerCase());
+      const lastEv = nodeEvents[nodeEvents.length - 1];
+      document.getElementById('sheetNodeState').textContent = JSON.stringify(lastEv ? lastEv.data : { status: "ready" }, null, 2);
+
+      document.getElementById('sheetBackdrop').classList.add('open');
+      document.getElementById('sheetPanel').classList.add('open');
+    }
+
+    function closeNodeInspector() {
+      document.getElementById('sheetBackdrop').classList.remove('open');
+      document.getElementById('sheetPanel').classList.remove('open');
+    }
+
+    // Modal Helpers
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    function openEditClaimsModal() {
+      if (!currentState || !currentState.claims) return;
+      const body = document.getElementById('modalEditClaimsBody');
+      const validEv = (currentState.evidence || []).map(e => e.evidence_id);
+
+      body.innerHTML = currentState.claims.map((c, i) => `
+        <div style="background:var(--bg-subtle); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border-hairline);">
+          <div style="font-family:var(--font-mono); font-size:0.6875rem; color:var(--text-dim); margin-bottom:4px;">${c.claim_id}</div>
+          <input type="text" id="edit-claim-text-${i}" class="form-control" value="${c.text.replace(/"/g, '&quot;')}" style="margin-bottom:8px;" />
+          <div style="font-size:0.6875rem; color:var(--text-muted); margin-bottom:4px;">Linked Evidence IDs (comma separated, available: ${validEv.join(', ')}):</div>
+          <input type="text" id="edit-claim-ev-${i}" class="form-control" value="${(c.evidence_ids || []).join(', ')}" />
+        </div>
+      `).join('');
+
+      openModal('modalEditClaims');
+    }
+
+    function saveEditedClaims() {
+      if (!currentState || !currentState.claims) return;
+      const edited = [];
+      const validEv = (currentState.evidence || []).map(e => e.evidence_id);
+
+      for (let i = 0; i < currentState.claims.length; i++) {
+        const orig = currentState.claims[i];
+        const text = document.getElementById(`edit-claim-text-${i}`).value.trim();
+        const evStr = document.getElementById(`edit-claim-ev-${i}`).value.trim();
+        const evIds = evStr ? evStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+        for (const eid of evIds) {
+          if (!validEv.includes(eid)) {
+            showToast(`Validation error: Evidence ID '${eid}' does not exist.`);
+            return;
+          }
+        }
+
+        edited.push({ claim_id: orig.claim_id, text, evidence_ids: evIds });
       }
 
-      editedClaims.push({
-        claim_id: orig.claim_id,
-        text: text,
-        evidence_ids: evIds
-      });
+      closeModal('modalEditClaims');
+      submitHitlAction('edit', { edited_claims: edited });
     }
 
-    toggleDialog('editDialog');
-    submitHitlAction('edit', { edited_claims: editedClaims });
-  }
-
-  function submitResearchMore() {
-    const feedback = document.getElementById('researchMoreFeedback').value.trim();
-    toggleDialog('researchMoreDialog');
-    submitHitlAction('research_more', { feedback: feedback || 'Please perform additional targeted search.' });
-  }
-
-  function submitReject() {
-    const feedback = document.getElementById('rejectFeedback').value.trim();
-    toggleDialog('rejectDialog');
-    submitHitlAction('reject', { feedback: feedback || 'Rejected by human reviewer.' });
-  }
-
-  function retryRun() {
-    if (currentState && currentState.question) {
-      setQuery(currentState.question);
-      startResearch();
+    function openResearchMoreModal() { openModal('modalResearchMore'); }
+    function submitResearchMore() {
+      const guidance = document.getElementById('researchMoreInput').value.trim();
+      closeModal('modalResearchMore');
+      submitHitlAction('research_more', { feedback: guidance || 'Perform additional targeted search.' });
     }
-  }
 
-  function copyMarkdownReport() {
-    if (!currentState) return;
-    const sup = (currentState.verification_results || []).filter(v => v.verdict === 'SUPPORTED');
-    const md = [
-      `# Verified Research Report`,
-      `**Question:** ${currentState.question}`,
-      `**Thread ID:** ${currentState.thread_id}`,
-      `**Verified Claims (${sup.length}):**`,
-      ...sup.map(v => {
-        const c = (currentState.claims || []).find(x => x.claim_id === v.claim_id);
-        return `- **${c ? c.text : v.claim_id}** (Confidence: ${Math.round(v.confidence * 100)}%)\n  *Rationale:* ${v.reasoning}`;
-      }),
-      `\n**Sources Indexed (${(currentState.sources || []).length}):**`,
-      ...(currentState.sources || []).map(s => `- [${s.title || s.url}](${s.url})`),
-    ].join('\n');
+    function openRejectModal() { openModal('modalReject'); }
+    function submitReject() {
+      const reason = document.getElementById('rejectReasonInput').value.trim();
+      closeModal('modalReject');
+      submitHitlAction('reject', { feedback: reason || 'Rejected by human reviewer.' });
+    }
 
-    navigator.clipboard.writeText(md).then(() => showToast('Markdown report copied to clipboard!'));
-  }
+    function openRestoreModal() { openModal('modalRestore'); }
+    function submitRestore() {
+      const tid = document.getElementById('restoreThreadInput').value.trim();
+      if (tid) {
+        closeModal('modalRestore');
+        restoreSession(tid);
+      }
+    }
 
-  function downloadJsonState() {
-    if (!currentState) return;
-    const blob = new Blob([JSON.stringify(currentState, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${currentState.thread_id || 'research'}_state.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-</script>
+    // Export Helpers
+    function copyMarkdownReport() {
+      if (!currentState) return;
+      const rep = currentState.final_response;
+      let md = '';
+      if (rep) {
+        md = [
+          `# ${rep.title || 'Verified Research Report'}`,
+          `**Generated:** ${rep.generated_at || ''}`,
+          `\n## Executive Summary\n${rep.summary || ''}`,
+          `\n## Answer\n${rep.answer || ''}`,
+          ...(rep.sections || []).map(s => `\n### ${s.title}\n${s.content}`),
+          `\n## Works Cited`,
+          ...(rep.citations || []).map(c => `[${c.index}] [${c.source_title || c.source_url}](${c.source_url}) (Claim: ${c.claim_id})`)
+        ].join('\n');
+      } else {
+        const sup = (currentState.verification_results || []).filter(v => v.verdict === 'SUPPORTED');
+        md = [
+          `# Verified Research Investigation`,
+          `**Question:** ${currentState.question}`,
+          `**Thread ID:** ${currentState.thread_id}`,
+          `\n## Verified Claims (${sup.length})`,
+          ...sup.map(v => {
+            const c = (currentState.claims || []).find(x => x.claim_id === v.claim_id);
+            return `- **${c ? c.text : v.claim_id}** (Confidence: ${Math.round(v.confidence * 100)}%)\n  *Rationale:* ${v.reasoning}`;
+          }),
+          `\n## Sources`,
+          ...(currentState.sources || []).map(s => `- [${s.title || s.url}](${s.url})`)
+        ].join('\n');
+      }
 
+      navigator.clipboard.writeText(md).then(() => showToast('Markdown report copied to clipboard!'));
+    }
+
+    function downloadJsonState() {
+      if (!currentState) return;
+      const blob = new Blob([JSON.stringify(currentState, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentState.thread_id || 'research'}_state.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
 </body>
 </html>
