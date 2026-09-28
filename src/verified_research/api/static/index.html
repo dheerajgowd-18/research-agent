@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verified Research Agent</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --purple: #a855f7;
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--surface-border);
+      margin-bottom: 24px;
+    }
+    .logo-group h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
+    .logo-group p { font-size: 0.875rem; color: var(--text-muted); }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .status-idle { background: #334155; color: #cbd5e1; }
+    .status-running { background: #0369a1; color: #bae6fd; animation: pulse 2s infinite; }
+    .status-waiting_for_human { background: #b45309; color: #fef3c7; }
+    .status-resuming { background: #6b21a8; color: #f3e8ff; animation: pulse 2s infinite; }
+    .status-completed { background: #15803d; color: #bbf7d0; }
+    .status-failed { background: #991b1b; color: #fecaca; }
+    .status-rejected { background: #475569; color: #f1f5f9; border: 1px solid var(--danger); }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+    /* Session & Search Bar */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .input-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    input[type="text"], textarea {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--surface-border);
+      background: #0f172a;
+      color: var(--text-main);
+      font-size: 0.95rem;
+    }
+    input[type="text"]:focus, textarea:focus { outline: 2px solid var(--primary); }
+    button {
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease;
+    }
+    .btn-primary { background: var(--primary); color: #0f172a; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-secondary { background: var(--surface-border); color: var(--text-main); }
+    .btn-secondary:hover:not(:disabled) { background: #475569; }
+    .btn-success { background: var(--success); color: #0f172a; }
+    .btn-warning { background: var(--warning); color: #0f172a; }
+    .btn-danger { background: var(--danger); color: #ffffff; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Stepper / Timeline */
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      background: var(--surface);
+      padding: 16px 24px;
+      border-radius: var(--radius);
+      border: 1px solid var(--surface-border);
+      position: relative;
+    }
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      z-index: 1;
+    }
+    .step-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+    }
+    .step-item.active .step-icon { background: var(--primary); color: #0f172a; box-shadow: 0 0 12px var(--primary); }
+    .step-item.active { color: var(--primary); }
+    .step-item.completed .step-icon { background: var(--success); color: #0f172a; }
+    .step-item.completed { color: var(--success); }
+
+    /* Operational Banner */
+    .supervisor-banner {
+      background: #172554;
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .supervisor-banner strong { color: var(--primary); }
+
+    /* Layout Columns */
+    .grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+    @media (max-width: 900px) { .grid-layout { grid-template-columns: 1fr; } }
+
+    /* Metrics Cards */
+    .metrics-bar { display: flex; gap: 16px; margin-bottom: 20px; }
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      flex: 1;
+      text-align: center;
+    }
+    .metric-card .val { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .metric-card .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+
+    /* Claims & Verification Cards */
+    .claim-card {
+      background: #131d31;
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .claim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .claim-title { font-weight: 600; font-size: 1rem; color: #f1f5f9; }
+    .verdict-tag {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .verdict-supported { background: #14532d; color: #86efac; border: 1px solid #22c55e; }
+    .verdict-partial { background: #713f12; color: #fde047; border: 1px solid #eab308; }
+    .verdict-unsupported { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
+    .evidence-box {
+      margin-top: 12px;
+      padding: 12px;
+      background: #0f172a;
+      border-left: 3px solid var(--surface-border);
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+    .evidence-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    .evidence-meta a { color: var(--primary); text-decoration: none; }
+    .evidence-meta a:hover { text-decoration: underline; }
+
+    /* HITL Callout Modal / Section */
+    .hitl-section {
+      background: #2a1f07;
+      border: 2px solid var(--warning);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .hitl-section h2 { font-size: 1.25rem; color: #fef08a; margin-bottom: 8px; }
+    .hitl-controls { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+    .hitl-edit-pane { margin-top: 16px; padding: 16px; background: #1e293b; border-radius: var(--radius); }
+
+    /* Log Console */
+    .log-stream {
+      background: #090d16;
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      padding: 12px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .log-entry { margin-bottom: 6px; padding: 4px; border-bottom: 1px solid #1e293b; }
+    .log-time { color: var(--text-muted); }
+    .log-node { color: var(--primary); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="logo-group">
+        <h1>Verified Research Agent</h1>
+        <p>Ground-truth claim verification with Human-in-the-Loop orchestration</p>
+      </div>
+      <div id="statusBadge" class="status-badge status-idle">
+        <span id="statusDot">●</span>
+        <span id="statusText">IDLE</span>
+      </div>
+    </header>
+
+    <!-- Session & Question Controls -->
+    <section class="card">
+      <div class="input-row">
+        <input type="text" id="questionInput" placeholder="Enter research query (e.g. What are the latest enterprise RAG security risks?)" />
+        <button id="btnStart" class="btn-primary" onclick="startResearch()">Start Research</button>
+      </div>
+      <div class="input-row" style="margin-bottom: 0;">
+        <input type="text" id="threadInput" placeholder="Reconnect to Session / Thread ID (optional)" />
+        <button id="btnReconnect" class="btn-secondary" onclick="reconnectSession()">Reconnect</button>
+      </div>
+    </section>
+
+    <!-- Execution Stepper -->
+    <section class="stepper" id="stepper">
+      <div class="step-item" id="step-supervisor">
+        <div class="step-icon">1</div>
+        <span>Supervisor</span>
+      </div>
+      <div class="step-item" id="step-research">
+        <div class="step-icon">2</div>
+        <span>Research</span>
+      </div>
+      <div class="step-item" id="step-verifier">
+        <div class="step-icon">3</div>
+        <span>Verifier</span>
+      </div>
+      <div class="step-item" id="step-human_review">
+        <div class="step-icon">4</div>
+        <span>Human Review</span>
+      </div>
+      <div class="step-item" id="step-finish">
+        <div class="step-icon">5</div>
+        <span>Finish</span>
+      </div>
+    </section>
+
+    <!-- Supervisor Operational Banner -->
+    <div id="supervisorBanner" class="supervisor-banner" style="display: none;">
+      <div>
+        <strong>Supervisor Decision:</strong>
+        <span id="supervisorText">Evaluating research plan...</span>
+      </div>
+    </div>
+
+    <!-- Human Review Section (Shown during interrupt) -->
+    <section id="hitlSection" class="hitl-section" style="display: none;">
+      <h2>⚠️ Human Review Required</h2>
+      <p>Research execution has paused for human inspection. Review the verified claims below and choose an action to proceed.</p>
+
+      <div class="hitl-controls">
+        <button class="btn-success" onclick="submitReview('approve')">✓ Approve Research</button>
+        <button class="btn-primary" onclick="toggleEditPane()">✎ Edit Claims</button>
+        <button class="btn-warning" onclick="promptResearchMore()">⟳ Request More Research</button>
+        <button class="btn-danger" onclick="confirmReject()">✕ Reject Research</button>
+      </div>
+
+      <div id="editPane" class="hitl-edit-pane" style="display: none;">
+        <h3>Edit Claims</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Edit claim text while preserving existing evidence linkages.</p>
+        <div id="editClaimsContainer"></div>
+        <button class="btn-primary" style="margin-top: 12px;" onclick="submitEditedClaims()">Submit Edited Claims</button>
+      </div>
+
+      <div id="feedbackPane" class="hitl-edit-pane" style="display: none;">
+        <h3>Research Feedback</h3>
+        <textarea id="feedbackInput" rows="3" placeholder="Provide targeted topics or queries for additional research passes..."></textarea>
+        <button class="btn-warning" style="margin-top: 12px;" onclick="submitReview('research_more')">Dispatch Research Pass</button>
+      </div>
+    </section>
+
+    <!-- Metrics Bar -->
+    <div class="metrics-bar">
+      <div class="metric-card">
+        <div class="val" id="metricIteration">0</div>
+        <div class="label">Research Iteration</div>
+      </div>
+      <div class="metric-card">
+        <div class="val" id="metricSources">0</div>
+        <div class="label">Sources Found</div>
+      </div>
+      <div class="metric-card">
+        <div class="val" id="metricClaims">0</div>
+        <div class="label">Claims Verified</div>
+      </div>
+      <div class="metric-card">
+        <div class="val" id="metricCycles">0</div>
+        <div class="label">Human Cycles</div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid-layout">
+      <!-- Left: Claims, Evidence, & Traceability -->
+      <div>
+        <h2 style="font-size: 1.15rem; margin-bottom: 16px;">Verified Claims & Grounding Evidence</h2>
+        <div id="claimsContainer">
+          <p style="color: var(--text-muted); font-size: 0.9rem;">No active claims. Start research above to formulate and verify findings.</p>
+        </div>
+      </div>
+
+      <!-- Right: Live Execution Log -->
+      <div>
+        <h2 style="font-size: 1.15rem; margin-bottom: 16px;">Execution Stream</h2>
+        <div id="logStream" class="log-stream">
+          <div class="log-entry" style="color: var(--text-muted);">Waiting for run initiation...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeThreadId = null;
+    let eventSource = null;
+    let currentState = null;
+
+    function setStatus(status) {
+      const badge = document.getElementById('statusBadge');
+      const text = document.getElementById('statusText');
+      badge.className = `status-badge status-${status.toLowerCase()}`;
+      text.textContent = status.replace('_', ' ').toUpperCase();
+
+      const btnStart = document.getElementById('btnStart');
+      const isBusy = (status === 'running' || status === 'resuming');
+      btnStart.disabled = isBusy;
+    }
+
+    function addLog(event) {
+      const log = document.getElementById('logStream');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      const time = new Date(event.timestamp || Date.now()).toLocaleTimeString();
+      const nodeTag = event.node ? `[${event.node}]` : '';
+      const summary = JSON.stringify(event.data || {});
+      entry.innerHTML = `<span class="log-time">${time}</span> <span class="log-node">${event.event_type} ${nodeTag}</span>: ${summary}`;
+      log.prepend(entry);
+    }
+
+    function updateStepper(node) {
+      const steps = ['supervisor', 'research', 'verifier', 'human_review', 'finish'];
+      steps.forEach(s => {
+        const el = document.getElementById(`step-${s}`);
+        if (!el) return;
+        if (s === node) {
+          el.className = 'step-item active';
+        } else if (steps.indexOf(s) < steps.indexOf(node)) {
+          el.className = 'step-item completed';
+        }
+      });
+    }
+
+    function updateSupervisorBanner(decision, reasoning) {
+      const banner = document.getElementById('supervisorBanner');
+      const text = document.getElementById('supervisorText');
+      if (decision) {
+        banner.style.display = 'flex';
+        text.textContent = `Selected '${decision}'. ${reasoning || ''}`;
+      }
+    }
+
+    async function startResearch() {
+      const question = document.getElementById('questionInput').value.trim();
+      const threadId = document.getElementById('threadInput').value.trim();
+      if (!question) {
+        alert('Please enter a research question.');
+        return;
+      }
+
+      setStatus('running');
+      try {
+        const res = await fetch('/api/research', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, thread_id: threadId || null })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        activeThreadId = data.thread_id;
+        document.getElementById('threadInput').value = activeThreadId;
+        connectSSE(activeThreadId);
+      } catch (err) {
+        setStatus('failed');
+        alert('Failed to start research: ' + err.message);
+      }
+    }
+
+    function connectSSE(threadId) {
+      if (eventSource) eventSource.close();
+      eventSource = new EventSource(`/api/research/${threadId}/stream`);
+
+      eventSource.onmessage = (e) => {
+        try {
+          const event = JSON.parse(e.data);
+          handleAgentEvent(event);
+        } catch (err) {
+          console.error('Error parsing SSE data', err);
+        }
+      };
+
+      eventSource.onerror = (err) => {
+        console.warn('SSE connection error; polling snapshot fallback', err);
+        fetchState(threadId);
+      };
+    }
+
+    function handleAgentEvent(event) {
+      addLog(event);
+
+      if (event.node) updateStepper(event.node);
+
+      switch (event.event_type) {
+        case 'supervisor_decision':
+          updateSupervisorBanner(event.data.next_worker, event.data.reasoning);
+          break;
+        case 'research_update':
+          document.getElementById('metricSources').textContent = event.data.sources_count || 0;
+          document.getElementById('metricClaims').textContent = event.data.claims_count || 0;
+          break;
+        case 'verification_update':
+          document.getElementById('metricClaims').textContent = event.data.count || 0;
+          fetchState(activeThreadId);
+          break;
+        case 'human_review_required':
+          setStatus('waiting_for_human');
+          updateStepper('human_review');
+          document.getElementById('hitlSection').style.display = 'block';
+          fetchState(activeThreadId);
+          break;
+        case 'human_review_resumed':
+          setStatus('resuming');
+          document.getElementById('hitlSection').style.display = 'none';
+          break;
+        case 'run_completed':
+          setStatus('completed');
+          updateStepper('finish');
+          fetchState(activeThreadId);
+          if (eventSource) eventSource.close();
+          break;
+        case 'run_rejected':
+          setStatus('rejected');
+          document.getElementById('hitlSection').style.display = 'none';
+          fetchState(activeThreadId);
+          if (eventSource) eventSource.close();
+          break;
+        case 'run_failed':
+          setStatus('failed');
+          alert('Research failed: ' + (event.data.error || 'Unknown error'));
+          if (eventSource) eventSource.close();
+          break;
+      }
+    }
+
+    async function reconnectSession() {
+      const threadId = document.getElementById('threadInput').value.trim();
+      if (!threadId) {
+        alert('Please enter a thread ID to reconnect.');
+        return;
+      }
+      activeThreadId = threadId;
+      await fetchState(threadId);
+      connectSSE(threadId);
+    }
+
+    async function fetchState(threadId) {
+      try {
+        const res = await fetch(`/api/research/${threadId}`);
+        if (!res.ok) throw new Error(await res.text());
+        currentState = await res.json();
+        renderState(currentState);
+      } catch (err) {
+        console.error('Failed to fetch state', err);
+      }
+    }
+
+    function renderState(state) {
+      setStatus(state.status);
+      document.getElementById('metricIteration').textContent = state.research_iteration;
+      document.getElementById('metricSources').textContent = (state.sources || []).length;
+      document.getElementById('metricClaims').textContent = (state.claims || []).length;
+      document.getElementById('metricCycles').textContent = state.human_research_cycles;
+
+      if (state.question) document.getElementById('questionInput').value = state.question;
+      if (state.status === 'waiting_for_human') {
+        document.getElementById('hitlSection').style.display = 'block';
+        updateStepper('human_review');
+      } else {
+        document.getElementById('hitlSection').style.display = 'none';
+      }
+
+      renderClaims(state.claims, state.evidence, state.sources, state.verification_results);
+    }
+
+    function renderClaims(claims, evidenceList, sourcesList, verifications) {
+      const container = document.getElementById('claimsContainer');
+      if (!claims || claims.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No claims available.</p>';
+        return;
+      }
+
+      const evMap = {};
+      (evidenceList || []).forEach(e => { evMap[e.evidence_id] = e; });
+      const srcMap = {};
+      (sourcesList || []).forEach(s => { srcMap[s.source_id] = s; });
+      const verMap = {};
+      (verifications || []).forEach(v => { verMap[v.claim_id] = v; });
+
+      container.innerHTML = claims.map(c => {
+        const v = verMap[c.claim_id];
+        const verdict = v ? v.verdict : 'UNVERIFIED';
+        const conf = v && v.confidence ? Math.round(v.confidence * 100) : 0;
+        let vClass = 'verdict-unsupported';
+        let vSymbol = '✕';
+        if (verdict === 'SUPPORTED') { vClass = 'verdict-supported'; vSymbol = '✓'; }
+        else if (verdict === 'PARTIAL') { vClass = 'verdict-partial'; vSymbol = '◐'; }
+
+        const evidenceHtml = (c.evidence_ids || []).map(eid => {
+          const ev = evMap[eid];
+          if (!ev) return `<div class="evidence-box">Evidence [${eid}] not found in state.</div>`;
+          const src = srcMap[ev.source_id];
+          return `
+            <div class="evidence-box">
+              <p>"${ev.text}"</p>
+              <div class="evidence-meta">
+                <span>Evidence ID: ${ev.evidence_id}</span>
+                ${src ? `<span>Source: <a href="${src.url}" target="_blank">${src.title || src.url}</a></span>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="claim-card">
+            <div class="claim-header">
+              <div class="claim-title">[${c.claim_id}] ${c.text}</div>
+              <span class="verdict-tag ${vClass}">${vSymbol} ${verdict} (${conf}%)</span>
+            </div>
+            ${v && v.reasoning ? `<p style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 8px;"><strong>Rationale:</strong> ${v.reasoning}</p>` : ''}
+            <div>
+              <strong style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Grounding Traceability</strong>
+              ${evidenceHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* Human in the loop handlers */
+    function toggleEditPane() {
+      const pane = document.getElementById('editPane');
+      const isVisible = pane.style.display === 'block';
+      pane.style.display = isVisible ? 'none' : 'block';
+      document.getElementById('feedbackPane').style.display = 'none';
+
+      if (!isVisible && currentState && currentState.claims) {
+        const container = document.getElementById('editClaimsContainer');
+        container.innerHTML = currentState.claims.map((c, i) => `
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 0.8rem; color: var(--text-muted);">Claim ${c.claim_id} (Evidence: ${c.evidence_ids.join(', ')}):</label>
+            <textarea id="edit_claim_${i}" rows="2" style="width: 100%; margin-top: 4px;">${c.text}</textarea>
+          </div>
+        `).join('');
+      }
+    }
+
+    function promptResearchMore() {
+      const pane = document.getElementById('feedbackPane');
+      pane.style.display = pane.style.display === 'block' ? 'none' : 'block';
+      document.getElementById('editPane').style.display = 'none';
+    }
+
+    async function submitReview(action) {
+      if (!activeThreadId) return;
+      const feedback = document.getElementById('feedbackInput').value.trim() || null;
+      try {
+        const res = await fetch(`/api/research/${activeThreadId}/resume`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, feedback })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        setStatus('resuming');
+        document.getElementById('hitlSection').style.display = 'none';
+      } catch (err) {
+        alert('Resume action failed: ' + err.message);
+      }
+    }
+
+    async function submitEditedClaims() {
+      if (!activeThreadId || !currentState || !currentState.claims) return;
+      const edited_claims = currentState.claims.map((c, i) => ({
+        claim_id: c.claim_id,
+        text: document.getElementById(`edit_claim_${i}`).value.trim(),
+        evidence_ids: c.evidence_ids
+      }));
+
+      try {
+        const res = await fetch(`/api/research/${activeThreadId}/resume`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'edit', edited_claims })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        setStatus('resuming');
+        document.getElementById('hitlSection').style.display = 'none';
+        document.getElementById('editPane').style.display = 'none';
+      } catch (err) {
+        alert('Failed to submit edited claims: ' + err.message);
+      }
+    }
+
+    function confirmReject() {
+      if (confirm('Are you sure you want to reject this research? This is a terminal action.')) {
+        submitReview('reject');
+      }
+    }
+  </script>
+</body>
+</html>
