@@ -78,17 +78,29 @@ class AgentEvent(BaseModel):
 | Event Type | Emitting Component | Trigger Condition | Payload Data (`data`) |
 |---|---|---|---|
 | `run_started` | `ResearchService` | Initiation of research run. | `{"question": str}` |
-| `node_started` | `ResearchService` | Graph node begins execution. | `{"node": str}` |
-| `node_completed` | `ResearchService` | Graph node finishes execution step. | Summary output dictionary. |
+| `node_started` | `ResearchService` | Graph or worker node begins execution. | `{"node": str, "message": str}` |
+| `node_completed` | `ResearchService` | Graph or worker node finishes execution step. | Summary output dictionary. |
 | `supervisor_decision`| `SupervisorNode` | Supervisor selects next worker. | `{"step": int, "next_worker": str, "reasoning": str}` |
-| `research_update` | `ResearchSubgraph`| Researcher/analyst updates state. | `{"sources_count": int, "claims_count": int}` |
+| `research_update` | `ResearchSubgraph`| Researcher gathers sources. | `{"sources_count": int, "claims_count": int}` |
 | `source_found` | `ResearcherNode` | Search client discovers new source. | `{"source_id": str, "title": str, "url": str}` |
-| `verification_update`| `VerifierNode` | Verifier produces claim verdicts. | `{"verification_results": [...], "count": int}` |
+| `analysis_update` | `AnalystNode` | Analyst extracts atomic claims & findings. | `{"claims_count": int, "findings_count": int}` |
+| `critic_update` | `CriticNode` | Critic evaluates research quality & gaps. | `{"critique": {...}, "quality_score": float}` |
+| `verification_update`| `VerifierNode` | Verifier evaluates claim against evidence. | `{"claim": {...}, "count": int}` |
+| `retry` | `ReliabilityLayer`| Transient network/rate-limit error retry. | `{"attempt": int, "delay": float, "error": str}` |
 | `human_review_required`| `HumanReviewNode`| Graph hits `interrupt()` review gate. | Review payload: claims, evidence, verification. |
 | `human_review_resumed` | `HumanReviewNode`| Human submits resume action. | `{"action": str, "feedback": str \| None}` |
 | `run_completed` | `SupervisorNode` | Graph halts at finish (`COMPLETED`). | `{"termination_reason": "COMPLETED"}` |
 | `run_failed` | `ResearchService` | Exception raised during execution. | `{"error": str}` (sanitized error message) |
 | `run_rejected` | `SupervisorNode` | Reviewer rejects research (`REJECTED`).| `{"reason": str, "feedback": str \| None}` |
+
+---
+
+## 3.1 Real-Time Streaming Bridge Queue
+
+To prevent synchronous batching where events only arrive after the whole graph completes, `ResearchService` implements an asynchronous bridge queue (`asyncio.Queue`):
+- Background worker thread executes `graph.stream(...)` and subgraph invocations.
+- ContextVar-based event emitter (`emit_live_event`) pushes events immediately via `loop.call_soon_threadsafe(queue.put_nowait, ...)`.
+- Async generator in FastAPI yields SSE events with sub-millisecond latency as each worker node progresses.
 
 ---
 

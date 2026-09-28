@@ -5,7 +5,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.2+-green.svg)](https://github.com/langchain-ai/langgraph)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg)](https://fastapi.tiangolo.com/)
-[![Tests](https://img.shields.io/badge/tests-328%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-331%20passing-brightgreen.svg)]()
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ---
@@ -349,7 +349,7 @@ Open your browser to:
 
 ## 17. Running Tests & Evaluations
 
-### Run Complete Test Suite (328 tests)
+### Run Complete Test Suite (331 tests)
 
 ```bash
 uv run pytest
