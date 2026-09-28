@@ -175,8 +175,8 @@ class TestSupervisorDecisionSchema:
     """Test suite verifying SupervisorDecision schema validation and rejection of invalid workers."""
 
     def test_valid_supervisor_decisions_accepted(self):
-        """Valid worker names 'research', 'verify', 'human_review', and 'finish' are accepted."""
-        for worker in ("research", "verify", "human_review", "finish"):
+        """Valid worker names 'research', 'verify', 'human_review', 'writer', and 'finish' are accepted."""
+        for worker in ("research", "verify", "human_review", "writer", "finish"):
             decision = SupervisorDecision(
                 next_worker=worker,
                 reasoning=f"Valid decision routing to {worker}.",
@@ -186,7 +186,7 @@ class TestSupervisorDecisionSchema:
 
     def test_invalid_worker_names_rejected(self):
         """Arbitrary worker names such as 'search_web', 'foo', or 'random_agent' are strictly rejected."""
-        invalid_names = ["search_web", "random_agent", "foo", "writer", "summarize"]
+        invalid_names = ["search_web", "random_agent", "foo", "planner", "summarize"]
         for bad_name in invalid_names:
             with pytest.raises(ValidationError):
                 SupervisorDecision(

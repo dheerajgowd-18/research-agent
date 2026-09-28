@@ -561,3 +561,67 @@ async def test_unknown_thread_id_returns_404(test_app):
         assert res.status_code == 404
         assert "not found" in res.json()["detail"].lower()
 
+
+@pytest.mark.anyio
+async def test_full_lifecycle_with_writer_via_api(mock_pipeline):
+    """End-to-end API verification with Writer node enabled."""
+    checkpointer = MemorySaver()
+    graph = create_supervisor_graph(
+        custom_subgraph=mock_pipeline["subgraph"],
+        custom_verifier=mock_pipeline["verifier"],
+        checkpointer=checkpointer,
+        enable_writer=True,
+    )
+    app = create_app(graph=graph, checkpointer=checkpointer)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        # 1. Start research run
+        start_res = await client.post("/api/research", json={"question": "What are enterprise RAG risks?"})
+        assert start_res.status_code == 202
+        tid = start_res.json()["thread_id"]
+
+        # 2. Stream until human review required
+        hitl_reached = False
+        async with client.stream("GET", f"/api/research/{tid}/stream") as stream:
+            async for line in stream.aiter_lines():
+                if line.startswith("data: "):
+                    evt = json.loads(line[6:])
+                    if evt["event_type"] == "human_review_required":
+                        hitl_reached = True
+                        break
+        assert hitl_reached is True
+
+        # 3. Resume with approve action
+        resume_res = await client.post(
+            f"/api/research/{tid}/resume",
+            json={"action": "approve"},
+        )
+        assert resume_res.status_code == 202
+
+        # 4. Stream until completion and collect events
+        writer_events = []
+        completed = False
+        async with client.stream("GET", f"/api/research/{tid}/stream") as stream:
+            async for line in stream.aiter_lines():
+                if line.startswith("data: "):
+                    evt = json.loads(line[6:])
+                    if evt["event_type"] == "writer_update":
+                        writer_events.append(evt)
+                    elif evt["event_type"] == "run_completed":
+                        completed = True
+                        break
+
+        assert completed is True
+        assert len(writer_events) >= 1
+
+        # 5. Query state and check final_response
+        state_res = await client.get(f"/api/research/{tid}")
+        assert state_res.status_code == 200
+        state = state_res.json()
+        assert state["status"] == "completed"
+        assert state["final_response"] is not None
+        final_rep = state["final_response"]
+        assert "enterprise rag" in final_rep["title"].lower()
+        assert len(final_rep["citations"]) >= 1
+        assert "[1]" in final_rep["answer"]
+
