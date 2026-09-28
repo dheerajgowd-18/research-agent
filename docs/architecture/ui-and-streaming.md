@@ -213,7 +213,74 @@ The user interface explicitly surfaces evidential grounding rather than presenti
 
 ---
 
-## 9. Limitations & Known Tradeoffs
+## 10. Interactive LangGraph Architecture Visualizer Engine
+
+The Architecture Visualizer tab embeds an interactive node-and-edge workflow graph representing the real underlying LangGraph topology and its stateful execution.
+
+### 10.1 Real Backend Graph Topology
+
+The visualizer directly models the actual compiled LangGraph state machine:
+
+```mermaid
+flowchart LR
+    Start([START]) --> Supervisor[SUPERVISOR]
+    
+    subgraph SubgraphCluster ["RESEARCH SUBGRAPH (Encapsulated LangGraph Cycle)"]
+        Researcher[RESEARCHER] --> Analyst[ANALYST]
+        Analyst --> Critic[CRITIC]
+        Critic -. "score < 0.8" .-> Researcher
+    end
+    
+    Supervisor --> Researcher
+    Critic -. "score >= 0.8" .-> Supervisor
+    Supervisor --> Verifier[VERIFIER]
+    Verifier --> Supervisor
+    Supervisor --> HumanReview[HUMAN REVIEW]
+    
+    HumanReview -->|"approve"| Writer[WRITER]
+    HumanReview -->|"edit"| Writer
+    HumanReview -->|"research_more"| Supervisor
+    HumanReview -->|"reject"| Rejected([REJECTED])
+    
+    Writer --> FinalResponse[FINAL RESPONSE]
+    FinalResponse --> EndNode([END])
+```
+
+### 10.2 Subgraph Collapse & Expansion
+- **Collapsed View (Default)**: Renders `RESEARCH SUBGRAPH` as an atomic unit with role subtitle, status badge, and iteration count pill.
+- **Expanded View**: Expands into an encapsulated cluster containing `RESEARCHER` (web search & evidence), `ANALYST` (atomic claim distillation), and `CRITIC` (coverage & quality evaluation). Visually renders the conditional feedback loop edge (`CRITIC -> RESEARCHER`) and cycle counters.
+
+### 10.3 Dual View Modes
+- **System Architecture Mode**: Displays the complete state machine with all possible routing paths. Previously executed edges are marked in forest green (`edge-completed`).
+- **Live Execution Mode**: High-contrast execution tracing. The active node pulses in primary blue, active edge transitions stream data particles, and unvisited routing branches are muted (`edge-muted`).
+
+### 10.4 Canvas Controls & MiniMap
+- **Pan & Zoom**: Mouse-drag canvas panning and wheel zoom focused towards mouse cursor (0.35x to 2.5x).
+- **Fit View & Reset**: Automatically calculates bounding box scaling across both collapsed (1750px) and expanded (2250px) modes.
+- **MiniMap**: Live synchronized 170x90px overview canvas with a dynamic viewport rectangle tracking the current pan/zoom position.
+
+### 10.5 Active Edge Particle Animation
+When a transition occurs (e.g. `supervisor_decision` routing to `verifier`), an SVG data particle (`<circle class="data-particle">`) executes SMIL motion interpolation along the cubic Bézier curve (`<animateMotion>`), giving immediate physical feedback of token and data flow.
+
+### 10.6 Deep Node Inspector Drawer
+Clicking any node opens a slide-over inspection sheet detailing:
+1. **Node Metadata**: Formal title, LangGraph role, description, and status badge (`QUEUED`, `RUNNING`, `COMPLETED`, `WAITING`, `SKIPPED`, `FAILED`).
+2. **Execution Micro-Metrics**:
+   - `SUPERVISOR`: Step counter (`1 / 8`), routing decision, decision reasoning.
+   - `RESEARCHER`: Iteration index, source count, search query angles.
+   - `ANALYST`: Distilled claim count, extracted findings count, Pydantic schema validation.
+   - `CRITIC`: Quality score (0.0 to 1.0), missing aspects, loop recommendation.
+   - `VERIFIER`: Grounding distribution (Supported / Partial / Unsupported) and confidence percentage.
+   - `HUMAN REVIEW`: Review action, human cycle count (`1 / 3`), reviewer guidance.
+   - `WRITER`: Verified claims used, citations created, and strict invariant indicator (**New factual claims introduced = 0**).
+   - `FINAL RESPONSE`: Title, delivery status, works cited count.
+3. **Architectural Invariants Checklist**: Verifiable contracts guaranteed by the system architecture.
+4. **State Payload Inspector**: Formatted JSON viewer of the node's state with a single-click copy button.
+
+---
+
+## 11. Limitations & Known Tradeoffs
 
 1. **Single-Worker Event Buffering**: The in-memory event buffer per thread is scoped to the active application process. In multi-instance cluster deployments, an external message bus (e.g. Redis Pub/Sub) would be required to broadcast SSE across replicas.
 2. **Static SPA Packaging**: The single-page UI is embedded directly as vanilla HTML5/CSS/JavaScript without external build pipelines (Vite/Webpack) to ensure seamless zero-dependency deployment and offline operation.
+

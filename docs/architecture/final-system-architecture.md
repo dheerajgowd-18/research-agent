@@ -319,7 +319,7 @@ The comprehensive system evaluation benchmark (`data/system_eval.json`) executed
 | **Mean Supervisor Steps** | 4.53 steps |
 | **Claim-Level Verifier Accuracy** | 100.0% |
 | **Claim-Level Verifier Macro-F1**| 1.0000 |
-| **Total Test Suite** | 328 passing unit, integration, and production tests |
+| **Total Test Suite** | 347 passing unit, integration, and production tests |
 
 ---
 

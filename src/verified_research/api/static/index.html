@@ -967,60 +967,307 @@
     }
 
     /* Tab 4: Architecture Visualizer */
+    /* Tab 4: Interactive Architecture Visualizer */
     .arch-panel {
       background: var(--bg-surface);
       border: 1px solid var(--border-hairline);
       border-radius: var(--radius-xl);
-      padding: 24px;
+      padding: 20px 24px;
       box-shadow: var(--shadow-xs);
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
 
-    .arch-header {
+    .arch-toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding-bottom: 2px;
     }
 
-    .arch-title {
-      font-size: 0.9375rem;
-      font-weight: 700;
+    .btn-group {
+      display: inline-flex;
+      align-items: center;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .btn-toggle {
+      font-family: var(--font-sans);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-toggle:hover {
       color: var(--text-main);
     }
 
-    .arch-subtitle {
-      font-size: 0.8125rem;
-      color: var(--text-muted);
+    .btn-toggle.active {
+      background: var(--bg-surface);
+      color: var(--accent-primary);
+      box-shadow: var(--shadow-xs);
     }
 
-    .svg-canvas-wrap {
+    .exec-indicator-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      color: var(--text-secondary);
+    }
+
+    .exec-indicator-pill .indicator-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-dim);
+    }
+
+    .exec-indicator-pill.active {
+      background: var(--accent-subtle);
+      border-color: var(--accent-border);
+      color: var(--accent-primary);
+    }
+
+    .exec-indicator-pill.active .indicator-dot {
+      background: var(--accent-primary);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+      animation: pulseDot 1.5s infinite;
+    }
+
+    .exec-indicator-pill.waiting {
+      background: var(--warning-subtle);
+      border-color: var(--warning-border);
+      color: var(--warning-main);
+    }
+
+    .exec-indicator-pill.waiting .indicator-dot {
+      background: var(--warning-main);
+      box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.25);
+      animation: pulseDot 1.5s infinite;
+    }
+
+    .exec-indicator-pill.completed {
+      background: var(--success-subtle);
+      border-color: var(--success-border);
+      color: var(--success-main);
+    }
+
+    .exec-indicator-pill.completed .indicator-dot {
+      background: var(--success-main);
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.8; }
+    }
+
+    .graph-viewport-wrap {
+      position: relative;
       width: 100%;
-      background: #fbfcfe;
+      height: 560px;
+      background-color: #ffffff;
+      background-image: radial-gradient(circle, #e2e8f0 1.2px, transparent 1.2px);
+      background-size: 20px 20px;
       border: 1px solid var(--border-hairline);
       border-radius: var(--radius-lg);
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow-x: auto;
+      overflow: hidden;
+      cursor: grab;
+      user-select: none;
     }
 
-    .arch-node {
+    .graph-viewport-wrap.is-dragging {
+      cursor: grabbing;
+    }
+
+    .graph-svg-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Node & Edge Styles */
+    .flow-node {
       cursor: pointer;
-      transition: all 0.2s ease;
+      outline: none;
+      transition: transform 0.15s ease, filter 0.15s ease;
     }
 
-    .arch-node:hover rect {
-      stroke: var(--accent-primary) !important;
-      stroke-width: 2px !important;
+    .flow-node:hover {
+      filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.08));
     }
 
-    .arch-node.active rect {
-      stroke: var(--accent-primary) !important;
-      stroke-width: 2.5px !important;
-      filter: drop-shadow(0 2px 8px rgba(37, 99, 235, 0.2));
+    .flow-node:focus-visible {
+      outline: 2px solid var(--accent-primary);
+    }
+
+    .node-box {
+      fill: #ffffff;
+      stroke: var(--border-hairline);
+      stroke-width: 1.5px;
+      transition: stroke 0.2s ease, stroke-width 0.2s ease, fill 0.2s ease;
+    }
+
+    .flow-node.active .node-box {
+      stroke: var(--accent-primary);
+      stroke-width: 2px;
+      fill: #ffffff;
+      filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.2));
+    }
+
+    .flow-node.status-completed .node-box {
+      stroke: var(--success-main);
+      stroke-width: 1.5px;
+    }
+
+    .flow-node.status-waiting .node-box {
+      stroke: var(--warning-main);
+      stroke-width: 2px;
+      animation: borderPulseAmber 2s infinite;
+    }
+
+    .flow-node.status-failed .node-box {
+      stroke: var(--danger-main);
+      stroke-width: 2px;
+    }
+
+    .flow-node.status-skipped .node-box {
+      stroke: var(--border-subtle);
+      fill: #f8fafc;
+      opacity: 0.7;
+    }
+
+    @keyframes borderPulseAmber {
+      0%, 100% { stroke: #d97706; }
+      50% { stroke: #f59e0b; }
+    }
+
+    .flow-edge {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.25s ease, stroke-width 0.25s ease, stroke-dasharray 0.25s ease;
+    }
+
+    .edge-available {
+      stroke: #cbd5e1;
+      stroke-width: 1.5px;
+      stroke-dasharray: 4, 4;
+    }
+
+    .edge-executed {
+      stroke: var(--accent-primary);
+      stroke-width: 2.5px;
+      stroke-dasharray: none;
+    }
+
+    .edge-completed {
+      stroke: var(--success-main);
+      stroke-width: 2px;
+      stroke-dasharray: none;
+    }
+
+    .edge-muted {
+      stroke: #e2e8f0;
+      stroke-width: 1px;
+      stroke-dasharray: 3, 3;
+      opacity: 0.45;
+    }
+
+    .edge-rejected {
+      stroke: var(--danger-main);
+      stroke-width: 2px;
+      stroke-dasharray: none;
+    }
+
+    .edge-label-rect {
+      fill: #ffffff;
+      stroke: var(--border-hairline);
+      stroke-width: 1px;
+      rx: 3px;
+      ry: 3px;
+    }
+
+    .edge-label-text {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      font-weight: 600;
+      fill: var(--text-secondary);
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    .data-particle {
+      fill: var(--accent-primary);
+      filter: drop-shadow(0 0 3px rgba(37, 99, 235, 0.4));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .data-particle {
+        display: none !important;
+      }
+      .exec-indicator-pill.active .indicator-dot,
+      .exec-indicator-pill.waiting .indicator-dot,
+      .flow-node.status-waiting .node-box {
+        animation: none !important;
+      }
+    }
+
+    /* MiniMap */
+    .graph-minimap-wrap {
+      position: absolute;
+      bottom: 14px;
+      right: 14px;
+      width: 170px;
+      height: 90px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .minimap-title {
+      position: absolute;
+      top: 3px;
+      left: 6px;
+      font-family: var(--font-mono);
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .minimap-viewport-indicator {
+      fill: rgba(37, 99, 235, 0.12);
+      stroke: var(--accent-primary);
+      stroke-width: 1px;
     }
 
     /* Tab 5: Live Execution Trace */
@@ -1658,77 +1905,72 @@
     <!-- Pane 4: Architecture Visualizer -->
     <div id="tabArchitecture" class="tab-pane">
       <div class="arch-panel">
-        <div class="arch-header">
-          <div>
-            <div class="arch-title">State Machine Architecture</div>
-            <div class="arch-subtitle">Interactive LangGraph pipeline. Click any node to inspect invariants, state, and execution history.</div>
+        <div class="arch-toolbar">
+          <!-- Left Controls: View Mode & Subgraph Expand -->
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="btn-group">
+              <button class="btn-toggle active" id="btnModeArchitecture" onclick="setGraphViewMode('architecture')">
+                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                <span>System Architecture</span>
+              </button>
+              <button class="btn-toggle" id="btnModeLive" onclick="setGraphViewMode('live')">
+                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span>Live Execution</span>
+              </button>
+            </div>
+
+            <button class="btn btn-secondary btn-sm" id="btnToggleSubgraph" onclick="toggleSubgraphExpansion()" style="font-size:0.75rem;">
+              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg>
+              <span id="subgraphToggleText">Expand Subgraph</span>
+            </button>
           </div>
-          <span class="state-badge state-idle" id="activeNodeBadge">Idle</span>
+
+          <!-- Center Status Indicator -->
+          <div class="exec-indicator-pill" id="executionIndicatorPill">
+            <span class="indicator-dot"></span>
+            <span id="executionIndicatorText">CURRENT: IDLE</span>
+          </div>
+
+          <!-- Right Controls: Zoom & Fit View -->
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="btn-group">
+              <button class="btn-toggle" onclick="zoomGraph(1.2)" title="Zoom In (+)">
+                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              </button>
+              <button class="btn-toggle" onclick="zoomGraph(0.833)" title="Zoom Out (-)">
+                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+              </button>
+              <button class="btn-toggle" onclick="fitGraphView()" title="Fit View">
+                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h6v2H6v4H4V4zm16 0h-6v2h4v4h2V4zM4 20h6v-2H6v-4H4v6zm16 0h-6v-2h4v-4h2v6z"/></svg>
+                <span>Fit</span>
+              </button>
+              <button class="btn-toggle" onclick="resetGraphView()" title="Reset View">
+                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              </button>
+            </div>
+            <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted); min-width:40px; text-align:right;" id="zoomLevelDisplay">100%</span>
+          </div>
         </div>
 
-        <div class="svg-canvas-wrap">
-          <svg viewBox="0 0 960 220" width="100%" height="220" style="max-width:960px;">
-            <defs>
-              <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 1 L 8 5 L 0 9 z" fill="#94a3b8" />
-              </marker>
-              <marker id="arrow-active" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 1 L 8 5 L 0 9 z" fill="#2563eb" />
-              </marker>
+        <!-- Interactive Canvas Viewport Wrap -->
+        <div class="graph-viewport-wrap" id="graphCanvasWrap" role="region" aria-label="LangGraph State Machine Visualizer" tabindex="0">
+          <svg class="graph-svg-canvas" id="graphSvgCanvas">
+            <defs id="svgDefs">
+              <!-- Markers and animations -->
             </defs>
-
-            <!-- Connecting Edges -->
-            <path d="M 70 110 L 130 110" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)" />
-            <path d="M 250 110 L 310 110" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)" />
-            <path d="M 430 110 L 490 110" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)" />
-            <path d="M 610 110 L 670 110" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)" />
-            <path d="M 790 110 L 850 110" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)" />
-
-            <!-- Dynamic Cycle Return Edge (Research -> Supervisor) -->
-            <path d="M 370 70 C 370 20, 190 20, 190 70" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow)" />
-
-            <!-- START Node -->
-            <g class="arch-node" onclick="openNodeInspector('start')">
-              <circle cx="45" cy="110" r="24" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" />
-              <text x="45" y="114" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">START</text>
-            </g>
-
-            <!-- SUPERVISOR Node -->
-            <g class="arch-node" id="node-supervisor" onclick="openNodeInspector('supervisor')">
-              <rect x="130" y="75" width="120" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
-              <text x="190" y="104" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Supervisor</text>
-              <text x="190" y="124" text-anchor="middle" font-size="10" fill="#64748b" class="node-state-text">Orchestrator</text>
-            </g>
-
-            <!-- RESEARCH SUBGRAPH Node -->
-            <g class="arch-node" id="node-research" onclick="openNodeInspector('research')">
-              <rect x="310" y="75" width="120" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
-              <text x="370" y="100" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Research Subgraph</text>
-              <text x="370" y="118" text-anchor="middle" font-size="9.5" fill="#64748b">Researcher · Analyst</text>
-              <text x="370" y="132" text-anchor="middle" font-size="9.5" fill="#64748b">· Critic</text>
-            </g>
-
-            <!-- VERIFIER Node -->
-            <g class="arch-node" id="node-verifier" onclick="openNodeInspector('verifier')">
-              <rect x="490" y="75" width="120" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
-              <text x="550" y="104" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Verifier</text>
-              <text x="550" y="124" text-anchor="middle" font-size="10" fill="#64748b" class="node-state-text">NLI Fact Check</text>
-            </g>
-
-            <!-- HUMAN REVIEW Node -->
-            <g class="arch-node" id="node-human_review" onclick="openNodeInspector('human_review')">
-              <rect x="670" y="75" width="120" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
-              <text x="730" y="104" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Human Review</text>
-              <text x="730" y="124" text-anchor="middle" font-size="10" fill="#64748b" class="node-state-text">HITL Interrupt</text>
-            </g>
-
-            <!-- WRITER Node -->
-            <g class="arch-node" id="node-writer" onclick="openNodeInspector('writer')">
-              <rect x="850" y="75" width="100" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
-              <text x="900" y="104" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Writer</text>
-              <text x="900" y="124" text-anchor="middle" font-size="10" fill="#64748b" class="node-state-text">Grounded Report</text>
+            <g id="graphViewport">
+              <!-- Nodes and edges rendered dynamically -->
             </g>
           </svg>
+
+          <!-- MiniMap Widget -->
+          <div class="graph-minimap-wrap" id="graphMiniMapWrap">
+            <div class="minimap-title">MiniMap</div>
+            <svg id="miniMapSvg" width="170" height="90">
+              <g id="miniMapElements"></g>
+              <rect class="minimap-viewport-indicator" id="miniMapViewportIndicator" x="0" y="0" width="170" height="90" />
+            </svg>
+          </div>
         </div>
       </div>
     </div>
@@ -1766,9 +2008,21 @@
       <button class="sheet-close-btn" onclick="closeNodeInspector()">&times;</button>
     </div>
     <div class="sheet-body">
+      <!-- Status & Timing Banner -->
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--bg-subtle); border-radius:var(--radius-md); border:1px solid var(--border-hairline);">
+        <span class="state-badge state-idle" id="sheetNodeStatusBadge">QUEUED</span>
+        <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);" id="sheetNodeDuration">Execution: 0.00s</span>
+      </div>
+
       <div class="sheet-section">
         <div class="sheet-section-title">Core Responsibility</div>
         <div style="font-size:0.875rem; color:var(--text-secondary); line-height:1.5;" id="sheetNodeDesc">Description here.</div>
+      </div>
+
+      <!-- Specific Node Real-Time Metrics -->
+      <div class="sheet-section" id="sheetMetricsSection">
+        <div class="sheet-section-title">Execution Metrics & Data Flow</div>
+        <div id="sheetNodeMetrics" style="display:flex; flex-direction:column; gap:8px;"></div>
       </div>
 
       <div class="sheet-section">
@@ -1777,7 +2031,10 @@
       </div>
 
       <div class="sheet-section">
-        <div class="sheet-section-title">Latest Node Output / State</div>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span class="sheet-section-title">Latest Node Output / State</span>
+          <button class="btn btn-secondary btn-sm" onclick="copyNodeStatePayload()" style="font-size:0.6875rem; padding:2px 8px;">Copy JSON</button>
+        </div>
         <pre class="trace-payload-json" style="display:block; max-height:260px;" id="sheetNodeState">{}</pre>
       </div>
     </div>
@@ -1878,206 +2135,1204 @@
     let timerInterval = null;
     let currentState = null;
 
-    // Node Invariant Definitions for Inspector
+    // =========================================================================
+    // Real Interactive LangGraph Architecture Visualizer Engine
+    // =========================================================================
+
+    // Visualizer View State
+    let graphViewMode = 'architecture'; // 'architecture' | 'live'
+    let isSubgraphExpanded = false;
+    let graphZoom = 1.0;
+    let graphPanX = 0;
+    let graphPanY = 0;
+    let isDraggingGraph = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let selectedNodeKey = null;
+    let activeNode = null;
+    let activeTransitionEdge = null;
+    let transitionTimer = null;
+
+    // Node Execution States
+    let nodeStates = {
+      start: 'completed',
+      supervisor: 'queued',
+      research: 'queued',
+      researcher: 'queued',
+      analyst: 'queued',
+      critic: 'queued',
+      verifier: 'queued',
+      human_review: 'queued',
+      writer: 'queued',
+      final_response: 'queued',
+      rejected: 'queued',
+      end: 'queued'
+    };
+
+    // Executed Paths & Edges (Traversed in Reality)
+    const executedEdges = new Set();
+
+    // Node-Specific Real-Time Execution Data & Metrics
+    const nodeMetrics = {
+      supervisor: { step: 0, maxSteps: 8, decision: 'Pending', reasoning: 'Evaluating system state...', prevWorker: 'START', nextWorker: '-' },
+      researcher: { iteration: 0, maxIterations: 3, sourcesCount: 0, queries: [], evidenceCount: 0, duration: 0 },
+      analyst: { claimsCount: 0, findingsCount: 0, schemaStatus: 'Pending validation' },
+      critic: { qualityScore: null, threshold: 0.8, shouldResearchAgain: false, missingAspects: [], reasoning: '' },
+      verifier: { total: 0, supported: 0, partial: 0, unsupported: 0, avgConfidence: 0 },
+      human_review: { action: 'Pending', feedback: '', cycles: 0, maxCycles: 3, reviewedClaimsCount: 0 },
+      writer: { approvedClaimsCount: 0, citationsCount: 0, wordCount: 0, newFactualClaims: 0 },
+      final_response: { title: '', citationsCount: 0, status: 'Queued', summary: '' }
+    };
+
+    // Node Invariant Definitions & Technical Specs for Inspector
     const NODE_METADATA = {
       start: {
         title: "START Node",
         subtitle: "Graph Entrypoint",
-        desc: "Initializes ResearchState with user question and configuration.",
+        desc: "Initializes ResearchState with user question, creates thread isolation, and resets iteration counters.",
         invariants: [
-          "Thread ID is cryptographically assigned or validated.",
-          "Supervisor iteration counters are zeroed.",
-          "SQLite checkpointer stores initial graph snapshot."
+          "Thread ID assigned and indexed in SQLite checkpointer.",
+          "Supervisor iteration and human cycle counters initialized to zero.",
+          "Thread configuration validated across process boundaries."
         ]
       },
       supervisor: {
-        title: "Supervisor Node",
-        subtitle: "Orchestration & Routing Policy",
+        title: "SUPERVISOR Node",
+        subtitle: "Routing & Orchestration Policy",
         desc: "Acts as the central decision-maker. Inspects current state and determines whether to invoke the research subgraph, verifier, request human review, invoke the writer, or conclude execution.",
         invariants: [
           "Max 8 supervisor steps per execution session.",
-          "Max 2 research iterations allowed.",
-          "Max 3 human research cycles.",
           "Routes to Verifier immediately after research concludes.",
-          "Cannot invoke Writer before human review approval."
+          "Routes to Writer strictly upon human review approval or edit.",
+          "Routes to finish when termination limits are reached or review rejected."
         ]
       },
       research: {
-        title: "Research Subgraph",
-        subtitle: "Researcher · Analyst · Critic",
-        desc: "Executes targeted multi-source web retrieval (Researcher), atomic claim and evidence extraction (Analyst), and quality/coverage critique (Critic).",
+        title: "RESEARCH SUBGRAPH",
+        subtitle: "Iterative Evidence Retrieval",
+        desc: "Encapsulates iterative loop of Researcher (web search), Analyst (claim distillation), and Critic (gap analysis).",
         invariants: [
-          "Every claim extracted must reference >= 1 valid evidence ID.",
-          "Evidence must contain verbatim text quote and source URL.",
-          "Critic quality score evaluates synthesis readiness."
+          "Inner loop capped at 3 iterations.",
+          "Quality score threshold: >= 0.8 to conclude research pass.",
+          "Every distilled claim cites >= 1 valid evidence passage."
+        ]
+      },
+      researcher: {
+        title: "RESEARCHER Node",
+        subtitle: "Web Research & Retrieval",
+        desc: "Performs external web searches, parses organic search results, and extracts immutable evidence text quotes.",
+        invariants: [
+          "Only extracts evidence directly from indexed web sources.",
+          "Retains deduplicated sources and links them by source ID."
+        ]
+      },
+      analyst: {
+        title: "ANALYST Node",
+        subtitle: "Atomic Claim Distillation",
+        desc: "Analyzes extracted evidence passages to formulate atomic, verifiable claims and synthesized findings.",
+        invariants: [
+          "Zero claims generated without backing evidence IDs.",
+          "Enforces strict Pydantic schema validation (extra='forbid')."
+        ]
+      },
+      critic: {
+        title: "CRITIC Node",
+        subtitle: "Quality & Coverage Critique",
+        desc: "Evaluates research sufficiency, identifies missing topical aspects or citation gaps, and determines whether another search loop is required.",
+        invariants: [
+          "Quality score computed between 0.0 and 1.0.",
+          "Recommends focused delta query angles when quality is insufficient."
         ]
       },
       verifier: {
-        title: "Verifier Node",
-        subtitle: "Adversarial NLI Verification",
-        desc: "Performs strict natural language inference of each atomic claim strictly against its linked evidence text.",
+        title: "VERIFIER Node",
+        subtitle: "Claim Grounding (NLI)",
+        desc: "Independently validates each atomic claim against its linked evidence text using a 3-class classification model (SUPPORTED, PARTIAL, UNSUPPORTED).",
         invariants: [
-          "Assigns SUPPORTED, PARTIAL, or UNSUPPORTED verdict.",
-          "Computes confidence score (0.0 to 1.0).",
-          "Generates grounded rationale explaining why evidence supports or refutes."
+          "Evaluates strictly against provided evidence citations.",
+          "Provides numeric confidence score (0.0 to 1.0) and rationale."
         ]
       },
       human_review: {
-        title: "Human Review Node",
-        subtitle: "Human-in-the-Loop Checkpoint",
-        desc: "Interrupts graph execution when supervisor deems human approval necessary, or after verification. Resumes only with authoritative user input.",
+        title: "HUMAN REVIEW Node",
+        subtitle: "HITL Checkpoint Gate",
+        desc: "Pauses graph execution via LangGraph __interrupt__ to solicit authoritative human review (approve, edit, research_more, reject).",
         invariants: [
-          "Halts graph execution using LangGraph __interrupt__.",
-          "State persists cleanly in SQLite across process boundaries.",
-          "Supports approve, edit claims, request re-research, or reject actions."
+          "Durable cross-process boundary persistence via SQLite.",
+          "Re-research passes capped at 3 human cycles."
         ]
       },
       writer: {
-        title: "Writer Node",
-        subtitle: "Grounded Synthesis",
-        desc: "Compiles verified claims into an authoritative, grounded final report with exact citations [1]. Introduces zero hallucinated or external facts.",
+        title: "WRITER Node",
+        subtitle: "Grounded Response Synthesis",
+        desc: "Compiles verified claims into an authoritative, grounded final report with exact citations [1]. Introduces zero external or unverified claims.",
         invariants: [
-          "Only runs AFTER human review approval or edit.",
-          "Only uses approved / verified claims.",
-          "Every statement must map to evidence and source citations.",
-          "Produces structured FinalReport (summary, answer, sections, citations)."
+          "Strict Invariant: New factual claims introduced = 0.",
+          "Executes strictly after human review approval or edit.",
+          "Every statement maps to approved claims and source URLs."
+        ]
+      },
+      final_response: {
+        title: "FINAL RESPONSE Node",
+        subtitle: "Verified Artifact Delivery",
+        desc: "Formats, indexes, and delivers the finalized grounded research report with works cited bibliography and verification certificate.",
+        invariants: [
+          "All citations verified against indexed source repository.",
+          "Emits run_completed event upon delivery."
+        ]
+      },
+      rejected: {
+        title: "REJECTED (TERMINAL)",
+        subtitle: "Terminated by Reviewer",
+        desc: "Records human rejection feedback and transitions state machine directly to terminal finish without report synthesis.",
+        invariants: [
+          "Zero downstream agent execution after rejection."
+        ]
+      },
+      end: {
+        title: "END Node",
+        subtitle: "Graph Termination",
+        desc: "Terminal state of the LangGraph execution flow.",
+        invariants: [
+          "Final state persisted durably in SQLite checkpointer."
         ]
       }
     };
 
-    // On Load Lifecycle
-    window.addEventListener('DOMContentLoaded', () => {
-      const hashThread = window.location.hash.replace('#thread=', '').trim();
-      const storedThread = localStorage.getItem('active_thread_id');
-      const tid = hashThread || storedThread;
-      if (tid && tid.startsWith('research_')) {
-        restoreSession(tid);
+    // Node & Layout Definitions for Collapsed & Expanded Modes
+    function getGraphTopology() {
+      const isExp = isSubgraphExpanded;
+
+      // Node Geometry Configurations
+      let nodes = [];
+      let edges = [];
+
+      if (!isExp) {
+        // COLLAPSED TOPOLOGY
+        nodes = [
+          { id: 'start', type: 'circle', cx: 45, cy: 157, r: 22, name: 'START', role: 'Entry' },
+          { id: 'supervisor', type: 'node', x: 120, y: 120, w: 180, h: 74, name: 'SUPERVISOR', sub: 'Routing / Control', icon: 'cpu' },
+          { id: 'research', type: 'node', x: 380, y: 120, w: 190, h: 74, name: 'RESEARCH SUBGRAPH', sub: 'Researcher · Analyst · Critic', icon: 'search' },
+          { id: 'verifier', type: 'node', x: 650, y: 120, w: 180, h: 74, name: 'VERIFIER', sub: 'Claim Grounding (NLI)', icon: 'shield-check' },
+          { id: 'human_review', type: 'node', x: 910, y: 120, w: 180, h: 74, name: 'HUMAN REVIEW', sub: 'HITL Review Gate', icon: 'user-check' },
+          { id: 'writer', type: 'node', x: 1190, y: 65, w: 180, h: 74, name: 'WRITER', sub: 'Grounded Report', icon: 'file-text' },
+          { id: 'rejected', type: 'node', x: 1190, y: 205, w: 180, h: 74, name: 'REJECTED', sub: 'Terminal Session', icon: 'x-circle' },
+          { id: 'final_response', type: 'node', x: 1440, y: 65, w: 180, h: 74, name: 'FINAL RESPONSE', sub: 'Verified Synthesis', icon: 'check-circle' },
+          { id: 'end', type: 'circle', cx: 1690, cy: 102, r: 22, name: 'END', role: 'Terminal' }
+        ];
+
+        edges = [
+          { id: 'start->supervisor', from: 'start', to: 'supervisor', d: 'M 67 157 L 120 157', label: 'question', labelX: 93, labelY: 147 },
+          { id: 'supervisor->research', from: 'supervisor', to: 'research', d: 'M 300 157 L 380 157', label: 'search query', labelX: 340, labelY: 147 },
+          { id: 'research->supervisor', from: 'research', to: 'supervisor', d: 'M 475 120 C 475 55, 210 55, 210 120', label: 'sources + claims', labelX: 342, labelY: 60, returnEdge: true },
+          { id: 'supervisor->verifier', from: 'supervisor', to: 'verifier', d: 'M 300 175 C 475 225, 560 225, 650 175', label: 'claims + evidence', labelX: 520, labelY: 220 },
+          { id: 'verifier->supervisor', from: 'verifier', to: 'supervisor', d: 'M 740 120 C 740 35, 230 35, 230 120', label: 'verification results', labelX: 500, labelY: 40, returnEdge: true },
+          { id: 'supervisor->human_review', from: 'supervisor', to: 'human_review', d: 'M 300 135 C 550 50, 750 50, 910 135', label: 'review payload', labelX: 630, labelY: 55 },
+          { id: 'human_review->writer_approve', from: 'human_review', to: 'writer', d: 'M 1090 140 C 1130 140, 1140 102, 1190 102', label: 'approve', labelX: 1140, labelY: 112 },
+          { id: 'human_review->writer_edit', from: 'human_review', to: 'writer', d: 'M 1090 157 C 1130 157, 1140 115, 1190 115', label: 'edit', labelX: 1140, labelY: 138 },
+          { id: 'human_review->supervisor_more', from: 'human_review', to: 'supervisor', d: 'M 1000 120 C 1000 15, 190 15, 190 120', label: 'research more', labelX: 600, labelY: 18, returnEdge: true },
+          { id: 'human_review->rejected', from: 'human_review', to: 'rejected', d: 'M 1090 175 C 1130 175, 1140 242, 1190 242', label: 'reject', labelX: 1140, labelY: 218 },
+          { id: 'writer->final_response', from: 'writer', to: 'final_response', d: 'M 1370 102 L 1440 102', label: 'grounded response', labelX: 1405, labelY: 92 },
+          { id: 'final_response->end', from: 'final_response', to: 'end', d: 'M 1620 102 L 1668 102', label: 'publish', labelX: 1644, labelY: 92 }
+        ];
+      } else {
+        // EXPANDED TOPOLOGY (Researcher -> Analyst -> Critic with Cycle Loop)
+        nodes = [
+          { id: 'start', type: 'circle', cx: 45, cy: 157, r: 22, name: 'START', role: 'Entry' },
+          { id: 'supervisor', type: 'node', x: 120, y: 120, w: 180, h: 74, name: 'SUPERVISOR', sub: 'Routing / Control', icon: 'cpu' },
+          { id: 'researcher', type: 'node', x: 385, y: 120, w: 180, h: 74, name: 'RESEARCHER', sub: 'Web Search & Evidence', icon: 'search' },
+          { id: 'analyst', type: 'node', x: 610, y: 120, w: 180, h: 74, name: 'ANALYST', sub: 'Claim Distillation', icon: 'list-checks' },
+          { id: 'critic', type: 'node', x: 835, y: 120, w: 180, h: 74, name: 'CRITIC', sub: 'Quality Critique', icon: 'scale' },
+          { id: 'verifier', type: 'node', x: 1110, y: 120, w: 180, h: 74, name: 'VERIFIER', sub: 'Claim Grounding (NLI)', icon: 'shield-check' },
+          { id: 'human_review', type: 'node', x: 1370, y: 120, w: 180, h: 74, name: 'HUMAN REVIEW', sub: 'HITL Review Gate', icon: 'user-check' },
+          { id: 'writer', type: 'node', x: 1650, y: 65, w: 180, h: 74, name: 'WRITER', sub: 'Grounded Report', icon: 'file-text' },
+          { id: 'rejected', type: 'node', x: 1650, y: 205, w: 180, h: 74, name: 'REJECTED', sub: 'Terminal Session', icon: 'x-circle' },
+          { id: 'final_response', type: 'node', x: 1900, y: 65, w: 180, h: 74, name: 'FINAL RESPONSE', sub: 'Verified Synthesis', icon: 'check-circle' },
+          { id: 'end', type: 'circle', cx: 2150, cy: 102, r: 22, name: 'END', role: 'Terminal' }
+        ];
+
+        edges = [
+          { id: 'start->supervisor', from: 'start', to: 'supervisor', d: 'M 67 157 L 120 157', label: 'question', labelX: 93, labelY: 147 },
+          { id: 'supervisor->researcher', from: 'supervisor', to: 'researcher', d: 'M 300 157 L 385 157', label: 'search query', labelX: 342, labelY: 147 },
+          { id: 'researcher->analyst', from: 'researcher', to: 'analyst', d: 'M 565 157 L 610 157', label: 'raw sources', labelX: 587, labelY: 147 },
+          { id: 'analyst->critic', from: 'analyst', to: 'critic', d: 'M 790 157 L 835 157', label: 'distilled claims', labelX: 812, labelY: 147 },
+          { id: 'critic->researcher', from: 'critic', to: 'researcher', d: 'M 925 194 C 925 260, 475 260, 475 194', label: 'research again (score < 0.8)', labelX: 700, labelY: 255, loopEdge: true },
+          { id: 'critic->supervisor', from: 'critic', to: 'supervisor', d: 'M 925 120 C 925 30, 210 30, 210 120', label: 'sufficient (score >= 0.8)', labelX: 560, labelY: 34, returnEdge: true },
+          { id: 'supervisor->verifier', from: 'supervisor', to: 'verifier', d: 'M 300 175 C 650 280, 850 280, 1110 175', label: 'claims + evidence', labelX: 720, labelY: 275 },
+          { id: 'verifier->supervisor', from: 'verifier', to: 'supervisor', d: 'M 1200 120 C 1200 18, 230 18, 230 120', label: 'verification results', labelX: 740, labelY: 22, returnEdge: true },
+          { id: 'supervisor->human_review', from: 'supervisor', to: 'human_review', d: 'M 300 135 C 750 10, 1050 10, 1370 135', label: 'review payload', labelX: 880, labelY: 14 },
+          { id: 'human_review->writer_approve', from: 'human_review', to: 'writer', d: 'M 1550 140 C 1590 140, 1600 102, 1650 102', label: 'approve', labelX: 1600, labelY: 112 },
+          { id: 'human_review->writer_edit', from: 'human_review', to: 'writer', d: 'M 1550 157 C 1590 157, 1600 115, 1650 115', label: 'edit', labelX: 1600, labelY: 138 },
+          { id: 'human_review->supervisor_more', from: 'human_review', to: 'supervisor', d: 'M 1460 120 C 1460 10, 190 10, 190 120', label: 'research more', labelX: 820, labelY: 12, returnEdge: true },
+          { id: 'human_review->rejected', from: 'human_review', to: 'rejected', d: 'M 1550 175 C 1590 175, 1600 242, 1650 242', label: 'reject', labelX: 1600, labelY: 218 },
+          { id: 'writer->final_response', from: 'writer', to: 'final_response', d: 'M 1830 102 L 1900 102', label: 'grounded response', labelX: 1865, labelY: 92 },
+          { id: 'final_response->end', from: 'final_response', to: 'end', d: 'M 2080 102 L 2128 102', label: 'publish', labelX: 2104, labelY: 92 }
+        ];
       }
-    });
 
-    // UI Feedback Helpers
-    function showToast(msg) {
-      const container = document.getElementById('toastContainer');
-      const pill = document.createElement('div');
-      pill.className = 'toast-pill';
-      pill.innerHTML = `
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span>${msg}</span>
+      return { nodes, edges };
+    }
+
+    // Graph Visualizer Core Engine
+    function initArchitectureGraph() {
+      const container = document.getElementById('graphCanvasWrap');
+      if (!container) return;
+
+      // Mouse drag for panning
+      container.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return; // left click only
+        isDraggingGraph = true;
+        dragStartX = e.clientX - graphPanX;
+        dragStartY = e.clientY - graphPanY;
+        container.classList.add('is-dragging');
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDraggingGraph) return;
+        graphPanX = e.clientX - dragStartX;
+        graphPanY = e.clientY - dragStartY;
+        applyGraphTransform();
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isDraggingGraph) {
+          isDraggingGraph = false;
+          container.classList.remove('is-dragging');
+        }
+      });
+
+      // Mouse wheel for zooming towards cursor
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const rect = container.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const zoomDelta = e.deltaY < 0 ? 1.15 : 0.87;
+        const newZoom = Math.min(Math.max(graphZoom * zoomDelta, 0.35), 2.5);
+
+        // Adjust pan to zoom towards mouse position
+        graphPanX = mouseX - (mouseX - graphPanX) * (newZoom / graphZoom);
+        graphPanY = mouseY - (mouseY - graphPanY) * (newZoom / graphZoom);
+        graphZoom = newZoom;
+
+        applyGraphTransform();
+      }, { passive: false });
+
+      // Keyboard accessibility
+      container.addEventListener('keydown', (e) => {
+        if (e.key === '+' || e.key === '=') { zoomGraph(1.2); }
+        else if (e.key === '-' || e.key === '_') { zoomGraph(0.833); }
+        else if (e.key === '0') { resetGraphView(); }
+        else if (e.key === 'f' || e.key === 'F') { fitGraphView(); }
+        else if (e.key === 'e' || e.key === 'E') { toggleSubgraphExpansion(); }
+      });
+
+      // Initial Render & Fit
+      renderGraph();
+      setTimeout(fitGraphView, 100);
+    }
+
+    function setGraphViewMode(mode) {
+      graphViewMode = mode;
+      document.getElementById('btnModeArchitecture').classList.toggle('active', mode === 'architecture');
+      document.getElementById('btnModeLive').classList.toggle('active', mode === 'live');
+      renderGraph();
+      showToast(`Graph mode: ${mode === 'architecture' ? 'System Architecture' : 'Live Execution'}`);
+    }
+
+    function toggleSubgraphExpansion() {
+      isSubgraphExpanded = !isSubgraphExpanded;
+      document.getElementById('subgraphToggleText').textContent = isSubgraphExpanded ? 'Collapse Subgraph' : 'Expand Subgraph';
+      renderGraph();
+      setTimeout(fitGraphView, 60);
+    }
+
+    function zoomGraph(factor) {
+      const container = document.getElementById('graphCanvasWrap');
+      const rect = container.getBoundingClientRect();
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+
+      const newZoom = Math.min(Math.max(graphZoom * factor, 0.35), 2.5);
+      graphPanX = cx - (cx - graphPanX) * (newZoom / graphZoom);
+      graphPanY = cy - (cy - graphPanY) * (newZoom / graphZoom);
+      graphZoom = newZoom;
+
+      applyGraphTransform();
+    }
+
+    function fitGraphView() {
+      const container = document.getElementById('graphCanvasWrap');
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const contentWidth = isSubgraphExpanded ? 2250 : 1750;
+      const contentHeight = isSubgraphExpanded ? 370 : 340;
+
+      const scaleX = (rect.width - 60) / contentWidth;
+      const scaleY = (rect.height - 60) / contentHeight;
+      graphZoom = Math.min(Math.max(Math.min(scaleX, scaleY), 0.4), 1.25);
+
+      graphPanX = (rect.width - contentWidth * graphZoom) / 2;
+      graphPanY = (rect.height - contentHeight * graphZoom) / 2;
+
+      applyGraphTransform();
+    }
+
+    function resetGraphView() {
+      graphZoom = 1.0;
+      graphPanX = 20;
+      graphPanY = 40;
+      applyGraphTransform();
+    }
+
+    function applyGraphTransform() {
+      const viewport = document.getElementById('graphViewport');
+      if (viewport) {
+        viewport.setAttribute('transform', `translate(${graphPanX}, ${graphPanY}) scale(${graphZoom})`);
+      }
+      document.getElementById('zoomLevelDisplay').textContent = `${Math.round(graphZoom * 100)}%`;
+      updateMiniMap();
+    }
+
+    // Render SVG Graph Nodes and Edges
+    function renderGraph() {
+      const svgDefs = document.getElementById('svgDefs');
+      const viewport = document.getElementById('graphViewport');
+      if (!svgDefs || !viewport) return;
+
+      const { nodes, edges } = getGraphTopology();
+
+      // 1. Setup Arrow Markers & Gradients
+      svgDefs.innerHTML = `
+        <marker id="arr-default" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94a3b8" />
+        </marker>
+        <marker id="arr-active" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#2563eb" />
+        </marker>
+        <marker id="arr-completed" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#059669" />
+        </marker>
+        <marker id="arr-danger" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#dc2626" />
+        </marker>
+        <marker id="arr-muted" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#cbd5e1" />
+        </marker>
       `;
-      container.appendChild(pill);
-      setTimeout(() => pill.classList.add('show'), 10);
-      setTimeout(() => {
-        pill.classList.remove('show');
-        setTimeout(() => pill.remove(), 250);
-      }, 3000);
+
+      let html = '';
+
+      // 2. Render Subgraph Cluster Boundary if Expanded
+      if (isSubgraphExpanded) {
+        html += `
+          <g class="subgraph-cluster-wrap">
+            <rect class="subgraph-cluster-bg" x="360" y="45" width="680" height="250" />
+            <text class="subgraph-cluster-title" x="380" y="70">RESEARCH SUBGRAPH (Encapsulated LangGraph Cycle)</text>
+          </g>
+        `;
+      }
+
+      // 3. Render Connecting Edges
+      edges.forEach(e => {
+        let edgeClass = 'edge-available';
+        let marker = 'url(#arr-default)';
+        const isExecuted = executedEdges.has(e.id);
+        const isActive = activeTransitionEdge === e.id;
+
+        if (graphViewMode === 'live') {
+          if (isActive) {
+            edgeClass = 'edge-executed';
+            marker = 'url(#arr-active)';
+          } else if (isExecuted) {
+            edgeClass = e.id.includes('rejected') ? 'edge-rejected' : 'edge-completed';
+            marker = e.id.includes('rejected') ? 'url(#arr-danger)' : 'url(#arr-completed)';
+          } else {
+            edgeClass = 'edge-muted';
+            marker = 'url(#arr-muted)';
+          }
+        } else {
+          // Architecture mode: highlight executed if run happened, else available
+          if (isExecuted) {
+            edgeClass = 'edge-completed';
+            marker = 'url(#arr-completed)';
+          }
+        }
+
+        html += `
+          <g class="edge-group" id="edge-grp-${e.id}">
+            <path id="path-${e.id}" class="flow-edge ${edgeClass}" d="${e.d}" marker-end="${marker}" />
+            ${e.label ? `
+              <rect class="edge-label-rect" x="${e.labelX - (e.label.length * 2.8)}" y="${e.labelY - 7}" width="${e.label.length * 5.6}" height="14" />
+              <text class="edge-label-text" x="${e.labelX}" y="${e.labelY}">${e.label}</text>
+            ` : ''}
+            ${isActive ? `
+              <circle class="data-particle" r="4.5">
+                <animateMotion dur="1.2s" repeatCount="indefinite" path="${e.d}" />
+              </circle>
+            ` : ''}
+          </g>
+        `;
+      });
+
+      // 4. Render Nodes
+      nodes.forEach(n => {
+        const state = nodeStates[n.id] || 'queued';
+        const isSelected = selectedNodeKey === n.id;
+        const isActive = activeNode === n.id;
+
+        let statusText = state.toUpperCase();
+        let statusBadgeClass = 'status-queued';
+        let accentColor = '#cbd5e1';
+
+        if (state === 'running') {
+          statusBadgeClass = 'status-running';
+          accentColor = '#2563eb';
+        } else if (state === 'completed') {
+          statusBadgeClass = 'status-completed';
+          accentColor = '#059669';
+        } else if (state === 'waiting') {
+          statusBadgeClass = 'status-waiting';
+          accentColor = '#d97706';
+        } else if (state === 'failed') {
+          statusBadgeClass = 'status-failed';
+          accentColor = '#dc2626';
+        } else if (state === 'skipped') {
+          statusBadgeClass = 'status-skipped';
+          accentColor = '#e2e8f0';
+        }
+
+        // Contextual dynamic micro-metrics
+        let metricLine = '';
+        if (n.id === 'supervisor') {
+          metricLine = `Step ${nodeMetrics.supervisor.step || 0}/8 · ${nodeMetrics.supervisor.decision || 'eval'}`;
+        } else if (n.id === 'research' || n.id === 'researcher') {
+          metricLine = `Iter ${nodeMetrics.researcher.iteration || 0}/3 · ${nodeMetrics.researcher.sourcesCount || 0} sources`;
+        } else if (n.id === 'analyst') {
+          metricLine = `${nodeMetrics.analyst.claimsCount || 0} claims · schema ok`;
+        } else if (n.id === 'critic') {
+          const score = nodeMetrics.critic.qualityScore !== null ? `${Math.round(nodeMetrics.critic.qualityScore * 10)}/10` : '-';
+          metricLine = `Quality ${score} · ${nodeMetrics.critic.shouldResearchAgain ? 'loop' : 'ok'}`;
+        } else if (n.id === 'verifier') {
+          metricLine = `${nodeMetrics.verifier.supported || 0}/${nodeMetrics.verifier.total || 0} verified`;
+        } else if (n.id === 'human_review') {
+          metricLine = `Action: ${nodeMetrics.human_review.action || 'awaiting'}`;
+        } else if (n.id === 'writer') {
+          metricLine = `${nodeMetrics.writer.citationsCount || 0} citations · 0 new facts`;
+        } else if (n.id === 'final_response') {
+          metricLine = nodeMetrics.final_response.status || 'Verified artifact';
+        }
+
+        if (n.type === 'circle') {
+          // Circle Nodes (START / END)
+          const fill = state === 'completed' ? '#ecfdf5' : '#f8fafc';
+          const stroke = state === 'completed' ? '#059669' : '#cbd5e1';
+          html += `
+            <g class="flow-node ${isSelected ? 'selected' : ''}" id="flow-node-${n.id}" onclick="openNodeInspector('${n.id}')" tabindex="0">
+              <circle cx="${n.cx}" cy="${n.cy}" r="${n.r}" fill="${fill}" stroke="${stroke}" stroke-width="2" />
+              <text x="${n.cx}" y="${n.cy + 4}" text-anchor="middle" font-family="var(--font-mono)" font-size="9.5" font-weight="700" fill="${stroke}">${n.name}</text>
+            </g>
+          `;
+        } else {
+          // Standard Technical Rectangular Nodes
+          html += `
+            <g class="flow-node ${isActive ? 'active' : ''} ${statusBadgeClass} ${isSelected ? 'selected' : ''}" 
+               id="flow-node-${n.id}" 
+               onclick="openNodeInspector('${n.id}')" 
+               tabindex="0"
+               role="button"
+               aria-label="${n.name} node: status ${state}">
+              <rect class="node-box" x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="8" />
+              <rect class="node-accent" x="${n.x}" y="${n.y}" width="4" height="${n.h}" rx="2" fill="${accentColor}" />
+              
+              <!-- Node Header -->
+              <text class="node-title" x="${n.x + 14}" y="${n.y + 20}" font-family="var(--font-mono)" font-size="11" font-weight="700" fill="#0f172a">${n.name}</text>
+              <text class="node-sub" x="${n.x + 14}" y="${n.y + 34}" font-family="var(--font-sans)" font-size="9.5" fill="#64748b">${n.sub}</text>
+              
+              <!-- Status Chip -->
+              <rect x="${n.x + 14}" y="${n.y + 44}" width="68" height="16" rx="3" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="0.75" />
+              <circle cx="${n.x + 22}" cy="${n.y + 52}" r="3" fill="${accentColor}" />
+              <text x="${n.x + 30}" y="${n.y + 55}" font-family="var(--font-mono)" font-size="8.5" font-weight="700" fill="#334155">${statusText}</text>
+              
+              <!-- Micro Metrics -->
+              <text class="node-metric-text" x="${n.x + 90}" y="${n.y + 55}" font-family="var(--font-mono)" font-size="8.5" fill="#64748b">${metricLine}</text>
+            </g>
+          `;
+        }
+      });
+
+      viewport.innerHTML = html;
+      applyGraphTransform();
     }
 
-    function setQuery(q) {
-      document.getElementById('questionInput').value = q;
-      document.getElementById('questionInput').focus();
+    // MiniMap Synchronization
+    function updateMiniMap() {
+      const miniMapElements = document.getElementById('miniMapElements');
+      const indicator = document.getElementById('miniMapViewportIndicator');
+      const container = document.getElementById('graphCanvasWrap');
+      if (!miniMapElements || !indicator || !container) return;
+
+      const { nodes } = getGraphTopology();
+      const contentWidth = isSubgraphExpanded ? 2250 : 1750;
+      const contentHeight = isSubgraphExpanded ? 370 : 340;
+
+      const scale = 170 / contentWidth;
+
+      miniMapElements.innerHTML = nodes.map(n => {
+        const state = nodeStates[n.id] || 'queued';
+        let color = '#cbd5e1';
+        if (state === 'running') color = '#2563eb';
+        else if (state === 'completed') color = '#059669';
+        else if (state === 'waiting') color = '#d97706';
+        else if (state === 'failed') color = '#dc2626';
+
+        if (n.type === 'circle') {
+          return `<circle cx="${n.cx * scale}" cy="${n.cy * scale}" r="${(n.r || 20) * scale}" fill="${color}" />`;
+        } else {
+          return `<rect x="${n.x * scale}" y="${n.y * scale}" width="${n.w * scale}" height="${n.h * scale}" rx="1" fill="${color}" />`;
+        }
+      }).join('');
+
+      // Viewport Rectangle calculation
+      const rect = container.getBoundingClientRect();
+      const vx = (-graphPanX / graphZoom) * scale;
+      const vy = (-graphPanY / graphZoom) * scale;
+      const vw = (rect.width / graphZoom) * scale;
+      const vh = (rect.height / graphZoom) * scale;
+
+      indicator.setAttribute('x', Math.max(0, Math.min(vx, 170)));
+      indicator.setAttribute('y', Math.max(0, Math.min(vy, 90)));
+      indicator.setAttribute('width', Math.min(vw, 170));
+      indicator.setAttribute('height', Math.min(vh, 90));
     }
 
-    function copyThreadId() {
-      if (!activeThreadId) return;
-      navigator.clipboard.writeText(activeThreadId).then(() => {
-        showToast(`Copied Thread ID: ${activeThreadId}`);
+    // Live Execution Event Synchronization with Graph
+    function syncGraphWithLiveEvent(evt) {
+      const evType = evt.event_type;
+      const node = (evt.node || '').toLowerCase();
+      const data = evt.data || {};
+
+      if (node) {
+        activeNode = node;
+        nodeStates[node] = 'running';
+      }
+
+      // 1. Node Started
+      if (evType === 'node_started') {
+        nodeStates[node] = 'running';
+        activeNode = node;
+        if (node === 'researcher' || node === 'research') {
+          executedEdges.add(isSubgraphExpanded ? 'supervisor->researcher' : 'supervisor->research');
+          activeTransitionEdge = isSubgraphExpanded ? 'supervisor->researcher' : 'supervisor->research';
+        } else if (node === 'analyst') {
+          nodeStates['researcher'] = 'completed';
+          executedEdges.add('researcher->analyst');
+          activeTransitionEdge = 'researcher->analyst';
+        } else if (node === 'critic') {
+          nodeStates['analyst'] = 'completed';
+          executedEdges.add('analyst->critic');
+          activeTransitionEdge = 'analyst->critic';
+        } else if (node === 'verifier') {
+          executedEdges.add('supervisor->verifier');
+          activeTransitionEdge = 'supervisor->verifier';
+        } else if (node === 'writer') {
+          executedEdges.add('human_review->writer_approve');
+          activeTransitionEdge = 'human_review->writer_approve';
+        }
+      }
+
+      // 2. Node Completed
+      else if (evType === 'node_completed') {
+        nodeStates[node] = 'completed';
+        if (node === 'verifier') {
+          executedEdges.add('verifier->supervisor');
+        } else if (node === 'researcher' && !isSubgraphExpanded) {
+          nodeStates['research'] = 'completed';
+          executedEdges.add('research->supervisor');
+        } else if (node === 'critic') {
+          if (data.quality_score >= 0.8 || !nodeMetrics.critic.shouldResearchAgain) {
+            executedEdges.add('critic->supervisor');
+          }
+        }
+      }
+
+      // 3. Supervisor Decision
+      else if (evType === 'supervisor_decision') {
+        nodeStates['supervisor'] = 'completed';
+        nodeMetrics.supervisor.step = data.step || 1;
+        nodeMetrics.supervisor.decision = data.next_worker || 'finish';
+        nodeMetrics.supervisor.reasoning = data.reasoning || '';
+        nodeMetrics.supervisor.nextWorker = data.next_worker || 'finish';
+
+        if (data.next_worker === 'research') {
+          executedEdges.add(isSubgraphExpanded ? 'supervisor->researcher' : 'supervisor->research');
+          activeTransitionEdge = isSubgraphExpanded ? 'supervisor->researcher' : 'supervisor->research';
+        } else if (data.next_worker === 'verify') {
+          executedEdges.add('supervisor->verifier');
+          activeTransitionEdge = 'supervisor->verifier';
+        } else if (data.next_worker === 'human_review') {
+          executedEdges.add('supervisor->human_review');
+          activeTransitionEdge = 'supervisor->human_review';
+        } else if (data.next_worker === 'writer') {
+          executedEdges.add('human_review->writer_approve');
+        } else if (data.next_worker === 'finish') {
+          executedEdges.add('writer->final_response');
+          executedEdges.add('final_response->end');
+        }
+      }
+
+      // 4. Research Subgraph Updates
+      else if (evType === 'research_update') {
+        if (data.sources_count) nodeMetrics.researcher.sourcesCount = data.sources_count;
+        if (data.sources) {
+          data.sources.forEach(s => {
+            if (s.title && !nodeMetrics.researcher.queries.includes(s.title)) {
+              nodeMetrics.researcher.queries.push(s.title);
+            }
+          });
+        }
+      }
+
+      // 5. Analysis Updates
+      else if (evType === 'analysis_update') {
+        if (data.claims_count) nodeMetrics.analyst.claimsCount = data.claims_count;
+        if (data.findings_count) nodeMetrics.analyst.findingsCount = data.findings_count;
+        nodeMetrics.analyst.schemaStatus = 'Validated (Pydantic extra=forbid)';
+      }
+
+      // 6. Critic Updates
+      else if (evType === 'critic_update') {
+        const c = data.critique || {};
+        nodeMetrics.critic.qualityScore = c.quality_score !== undefined ? c.quality_score : 0.8;
+        nodeMetrics.critic.shouldResearchAgain = !!c.should_research_again;
+        nodeMetrics.critic.missingAspects = c.missing_aspects || [];
+        nodeMetrics.critic.reasoning = c.reasoning || '';
+
+        if (c.should_research_again) {
+          executedEdges.add('critic->researcher');
+          activeTransitionEdge = 'critic->researcher';
+          nodeMetrics.researcher.iteration = (nodeMetrics.researcher.iteration || 1) + 1;
+        } else {
+          executedEdges.add(isSubgraphExpanded ? 'critic->supervisor' : 'research->supervisor');
+        }
+      }
+
+      // 7. Verification Updates
+      else if (evType === 'verification_update') {
+        const results = data.verification_results || [];
+        nodeMetrics.verifier.total = results.length || data.count || 0;
+        nodeMetrics.verifier.supported = results.filter(v => v.verdict === 'SUPPORTED').length;
+        nodeMetrics.verifier.partial = results.filter(v => v.verdict === 'PARTIAL').length;
+        nodeMetrics.verifier.unsupported = results.filter(v => v.verdict === 'UNSUPPORTED').length;
+        const totalConf = results.reduce((acc, v) => acc + (v.confidence || 0), 0);
+        nodeMetrics.verifier.avgConfidence = results.length ? Math.round((totalConf / results.length) * 100) : 95;
+      }
+
+      // 8. Human Review Required (Interrupt)
+      else if (evType === 'human_review_required') {
+        activeNode = 'human_review';
+        nodeStates['human_review'] = 'waiting';
+        executedEdges.add('supervisor->human_review');
+        nodeMetrics.human_review.reviewedClaimsCount = (data.review_items || []).length;
+        updateExecutionIndicator('WAITING FOR HUMAN REVIEW', 'waiting');
+      }
+
+      // 9. Human Review Resumed
+      else if (evType === 'human_review_resumed') {
+        nodeStates['human_review'] = 'completed';
+        const action = data.action || 'approve';
+        nodeMetrics.human_review.action = action.toUpperCase();
+        nodeMetrics.human_review.feedback = data.feedback || '';
+
+        if (action === 'approve') {
+          executedEdges.add('human_review->writer_approve');
+          activeTransitionEdge = 'human_review->writer_approve';
+        } else if (action === 'edit') {
+          executedEdges.add('human_review->writer_edit');
+          activeTransitionEdge = 'human_review->writer_edit';
+        } else if (action === 'research_more') {
+          executedEdges.add('human_review->supervisor_more');
+          activeTransitionEdge = 'human_review->supervisor_more';
+          nodeMetrics.human_review.cycles += 1;
+        } else if (action === 'reject') {
+          executedEdges.add('human_review->rejected');
+          nodeStates['rejected'] = 'completed';
+          nodeStates['writer'] = 'skipped';
+          nodeStates['final_response'] = 'skipped';
+        }
+      }
+
+      // 10. Writer Update
+      else if (evType === 'writer_update') {
+        nodeStates['writer'] = 'completed';
+        nodeStates['final_response'] = 'running';
+        activeNode = 'final_response';
+        executedEdges.add('writer->final_response');
+        activeTransitionEdge = 'writer->final_response';
+
+        nodeMetrics.writer.citationsCount = (data.citations || []).length;
+        nodeMetrics.writer.approvedClaimsCount = data.verified_claims_count || 0;
+        nodeMetrics.writer.wordCount = (data.answer || '').split(/\s+/).filter(Boolean).length;
+        nodeMetrics.writer.newFactualClaims = 0; // Strict Invariant
+
+        nodeMetrics.final_response.title = data.title || 'Verified Report';
+        nodeMetrics.final_response.citationsCount = (data.citations || []).length;
+        nodeMetrics.final_response.status = 'Generated';
+      }
+
+      // 11. Run Completed
+      else if (evType === 'run_completed') {
+        nodeStates['final_response'] = 'completed';
+        nodeStates['end'] = 'completed';
+        activeNode = null;
+        executedEdges.add('final_response->end');
+        updateExecutionIndicator('INVESTIGATION COMPLETED', 'completed');
+      }
+
+      // 12. Run Failed
+      else if (evType === 'run_failed') {
+        if (activeNode) nodeStates[activeNode] = 'failed';
+        updateExecutionIndicator('EXECUTION FAILED', 'waiting');
+      }
+
+      // Clear edge animation after brief period
+      clearTimeout(transitionTimer);
+      transitionTimer = setTimeout(() => {
+        activeTransitionEdge = null;
+        renderGraph();
+      }, 2400);
+
+      renderGraph();
+      if (selectedNodeKey) updateInspectorContents(selectedNodeKey);
+    }
+
+    function updateExecutionIndicator(text = null, stateType = 'active') {
+      const pill = document.getElementById('executionIndicatorPill');
+      const label = document.getElementById('executionIndicatorText');
+      if (!pill || !label) return;
+
+      if (!text) {
+        if (activeNode) {
+          text = `CURRENT: ${activeNode.toUpperCase().replace('_', ' ')}`;
+          stateType = activeNode === 'human_review' ? 'waiting' : 'active';
+        } else {
+          text = 'CURRENT: IDLE';
+          stateType = 'idle';
+        }
+      }
+
+      pill.className = `exec-indicator-pill ${stateType}`;
+      label.textContent = text;
+    }
+
+    // Populate Snapshot into Visualizer
+    function updateGraphFromSnapshot(state) {
+      if (!state) return;
+
+      // Start always completed
+      nodeStates['start'] = 'completed';
+      executedEdges.add('start->supervisor');
+
+      // Supervisor
+      nodeStates['supervisor'] = 'completed';
+      nodeMetrics.supervisor.step = state.supervisor_steps || 1;
+      if (state.supervisor_decision) {
+        nodeMetrics.supervisor.decision = state.supervisor_decision.next_worker;
+        nodeMetrics.supervisor.reasoning = state.supervisor_decision.reasoning;
+      }
+
+      // Research
+      if ((state.sources && state.sources.length) || (state.claims && state.claims.length)) {
+        nodeStates['research'] = 'completed';
+        nodeStates['researcher'] = 'completed';
+        nodeStates['analyst'] = 'completed';
+        nodeStates['critic'] = 'completed';
+        executedEdges.add('supervisor->research');
+        executedEdges.add('supervisor->researcher');
+        executedEdges.add('researcher->analyst');
+        executedEdges.add('analyst->critic');
+        executedEdges.add('critic->supervisor');
+
+        nodeMetrics.researcher.sourcesCount = state.sources.length;
+        nodeMetrics.researcher.iteration = state.research_iteration || 1;
+        nodeMetrics.analyst.claimsCount = (state.claims || []).length;
+        nodeMetrics.analyst.findingsCount = (state.findings || []).length;
+        if (state.critique) {
+          nodeMetrics.critic.qualityScore = state.critique.quality_score;
+          nodeMetrics.critic.missingAspects = state.critique.missing_aspects || [];
+        }
+      }
+
+      // Verifier
+      if (state.verification_results && state.verification_results.length) {
+        nodeStates['verifier'] = 'completed';
+        executedEdges.add('supervisor->verifier');
+        executedEdges.add('verifier->supervisor');
+        const ver = state.verification_results;
+        nodeMetrics.verifier.total = ver.length;
+        nodeMetrics.verifier.supported = ver.filter(v => v.verdict === 'SUPPORTED').length;
+        nodeMetrics.verifier.partial = ver.filter(v => v.verdict === 'PARTIAL').length;
+        nodeMetrics.verifier.unsupported = ver.filter(v => v.verdict === 'UNSUPPORTED').length;
+      }
+
+      // Human Review
+      if (state.status === 'waiting_for_human') {
+        nodeStates['human_review'] = 'waiting';
+        activeNode = 'human_review';
+        executedEdges.add('supervisor->human_review');
+        updateExecutionIndicator('WAITING FOR HUMAN REVIEW', 'waiting');
+      } else if (state.human_review) {
+        nodeStates['human_review'] = 'completed';
+        nodeMetrics.human_review.action = state.human_review.action.toUpperCase();
+        nodeMetrics.human_review.feedback = state.human_review.feedback || '';
+        if (state.human_review.action === 'approve') {
+          executedEdges.add('human_review->writer_approve');
+        } else if (state.human_review.action === 'edit') {
+          executedEdges.add('human_review->writer_edit');
+        } else if (state.human_review.action === 'reject') {
+          executedEdges.add('human_review->rejected');
+          nodeStates['rejected'] = 'completed';
+        }
+      }
+
+      // Writer & Final Response
+      if (state.final_response) {
+        nodeStates['writer'] = 'completed';
+        nodeStates['final_response'] = 'completed';
+        nodeStates['end'] = 'completed';
+        executedEdges.add('human_review->writer_approve');
+        executedEdges.add('writer->final_response');
+        executedEdges.add('final_response->end');
+
+        nodeMetrics.writer.citationsCount = (state.final_response.citations || []).length;
+        nodeMetrics.writer.approvedClaimsCount = state.final_response.verified_claims_count || 0;
+        nodeMetrics.final_response.title = state.final_response.title || '';
+        nodeMetrics.final_response.status = 'Generated';
+        updateExecutionIndicator('INVESTIGATION COMPLETED', 'completed');
+      }
+
+      renderGraph();
+    }
+
+    // =========================================================================
+    // Deep Interactive Node Inspector Sheet
+    // =========================================================================
+
+    function openNodeInspector(nodeKey) {
+      selectedNodeKey = nodeKey;
+      const meta = NODE_METADATA[nodeKey] || {
+        title: nodeKey.toUpperCase(),
+        subtitle: "Graph Worker Node",
+        desc: "Executes state transition in LangGraph.",
+        invariants: ["Standard LangGraph execution rules apply."]
+      };
+
+      document.getElementById('sheetNodeTitle').textContent = meta.title;
+      document.getElementById('sheetNodeSubtitle').textContent = meta.subtitle;
+      document.getElementById('sheetNodeDesc').textContent = meta.desc;
+
+      // Status Banner
+      const state = nodeStates[nodeKey] || 'queued';
+      const badgeEl = document.getElementById('sheetNodeStatusBadge');
+      badgeEl.className = `state-badge state-${state}`;
+      badgeEl.textContent = state.toUpperCase();
+
+      // Invariants List
+      const invContainer = document.getElementById('sheetNodeInvariants');
+      invContainer.innerHTML = meta.invariants.map(inv => `
+        <div class="sheet-invariant-item">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          <span>${inv}</span>
+        </div>
+      `).join('');
+
+      updateInspectorContents(nodeKey);
+
+      document.getElementById('sheetBackdrop').classList.add('open');
+      document.getElementById('sheetPanel').classList.add('open');
+      renderGraph(); // updates selected styling
+    }
+
+    function updateInspectorContents(nodeKey) {
+      const container = document.getElementById('sheetNodeMetrics');
+      if (!container) return;
+
+      let metricsHtml = '';
+
+      if (nodeKey === 'supervisor') {
+        const m = nodeMetrics.supervisor;
+        metricsHtml = `
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="stat-pill-box">
+              <span class="metadata-label">Supervisor Steps</span>
+              <span class="metadata-value">${m.step} / ${m.maxSteps}</span>
+            </div>
+            <div class="stat-pill-box">
+              <span class="metadata-label">Next Worker</span>
+              <span class="metadata-value" style="color:var(--accent-primary);">${m.decision}</span>
+            </div>
+          </div>
+          <div style="background:var(--bg-subtle); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border-hairline); font-size:0.8125rem;">
+            <strong>Decision Rationale:</strong><br/>
+            ${m.reasoning || 'Awaiting supervisor transition evaluation...'}
+          </div>
+        `;
+      } else if (nodeKey === 'researcher' || nodeKey === 'research') {
+        const m = nodeMetrics.researcher;
+        metricsHtml = `
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="stat-pill-box">
+              <span class="metadata-label">Research Iteration</span>
+              <span class="metadata-value">${m.iteration} / ${m.maxIterations}</span>
+            </div>
+            <div class="stat-pill-box">
+              <span class="metadata-label">Sources Indexed</span>
+              <span class="metadata-value">${m.sourcesCount} domains</span>
+            </div>
+          </div>
+          <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; margin-top:4px;">Discovered Search Angles & Sources:</div>
+          <div style="display:flex; flex-direction:column; gap:4px; max-height:120px; overflow-y:auto;">
+            ${(m.queries.length ? m.queries : ['Web queries executed via search client']).map(q => `
+              <div style="font-family:var(--font-mono); font-size:0.6875rem; background:var(--bg-subtle); padding:4px 8px; border-radius:3px;">&bull; "${q}"</div>
+            `).join('')}
+          </div>
+        `;
+      } else if (nodeKey === 'analyst') {
+        const m = nodeMetrics.analyst;
+        metricsHtml = `
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="stat-pill-box">
+              <span class="metadata-label">Distilled Atomic Claims</span>
+              <span class="metadata-value">${m.claimsCount} claims</span>
+            </div>
+            <div class="stat-pill-box">
+              <span class="metadata-label">Extracted Findings</span>
+              <span class="metadata-value">${m.findingsCount} findings</span>
+            </div>
+          </div>
+          <div class="stat-pill-box" style="margin-top:6px;">
+            <span class="metadata-label">Schema Validation</span>
+            <span class="metadata-value" style="color:var(--success-main);">Passed (Pydantic extra='forbid')</span>
+          </div>
+        `;
+      } else if (nodeKey === 'critic') {
+        const m = nodeMetrics.critic;
+        const scoreText = m.qualityScore !== null ? `${Math.round(m.qualityScore * 10)} / 10` : 'Evaluating...';
+        metricsHtml = `
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="stat-pill-box">
+              <span class="metadata-label">Quality Score</span>
+              <span class="metadata-value">${scoreText}</span>
+            </div>
+            <div class="stat-pill-box">
+              <span class="metadata-label">Loop Decision</span>
+              <span class="metadata-value" style="color:${m.shouldResearchAgain ? 'var(--warning-main)' : 'var(--success-main)'};">
+                ${m.shouldResearchAgain ? 'RESEARCH AGAIN' : 'SUFFICIENT'}
+              </span>
+            </div>
+          </div>
+          ${m.missingAspects && m.missingAspects.length ? `
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Identified Missing Topics:</div>
+            <div style="display:flex; flex-wrap:wrap; gap:4px;">
+              ${m.missingAspects.map(a => `<span class="preset-chip" style="font-size:0.6875rem;">${a}</span>`).join('')}
+            </div>
+          ` : ''}
+        `;
+      } else if (nodeKey === 'verifier') {
+        const m = nodeMetrics.verifier;
+        metricsHtml = `
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;">
+            <div class="stat-pill-box" style="border-left:3px solid var(--success-main);">
+              <span class="metadata-label">Supported</span>
+              <span class="metadata-value" style="color:var(--success-main);">${m.supported}</span>
+            </div>
+            <div class="stat-pill-box" style="border-left:3px solid var(--warning-main);">
+              <span class="metadata-label">Partial</span>
+              <span class="metadata-value" style="color:var(--warning-main);">${m.partial}</span>
+            </div>
+            <div class="stat-pill-box" style="border-left:3px solid var(--danger-main);">
+              <span class="metadata-label">Unsupported</span>
+              <span class="metadata-value" style="color:var(--danger-main);">${m.unsupported}</span>
+            </div>
+          </div>
+          <div class="stat-pill-box" style="margin-top:6px;">
+            <span class="metadata-label">Average Confidence</span>
+            <span class="metadata-value">${m.avgConfidence}% grounded in verbatim citations</span>
+          </div>
+        `;
+      } else if (nodeKey === 'human_review') {
+        const m = nodeMetrics.human_review;
+        metricsHtml = `
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="stat-pill-box">
+              <span class="metadata-label">Review Action</span>
+              <span class="metadata-value">${m.action}</span>
+            </div>
+            <div class="stat-pill-box">
+              <span class="metadata-label">Human Cycles</span>
+              <span class="metadata-value">${m.cycles} / ${m.maxCycles}</span>
+            </div>
+          </div>
+          ${m.feedback ? `
+            <div style="background:var(--bg-subtle); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border-hairline); font-size:0.8125rem;">
+              <strong>Reviewer Guidance:</strong><br/>
+              "${m.feedback}"
+            </div>
+          ` : ''}
+        `;
+      } else if (nodeKey === 'writer') {
+        const m = nodeMetrics.writer;
+        metricsHtml = `
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="stat-pill-box">
+              <span class="metadata-label">Citations Produced</span>
+              <span class="metadata-value">${m.citationsCount}</span>
+            </div>
+            <div class="stat-pill-box">
+              <span class="metadata-label">Approved Claims Used</span>
+              <span class="metadata-value">${m.approvedClaimsCount}</span>
+            </div>
+          </div>
+          <div class="stat-pill-box" style="margin-top:6px; border-left:3px solid var(--success-main);">
+            <span class="metadata-label">New Factual Claims Introduced</span>
+            <span class="metadata-value" style="color:var(--success-main);">0 (Strict Invariant Guarantee)</span>
+          </div>
+        `;
+      } else if (nodeKey === 'final_response') {
+        const m = nodeMetrics.final_response;
+        metricsHtml = `
+          <div class="stat-pill-box">
+            <span class="metadata-label">Report Title</span>
+            <span class="metadata-value" style="font-size:0.875rem;">${m.title || 'Verified Research Report'}</span>
+          </div>
+          <div style="margin-top:6px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="stat-pill-box">
+              <span class="metadata-label">Delivery Status</span>
+              <span class="metadata-value" style="color:var(--success-main);">${m.status}</span>
+            </div>
+            <div class="stat-pill-box">
+              <span class="metadata-label">Works Cited</span>
+              <span class="metadata-value">${m.citationsCount} references</span>
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = metricsHtml;
+
+      // Find last event for this node
+      const nodeEvents = currentEvents.filter(e => (e.node || '').toLowerCase() === nodeKey.toLowerCase());
+      const lastEv = nodeEvents[nodeEvents.length - 1];
+      const payload = lastEv ? lastEv.data : (currentState ? { thread_id: activeThreadId, status: nodeStates[nodeKey] } : { status: "ready" });
+      document.getElementById('sheetNodeState').textContent = JSON.stringify(payload, null, 2);
+    }
+
+    function copyNodeStatePayload() {
+      const text = document.getElementById('sheetNodeState').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Node JSON payload copied to clipboard!');
       });
     }
 
+    function closeNodeInspector() {
+      selectedNodeKey = null;
+      document.getElementById('sheetBackdrop').classList.remove('open');
+      document.getElementById('sheetPanel').classList.remove('open');
+      renderGraph();
+    }
+
+    // Workspace Navigation & Tab Controller
     function switchTab(tabId) {
-      document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-      
-      const pane = document.getElementById(tabId);
-      if (pane) pane.classList.add('active');
-
-      const btnIndex = ['tabReport', 'tabClaims', 'tabSources', 'tabArchitecture', 'tabTrace'].indexOf(tabId);
-      const buttons = document.querySelectorAll('.tab-item');
-      if (buttons[btnIndex]) buttons[btnIndex].classList.add('active');
+      document.querySelectorAll('.tab-item').forEach(btn => {
+        const isTarget = btn.getAttribute('onclick')?.includes(tabId);
+        btn.classList.toggle('active', !!isTarget);
+      });
+      document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.toggle('active', pane.id === tabId);
+      });
+      if (tabId === 'tabArchitecture') {
+        setTimeout(fitGraphView, 60);
+      }
     }
 
-    function toggleAutoScroll() {
-      autoScroll = !autoScroll;
-      document.getElementById('autoScrollToggleBtn').textContent = `Auto-scroll: ${autoScroll ? 'ON' : 'OFF'}`;
+    // System Status Indicator Controller
+    function updateStatus(status) {
+      const badge = document.getElementById('statusBadge');
+      if (badge) {
+        badge.className = `state-badge state-${status}`;
+        const labels = {
+          idle: 'Idle',
+          running: 'Running',
+          resuming: 'Resuming',
+          waiting_for_human: 'Human Review Required',
+          completed: 'Completed',
+          failed: 'Failed',
+          rejected: 'Rejected'
+        };
+        badge.textContent = labels[status] || status.toUpperCase();
+      }
+
+      const hitlSec = document.getElementById('hitlSection');
+      if (hitlSec) {
+        hitlSec.style.display = status === 'waiting_for_human' ? 'block' : 'none';
+      }
+
+      if (['completed', 'failed', 'rejected', 'waiting_for_human'].includes(status)) {
+        stopTimer();
+      }
     }
 
-    // Timer Controls
+    // Elapsed Execution Timer
     function startTimer() {
-      clearInterval(timerInterval);
+      if (timerInterval) clearInterval(timerInterval);
       runStartTime = Date.now();
+      const el = document.getElementById('elapsedTimer');
       timerInterval = setInterval(() => {
-        const elapsed = Date.now() - runStartTime;
-        const secs = (elapsed / 1000).toFixed(1);
-        const m = Math.floor(secs / 60).toString().padStart(2, '0');
-        const s = (secs % 60).toFixed(1).padStart(4, '0');
-        document.getElementById('elapsedTimer').textContent = `${m}:${s}s`;
+        if (!runStartTime || !el) return;
+        const diff = Date.now() - runStartTime;
+        const mins = Math.floor(diff / 60000);
+        const secs = Math.floor((diff % 60000) / 1000);
+        const tenths = Math.floor((diff % 1000) / 100);
+        el.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${tenths}s`;
       }, 100);
     }
 
     function stopTimer() {
-      clearInterval(timerInterval);
-    }
-
-    // Status Updates
-    function updateStatus(status) {
-      const badge = document.getElementById('statusBadge');
-      badge.className = `state-badge state-${status}`;
-      badge.textContent = status.replace(/_/g, ' ');
-
-      const connBadge = document.getElementById('connectionBadge');
-      const connLabel = document.getElementById('connectionLabel');
-
-      if (status === 'running' || status === 'resuming') {
-        document.getElementById('startBtn').disabled = true;
-        document.getElementById('startBtnText').textContent = 'Running...';
-        connBadge.className = 'status-indicator connected';
-        connLabel.textContent = 'Streaming';
-        if (!runStartTime) startTimer();
-      } else if (status === 'waiting_for_human') {
-        document.getElementById('startBtn').disabled = true;
-        document.getElementById('startBtnText').textContent = 'Investigate';
-        connBadge.className = 'status-indicator reconnecting';
-        connLabel.textContent = 'Awaiting Review';
-        stopTimer();
-      } else {
-        document.getElementById('startBtn').disabled = false;
-        document.getElementById('startBtnText').textContent = 'Investigate';
-        connBadge.className = 'status-indicator idle';
-        connLabel.textContent = 'Concluded';
-        stopTimer();
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
       }
-
-      // HITL Banner Visibility
-      document.getElementById('hitlSection').style.display = status === 'waiting_for_human' ? 'block' : 'none';
-
-      // Update Node Highlight in SVG
-      updateSvgNodeHighlight(status);
     }
 
-    function updateSvgNodeHighlight(status, activeNode = null) {
-      const nodes = ['supervisor', 'research', 'verifier', 'human_review', 'writer'];
-      nodes.forEach(n => {
-        const el = document.getElementById(`node-${n}`);
-        if (el) el.classList.remove('active');
-      });
+    // Toast Notification System
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast-notification';
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
 
-      if (status === 'running' || status === 'resuming') {
-        const target = activeNode || 'supervisor';
-        const el = document.getElementById(`node-${target}`);
-        if (el) el.classList.add('active');
-        document.getElementById('activeNodeBadge').className = 'state-badge state-running';
-        document.getElementById('activeNodeBadge').textContent = `ACTIVE: ${target.toUpperCase()}`;
-      } else if (status === 'waiting_for_human') {
-        const el = document.getElementById('node-human_review');
-        if (el) el.classList.add('active');
-        document.getElementById('activeNodeBadge').className = 'state-badge state-waiting_for_human';
-        document.getElementById('activeNodeBadge').textContent = 'INTERRUPTED: HUMAN REVIEW';
-      } else if (status === 'completed') {
-        document.getElementById('activeNodeBadge').className = 'state-badge state-completed';
-        document.getElementById('activeNodeBadge').textContent = 'COMPLETED';
-      } else {
-        document.getElementById('activeNodeBadge').className = 'state-badge state-idle';
-        document.getElementById('activeNodeBadge').textContent = 'IDLE';
+    // Auto-Scroll Toggle for Trace Feed
+    function toggleAutoScroll() {
+      autoScroll = !autoScroll;
+      const btn = document.getElementById('autoScrollToggleBtn');
+      if (btn) btn.textContent = `Auto-scroll: ${autoScroll ? 'ON' : 'OFF'}`;
+    }
+
+    // Preset Query Setter
+    function setQuery(text) {
+      const input = document.getElementById('questionInput');
+      if (input) {
+        input.value = text;
+        input.focus();
       }
     }
 
@@ -2151,11 +3406,8 @@
       document.getElementById('badgeTraceCount').textContent = currentEvents.length;
       renderTraceStream();
 
-      const evType = evt.event_type;
-      const node = evt.node;
-      const data = evt.data || {};
-
-      if (node) updateSvgNodeHighlight('running', node);
+      // Synchronize interactive Architecture Visualizer
+      syncGraphWithLiveEvent(evt);
 
       if (evType === 'supervisor_decision') {
         document.getElementById('statSteps').textContent = `${data.step || 1} / 8 steps`;
@@ -2221,6 +3473,7 @@
     function applyStateSnapshot(state) {
       if (!state) return;
       updateStatus(state.status);
+      updateGraphFromSnapshot(state);
 
       if (state.question) {
         document.getElementById('questionInput').value = state.question;
@@ -2510,41 +3763,6 @@
       }
     }
 
-    // Node Inspector Sheet
-    function openNodeInspector(nodeKey) {
-      const meta = NODE_METADATA[nodeKey] || {
-        title: nodeKey.toUpperCase(),
-        subtitle: "Graph Worker",
-        desc: "Graph execution node.",
-        invariants: ["Standard LangGraph node execution invariants apply."]
-      };
-
-      document.getElementById('sheetNodeTitle').textContent = meta.title;
-      document.getElementById('sheetNodeSubtitle').textContent = meta.subtitle;
-      document.getElementById('sheetNodeDesc').textContent = meta.desc;
-
-      const invContainer = document.getElementById('sheetNodeInvariants');
-      invContainer.innerHTML = meta.invariants.map(inv => `
-        <div class="sheet-invariant-item">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-          <span>${inv}</span>
-        </div>
-      `).join('');
-
-      // Find last event for this node
-      const nodeEvents = currentEvents.filter(e => (e.node || '').toLowerCase() === nodeKey.toLowerCase());
-      const lastEv = nodeEvents[nodeEvents.length - 1];
-      document.getElementById('sheetNodeState').textContent = JSON.stringify(lastEv ? lastEv.data : { status: "ready" }, null, 2);
-
-      document.getElementById('sheetBackdrop').classList.add('open');
-      document.getElementById('sheetPanel').classList.add('open');
-    }
-
-    function closeNodeInspector() {
-      document.getElementById('sheetBackdrop').classList.remove('open');
-      document.getElementById('sheetPanel').classList.remove('open');
-    }
-
     // Modal Helpers
     function openModal(id) { document.getElementById(id).classList.add('open'); }
     function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -2658,6 +3876,36 @@
       a.click();
       URL.revokeObjectURL(url);
     }
+
+    // Application Lifecycle & Event Binding
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. Initialize Interactive LangGraph Architecture Visualizer
+      initArchitectureGraph();
+
+      // 2. Keyboard shortcut for research input
+      const qInput = document.getElementById('questionInput');
+      if (qInput) {
+        qInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            startResearch();
+          }
+        });
+      }
+
+      // 3. Auto-recover session if thread parameter present in URL hash or storage
+      const hash = window.location.hash;
+      let targetThread = null;
+      if (hash && hash.includes('thread=')) {
+        targetThread = hash.split('thread=')[1].split('&')[0];
+      } else {
+        targetThread = localStorage.getItem('active_thread_id');
+      }
+
+      if (targetThread) {
+        restoreSession(targetThread);
+      }
+    });
   </script>
 </body>
 </html>

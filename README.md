@@ -221,14 +221,15 @@ The presentation layer includes:
 
 - **FastAPI Endpoints**:
   - `POST /api/research`: Initiate research sessions.
-  - `GET /api/stream/{thread_id}`: Real-time Server-Sent Events (SSE).
-  - `POST /api/review`: Submit human review decisions (`approve`, `edit`, `research_more`, `reject`).
-  - `GET /api/threads/{thread_id}/state`: Retrieve current execution state.
-- **Frontend Dashboard**:
-  - Real-time step progress visualizer.
-  - Interactive claim-by-claim verification table with color-coded badges (`SUPPORTED`, `PARTIAL`, `UNSUPPORTED`).
-  - Source and evidence explorer with verbatim quote highlights.
-  - Human review modal with inline claim editing.
+  - `GET /api/research/{thread_id}/stream`: Real-time Server-Sent Events (SSE).
+  - `POST /api/research/{thread_id}/resume`: Submit human review decisions (`approve`, `edit`, `research_more`, `reject`).
+  - `GET /api/research/{thread_id}`: Retrieve current execution state snapshot.
+- **Frontend Research Workspace**:
+  - **Interactive LangGraph Architecture Visualizer**: Real technical workflow node graph with pan, zoom-to-cursor, fit view, MiniMap, dual view modes (*System Architecture* vs *Live Execution*), collapsible research cycle cluster, active edge data particles, and deep slide-over Node Inspector sheet.
+  - **Grounded Final Report**: Primary hero view with inline citation pills linked directly to works cited sources.
+  - **Claims & Evidence Matrix**: Expandable table displaying verbatim quotes and NLI verifier rationales.
+  - **Sources Explorer**: Domain tags and direct URLs for all indexed citations.
+  - **Authoritative HITL Console**: Review bar with inline claim editing, research guidance, and rejection safeguards.
 
 ---
 
@@ -249,7 +250,7 @@ The comprehensive system evaluation suite was executed across 15 multi-dimension
 | **Mean Supervisor Steps**      | **4.53 steps**                                    |
 | **Mean Research Iterations**   | **1.0 cycles**                                    |
 | **Mean Latency (Mock Mode)**   | **0.013s** (Median: 0.01s)                        |
-| **Automated Test Suite**       | **328 passed**                                    |
+| **Automated Test Suite**       | **347 passed**                                    |
 
 Detailed reports are available in:
 
@@ -291,7 +292,7 @@ verified-research-agent/
 │       ├── observability/                 # LangSmith tracing & metadata
 │       ├── reliability/                   # Backoff, circuit breaker & retries
 │       └── verifier/                      # Claim verification engine
-└── tests/                                 # 328 unit, integration, and invariant tests
+└── tests/                                 # 347 unit, integration, and invariant tests
     ├── production/                        # Production scenarios & fault injection
     └── ...
 ```
@@ -364,7 +365,7 @@ Open your browser to:
 
 ## 17. Running Tests & Evaluations
 
-### Run Complete Test Suite (328 tests)
+### Run Complete Test Suite (347 tests)
 
 ```bash
 uv run pytest
