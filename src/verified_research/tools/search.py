@@ -96,21 +96,32 @@ class TavilySearchClient:
                 search_depth="basic",
             )
 
-        try:
-            raw_response = execute_with_retry(
-                operation=_do_search,
-                policy=self.retry_policy,
-                component="search",
-                operation_name="tavily_search",
-                reraise_original=True,
-            )
-        except Exception as e:
-            logger.error("[SEARCH] Tavily search failed for query '%s': %s", query, e)
-            error_info = getattr(e, "error_info", None)
-            raise SearchError(f"Tavily search request failed: {e}", error_info=error_info) from e
+        from verified_research.observability.metadata import sanitize_text
+        from verified_research.observability.tracer import record_metadata, trace_span
 
-        raw_results = raw_response.get("results", []) if isinstance(raw_response, dict) else []
-        return self._normalize_results(raw_results)
+        with trace_span(
+            name="search",
+            run_type="tool",
+            metadata={"query": sanitize_text(query), "max_results": limit},
+            tags=["search", "tavily"],
+        ):
+            try:
+                raw_response = execute_with_retry(
+                    operation=_do_search,
+                    policy=self.retry_policy,
+                    component="search",
+                    operation_name="tavily_search",
+                    reraise_original=True,
+                )
+            except Exception as e:
+                logger.error("[SEARCH] Tavily search failed for query '%s': %s", query, e)
+                error_info = getattr(e, "error_info", None)
+                raise SearchError(f"Tavily search request failed: {e}", error_info=error_info) from e
+
+            raw_results = raw_response.get("results", []) if isinstance(raw_response, dict) else []
+            sources = self._normalize_results(raw_results)
+            record_metadata(sources_count=len(sources))
+            return sources
 
     @staticmethod
     def _normalize_results(raw_results: list[dict]) -> list[Source]:

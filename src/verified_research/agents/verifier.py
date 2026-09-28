@@ -182,6 +182,9 @@ def create_verifier_node(
 
         results: list[VerificationResult] = []
 
+        from verified_research.observability.metadata import build_verifier_claim_metadata
+        from verified_research.observability.tracer import record_metadata, trace_span
+
         for claim in claims:
             # Evidence resolution: resolve all evidence_ids cited by the claim
             resolved_evidence: list[Evidence] = []
@@ -193,8 +196,25 @@ def create_verifier_node(
                     )
                 resolved_evidence.append(evidence_map[ev_id])
 
-            # Perform verification strictly on supplied evidence
-            result = verify_fn(claim, resolved_evidence)
+            # Perform verification strictly on supplied evidence within structured trace span
+            with trace_span(
+                name=f"verify_claim:{claim.claim_id}",
+                run_type="chain",
+                metadata={"claim_id": claim.claim_id, "evidence_count": len(resolved_evidence)},
+                tags=["verifier", "claim"],
+            ):
+                result = verify_fn(claim, resolved_evidence)
+                try:
+                    meta = build_verifier_claim_metadata(
+                        claim_id=result.claim_id,
+                        verdict=result.verdict,
+                        confidence=result.confidence,
+                        evidence_count=len(result.evidence_ids),
+                        reasoning=result.reasoning,
+                    )
+                    record_metadata(**meta)
+                except Exception:
+                    pass
 
             logger.info(
                 "[Verifier] claim_id=%s verdict=%s",
@@ -208,6 +228,11 @@ def create_verifier_node(
             raise RuntimeError(
                 f"Verifier invariant violated: expected {len(claims)} results, produced {len(results)}"
             )
+
+        try:
+            record_metadata(claims_verified_count=len(results))
+        except Exception:
+            pass
 
         return {"verification_results": results}
 

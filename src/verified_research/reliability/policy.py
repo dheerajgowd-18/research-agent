@@ -157,6 +157,18 @@ def execute_with_retry(
                 attempts,
                 duration,
             )
+            try:
+                from verified_research.observability.tracer import record_metadata
+                record_metadata(
+                    component=component,
+                    operation=operation_name,
+                    attempt_number=attempts,
+                    retry_count=attempts - 1,
+                    final_status="success",
+                    duration_seconds=round(duration, 3),
+                )
+            except Exception:
+                pass
             return result
         except Exception as exc:
             category, is_retryable, status_code = classifier(exc)
@@ -198,6 +210,21 @@ def execute_with_retry(
                     except Exception as cb_err:
                         logger.warning("[%s:%s] on_failure callback failed: %s", component, operation_name, cb_err)
 
+                try:
+                    from verified_research.observability.tracer import record_metadata
+                    record_metadata(
+                        component=component,
+                        operation=operation_name,
+                        attempt_number=attempts,
+                        retry_count=attempts - 1,
+                        final_status="failure",
+                        error_category=category.value,
+                        error_type=type(exc).__name__,
+                        duration_seconds=round(duration, 3),
+                    )
+                except Exception:
+                    pass
+
                 logger.error(
                     "[%s:%s] Permanent failure after %d attempt(s) [category=%s, retryable=%s]: %s",
                     component,
@@ -224,6 +251,20 @@ def execute_with_retry(
 
             # Failure is retryable and attempts remain
             delay = active_policy.calculate_delay(attempts)
+            try:
+                from verified_research.observability.tracer import record_event
+                record_event(
+                    "retry_attempt",
+                    component=component,
+                    operation=operation_name,
+                    attempt=attempts,
+                    delay_seconds=round(delay, 3),
+                    error_category=category.value,
+                    error_type=type(exc).__name__,
+                )
+            except Exception:
+                pass
+
             logger.warning(
                 "[%s:%s] Attempt %d/%d failed with %s (%s). Retrying in %.2fs...",
                 component,

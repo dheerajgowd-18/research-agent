@@ -437,6 +437,29 @@ def create_supervisor_node(
             else:
                 updates["supervisor_termination_reason"] = "COMPLETED"
 
+        try:
+            from verified_research.observability.metadata import build_supervisor_metadata
+            from verified_research.observability.tracer import record_metadata
+
+            unverified_count = len(
+                [
+                    c
+                    for c in eval_state.get("claims", [])
+                    if c.claim_id not in {v.claim_id for v in eval_state.get("verification_results", [])}
+                ]
+            )
+            meta = build_supervisor_metadata(
+                step=current_steps + 1,
+                selected_worker=decision.next_worker,
+                decision=decision.next_worker,
+                termination_reason=updates.get("supervisor_termination_reason"),
+                reasoning=decision.reasoning,
+                unverified_claims_count=unverified_count,
+            )
+            record_metadata(**meta)
+        except Exception:
+            pass
+
         return updates
 
     return supervisor_node

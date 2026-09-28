@@ -163,6 +163,15 @@ def create_analyst_node(
             len(evidence),
             len(claims),
         )
+        try:
+            from verified_research.observability.tracer import record_metadata
+            record_metadata(
+                findings_count=len(findings),
+                evidence_count=len(evidence),
+                claims_count=len(claims),
+            )
+        except Exception:
+            pass
         return {
             "findings": findings,
             "evidence": evidence,

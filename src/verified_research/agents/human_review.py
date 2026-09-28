@@ -150,6 +150,20 @@ def create_human_review_node(
             len(state.get("evidence", [])),
         )
 
+        try:
+            from verified_research.observability.metadata import build_hitl_metadata
+            from verified_research.observability.tracer import record_event, record_metadata
+
+            meta_pre = build_hitl_metadata(
+                event="interrupt_requested",
+                human_research_cycle=state.get("human_research_cycles", 0),
+                claims_count=len(state.get("claims", [])),
+            )
+            record_metadata(**meta_pre)
+            record_event("human_review_interrupt_requested", **meta_pre)
+        except Exception:
+            pass
+
         raw_decision = active_interrupt(payload)
 
         # Validate human decision against structured schema
@@ -163,6 +177,24 @@ def create_human_review_node(
             )
 
         logger.info("[HumanReview] Received human action: '%s'", validated_review.action)
+
+        try:
+            meta_post = build_hitl_metadata(
+                event="resumed",
+                human_action=validated_review.action,
+                human_research_cycle=state.get("human_research_cycles", 0),
+                claims_count=len(state.get("claims", [])),
+                edited_claims_count=(
+                    len(validated_review.edited_claims)
+                    if validated_review.action == "edit" and validated_review.edited_claims
+                    else None
+                ),
+                feedback_present=bool(validated_review.feedback),
+            )
+            record_metadata(**meta_post)
+            record_event("human_review_resumed", **meta_post)
+        except Exception:
+            pass
 
         if validated_review.action == "edit":
             assert validated_review.edited_claims is not None

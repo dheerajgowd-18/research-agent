@@ -113,6 +113,21 @@ def create_researcher_node(
             len(combined_sources),
         )
 
+        try:
+            from verified_research.observability.metadata import build_research_metadata
+            from verified_research.observability.tracer import record_metadata
+
+            meta = build_research_metadata(
+                iteration=current_iteration,
+                search_queries=queries_to_search,
+                new_sources_count=len(newly_retrieved),
+                total_sources_count=len(combined_sources),
+                critique=critique,
+            )
+            record_metadata(**meta)
+        except Exception:
+            pass
+
         return {
             "sources": combined_sources,
             "research_iteration": current_iteration,

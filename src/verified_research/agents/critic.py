@@ -144,6 +144,17 @@ def create_critic_node(
             result.quality_score,
             result.should_research_again,
         )
+        try:
+            from verified_research.observability.tracer import record_metadata
+            record_metadata(
+                quality_score=float(result.quality_score),
+                should_research_again=bool(result.should_research_again),
+                missing_topics_count=len(result.missing_topics),
+                citation_gaps_count=len(result.citation_gaps),
+                recommended_queries_count=len(result.recommended_queries),
+            )
+        except Exception:
+            pass
         return {"critique": result}
 
     return critic_node
