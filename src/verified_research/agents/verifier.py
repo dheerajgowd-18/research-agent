@@ -223,6 +223,21 @@ def create_verifier_node(
             )
             results.append(result)
 
+            try:
+                from verified_research.api.events import emit_live_event
+                emit_live_event(
+                    "verification_update",
+                    "verifier",
+                    {
+                        "verified_claim": result.model_dump(),
+                        "progress": f"{len(results)}/{len(claims)}",
+                        "current_index": len(results),
+                        "total_claims": len(claims),
+                    },
+                )
+            except Exception:
+                pass
+
         # Enforce 1:1 invariant: exactly one VerificationResult per claim
         if len(results) != len(claims):
             raise RuntimeError(

@@ -36,6 +36,7 @@ def get_chat_model(settings: Settings | None = None) -> BaseChatModel:
                 model=cfg.llm_model,
                 temperature=cfg.llm_temperature,
                 api_key=cfg.groq_api_key,
+                max_tokens=4096,
             )
         except Exception as e:
             logger.error("[LLM] Failed to initialize ChatGroq: %s", e)

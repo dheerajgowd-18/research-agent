@@ -262,6 +262,21 @@ def execute_with_retry(
                     error_category=category.value,
                     error_type=type(exc).__name__,
                 )
+                try:
+                    from verified_research.api.events import emit_live_event
+                    emit_live_event(
+                        "retry",
+                        component,
+                        {
+                            "operation": operation_name,
+                            "attempt": attempts,
+                            "delay_seconds": round(delay, 2),
+                            "error": sanitized_msg,
+                            "error_category": category.value,
+                        },
+                    )
+                except Exception:
+                    pass
             except Exception:
                 pass
 

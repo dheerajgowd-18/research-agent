@@ -12,11 +12,61 @@ def _wrap_research_subgraph(
     """Wrap the research subgraph to manage human-initiated cycle counting at parent level."""
 
     def research_node(state: ResearchState) -> dict[str, Any]:
-        result = (
-            subgraph.invoke(state)
-            if hasattr(subgraph, "invoke")
-            else subgraph(state)
-        )
+        try:
+            from verified_research.api.events import get_execution_event_emitter
+            emitter = get_execution_event_emitter()
+        except Exception:
+            emitter = None
+
+        if hasattr(subgraph, "stream") and emitter is not None:
+            emitter("node_started", "researcher", {"message": "Searching web and gathering sources..."})
+            accumulated: dict[str, Any] = dict(state)
+            for sub_chunk in subgraph.stream(state, stream_mode="updates"):
+                if not isinstance(sub_chunk, dict):
+                    continue
+                if "researcher" in sub_chunk:
+                    r_data = sub_chunk["researcher"]
+                    accumulated.update(r_data)
+                    sources = r_data.get("sources", [])
+                    emitter("research_update", "researcher", {
+                        "sources_count": len(accumulated.get("sources", [])),
+                        "new_sources_count": len(sources),
+                        "sources": [s.model_dump() if hasattr(s, "model_dump") else s for s in sources],
+                    })
+                    for s in sources:
+                        emitter("source_found", "researcher", s.model_dump() if hasattr(s, "model_dump") else s)
+                    emitter("node_completed", "researcher", {"sources_count": len(accumulated.get("sources", []))})
+                    emitter("node_started", "analyst", {"message": "Synthesizing findings and distilling atomic claims..."})
+                elif "analyst" in sub_chunk:
+                    a_data = sub_chunk["analyst"]
+                    accumulated.update(a_data)
+                    claims = a_data.get("claims", [])
+                    findings = a_data.get("findings", [])
+                    emitter("analysis_update", "analyst", {
+                        "claims_count": len(accumulated.get("claims", [])),
+                        "findings_count": len(accumulated.get("findings", [])),
+                        "claims": [c.model_dump() if hasattr(c, "model_dump") else c for c in claims],
+                        "findings": [f.model_dump() if hasattr(f, "model_dump") else f for f in findings],
+                    })
+                    emitter("node_completed", "analyst", {"claims_count": len(claims)})
+                    emitter("node_started", "critic", {"message": "Evaluating research quality and citation coverage..."})
+                elif "critic" in sub_chunk:
+                    c_data = sub_chunk["critic"]
+                    accumulated.update(c_data)
+                    critique = c_data.get("critique")
+                    critique_dict = critique.model_dump() if hasattr(critique, "model_dump") else (critique or {})
+                    emitter("critic_update", "critic", {"critique": critique_dict})
+                    emitter("node_completed", "critic", {"quality_score": getattr(critique, "quality_score", None)})
+                    if getattr(critique, "should_research_again", False):
+                        emitter("node_started", "researcher", {"message": "Executing iterative research loop..."})
+            result = accumulated
+        else:
+            result = (
+                subgraph.invoke(state)
+                if hasattr(subgraph, "invoke")
+                else subgraph(state)
+            )
+
         # If this pass was triggered by human selecting 'research_more', increment human_research_cycles
         review = state.get("human_review")
         if review and review.action == "research_more":

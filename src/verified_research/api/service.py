@@ -159,114 +159,164 @@ class ResearchService:
         return thread_id
 
     async def _execute_graph(self, thread_id: str, input_data: Any) -> None:
-        """Run graph streaming in a thread pool and map chunks to typed AgentEvents."""
+        """Run graph streaming in a thread pool and map chunks to typed AgentEvents in real time."""
         config = {"configurable": {"thread_id": thread_id}}
+        loop = asyncio.get_running_loop()
+        queue: asyncio.Queue[tuple[str, Any]] = asyncio.Queue()
+
+        # Bridge callback for synchronous worker nodes executing in thread pool
+        def bridge_emitter(event_type: str, node: str | None, data: dict[str, Any]) -> None:
+            loop.call_soon_threadsafe(queue.put_nowait, ("live_event", (event_type, node, data)))
 
         def run_stream():
-            return list(self.graph.stream(input_data, config, stream_mode="updates"))
+            from verified_research.api.events import set_execution_event_emitter
+            set_execution_event_emitter(bridge_emitter)
+            try:
+                for chunk in self.graph.stream(input_data, config, stream_mode="updates"):
+                    loop.call_soon_threadsafe(queue.put_nowait, ("chunk", chunk))
+            except Exception as exc:
+                loop.call_soon_threadsafe(queue.put_nowait, ("error", exc))
+            finally:
+                set_execution_event_emitter(None)
+                loop.call_soon_threadsafe(queue.put_nowait, ("done", None))
+
+        # Launch the stream in background worker thread
+        stream_task = asyncio.create_task(anyio.to_thread.run_sync(run_stream))
+
+        # Initial node_started event for supervisor
+        await self._emit_event(
+            thread_id=thread_id,
+            event_type="node_started",
+            node="supervisor",
+            data={"message": "Supervisor evaluating state..."},
+        )
 
         try:
-            chunks = await anyio.to_thread.run_sync(run_stream)
-
-            for chunk in chunks:
-                if not isinstance(chunk, dict):
-                    continue
-
-                # 1. Supervisor Worker Decisions
-                if "supervisor" in chunk:
-                    sup_data = chunk["supervisor"]
-                    decision = sup_data.get("supervisor_decision")
-                    reasoning = decision.reasoning if decision else ""
-                    next_worker = decision.next_worker if decision else "finish"
-                    steps = sup_data.get("supervisor_steps", 0)
-
+            while True:
+                msg_type, payload = await queue.get()
+                if msg_type == "error":
+                    raise payload
+                elif msg_type == "done":
+                    break
+                elif msg_type == "live_event":
+                    ev_type, ev_node, ev_data = payload
                     await self._emit_event(
                         thread_id=thread_id,
-                        event_type="supervisor_decision",
-                        node="supervisor",
-                        data={
-                            "step": steps,
-                            "next_worker": next_worker,
-                            "reasoning": reasoning,
-                            "termination_reason": sup_data.get("supervisor_termination_reason"),
-                        },
+                        event_type=ev_type,
+                        node=ev_node,
+                        data=ev_data,
                     )
-                    await self._emit_event(
-                        thread_id=thread_id,
-                        event_type="node_completed",
-                        node="supervisor",
-                        data={"step": steps, "next_worker": next_worker},
-                    )
+                elif msg_type == "chunk":
+                    chunk = payload
+                    if not isinstance(chunk, dict):
+                        continue
 
-                # 2. Research Subgraph Updates
-                if "research" in chunk:
-                    res_data = chunk["research"]
-                    sources = res_data.get("sources", [])
-                    claims = res_data.get("claims", [])
-                    findings = res_data.get("findings", [])
+                    # 1. Supervisor Worker Decisions
+                    if "supervisor" in chunk:
+                        sup_data = chunk["supervisor"]
+                        decision = sup_data.get("supervisor_decision")
+                        reasoning = decision.reasoning if decision else ""
+                        next_worker = decision.next_worker if decision else "finish"
+                        steps = sup_data.get("supervisor_steps", 0)
 
-                    await self._emit_event(
-                        thread_id=thread_id,
-                        event_type="research_update",
-                        node="research",
-                        data={
-                            "sources_count": len(sources),
-                            "claims_count": len(claims),
-                            "findings_count": len(findings),
-                        },
-                    )
-                    for s in sources:
                         await self._emit_event(
                             thread_id=thread_id,
-                            event_type="source_found",
-                            node="research",
-                            data=_to_dict(s),
+                            event_type="supervisor_decision",
+                            node="supervisor",
+                            data={
+                                "step": steps,
+                                "next_worker": next_worker,
+                                "reasoning": reasoning,
+                                "termination_reason": sup_data.get("supervisor_termination_reason"),
+                            },
                         )
-                    await self._emit_event(
-                        thread_id=thread_id,
-                        event_type="node_completed",
-                        node="research",
-                        data={"sources_count": len(sources), "claims_count": len(claims)},
-                    )
+                        await self._emit_event(
+                            thread_id=thread_id,
+                            event_type="node_completed",
+                            node="supervisor",
+                            data={"step": steps, "next_worker": next_worker},
+                        )
+                        if next_worker != "finish":
+                            worker_label = "Research Subgraph" if next_worker == "research" else next_worker.capitalize()
+                            await self._emit_event(
+                                thread_id=thread_id,
+                                event_type="node_started",
+                                node=next_worker,
+                                data={"message": f"Worker '{worker_label}' activated by supervisor"},
+                            )
 
-                # 3. Verifier Updates
-                if "verifier" in chunk:
-                    ver_data = chunk["verifier"]
-                    results = ver_data.get("verification_results", [])
-                    await self._emit_event(
-                        thread_id=thread_id,
-                        event_type="verification_update",
-                        node="verifier",
-                        data={
-                            "verification_results": _to_dict(results),
-                            "count": len(results),
-                        },
-                    )
-                    await self._emit_event(
-                        thread_id=thread_id,
-                        event_type="node_completed",
-                        node="verifier",
-                        data={"verified_count": len(results)},
-                    )
+                    # 2. Research Subgraph Updates
+                    if "research" in chunk:
+                        res_data = chunk["research"]
+                        sources = res_data.get("sources", [])
+                        claims = res_data.get("claims", [])
+                        findings = res_data.get("findings", [])
 
-                # 4. Human Review Node Updates
-                if "human_review" in chunk:
-                    await self._emit_event(
-                        thread_id=thread_id,
-                        event_type="node_completed",
-                        node="human_review",
-                        data=_to_dict(chunk["human_review"]),
-                    )
+                        await self._emit_event(
+                            thread_id=thread_id,
+                            event_type="research_update",
+                            node="research",
+                            data={
+                                "sources_count": len(sources),
+                                "claims_count": len(claims),
+                                "findings_count": len(findings),
+                            },
+                        )
+                        for s in sources:
+                            await self._emit_event(
+                                thread_id=thread_id,
+                                event_type="source_found",
+                                node="research",
+                                data=_to_dict(s),
+                            )
+                        await self._emit_event(
+                            thread_id=thread_id,
+                            event_type="node_completed",
+                            node="research",
+                            data={"sources_count": len(sources), "claims_count": len(claims)},
+                        )
 
-                # 5. Graph Interrupt (Human Review Required)
-                if "__interrupt__" in chunk:
-                    interrupt_val = chunk["__interrupt__"][0].value
-                    await self._emit_event(
-                        thread_id=thread_id,
-                        event_type="human_review_required",
-                        node="human_review",
-                        data=_to_dict(interrupt_val),
-                    )
+                    # 3. Verifier Updates
+                    if "verifier" in chunk:
+                        ver_data = chunk["verifier"]
+                        results = ver_data.get("verification_results", [])
+                        await self._emit_event(
+                            thread_id=thread_id,
+                            event_type="verification_update",
+                            node="verifier",
+                            data={
+                                "verification_results": _to_dict(results),
+                                "count": len(results),
+                            },
+                        )
+                        await self._emit_event(
+                            thread_id=thread_id,
+                            event_type="node_completed",
+                            node="verifier",
+                            data={"verified_count": len(results)},
+                        )
+
+                    # 4. Human Review Node Updates
+                    if "human_review" in chunk:
+                        await self._emit_event(
+                            thread_id=thread_id,
+                            event_type="node_completed",
+                            node="human_review",
+                            data=_to_dict(chunk["human_review"]),
+                        )
+
+                    # 5. Graph Interrupt (Human Review Required)
+                    if "__interrupt__" in chunk:
+                        interrupt_val = chunk["__interrupt__"][0].value
+                        await self._emit_event(
+                            thread_id=thread_id,
+                            event_type="human_review_required",
+                            node="human_review",
+                            data=_to_dict(interrupt_val),
+                        )
+
+            # Ensure the worker thread task completes
+            await stream_task
 
             # Check post-execution state for finality
             state = self.graph.get_state(config)
@@ -291,6 +341,8 @@ class ResearchService:
                             "termination_reason": term_reason or "COMPLETED",
                             "claims_count": len(state.values.get("claims", [])),
                             "sources_count": len(state.values.get("sources", [])),
+                            "evidence_count": len(state.values.get("evidence", [])),
+                            "verified_count": len(state.values.get("verification_results", [])),
                         },
                     )
 
@@ -382,7 +434,7 @@ class ResearchService:
         for event in buffered:
             yield event
 
-        # Check if already terminated
+        # Check if run has already reached a stopping or interrupt point
         if buffered and buffered[-1].event_type in (
             "run_completed",
             "run_failed",
