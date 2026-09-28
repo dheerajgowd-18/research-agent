@@ -3,6 +3,9 @@ target/
 __pycache__/
 .venv/
 .env
+.env.*
+!.env.example
+*.local
 .pytest_cache/
 .coverage
 htmlcov/

@@ -32,3 +32,9 @@ packages = ["src/verified_research"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src", "."]
+
+[dependency-groups]
+dev = [
+    "numpy>=2.4.6",
+    "scikit-learn>=1.9.1",
+]

@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 from typing import Literal
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -32,11 +32,40 @@ class Settings(BaseSettings):
     openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
 
     # LangSmith / Observability (Optional)
-    langchain_api_key: str | None = Field(default=None, alias="LANGCHAIN_API_KEY")
-    langchain_tracing_v2: bool = Field(default=False, alias="LANGCHAIN_TRACING_V2")
-    langchain_project: str = Field(
-        default="verified-research-agent", alias="LANGCHAIN_PROJECT"
+    langsmith_tracing: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "LANGSMITH_TRACING", "LANGCHAIN_TRACING_V2", "LANGCHAIN_TRACING"
+        ),
     )
+    langsmith_api_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("LANGSMITH_API_KEY", "LANGCHAIN_API_KEY"),
+    )
+    langsmith_project: str = Field(
+        default="verified-research-agent",
+        validation_alias=AliasChoices("LANGSMITH_PROJECT", "LANGCHAIN_PROJECT"),
+    )
+    langsmith_endpoint: str = Field(
+        default="https://api.smith.langchain.com",
+        validation_alias=AliasChoices("LANGSMITH_ENDPOINT", "LANGCHAIN_ENDPOINT"),
+    )
+
+    @property
+    def langchain_tracing_v2(self) -> bool:
+        return self.langsmith_tracing
+
+    @property
+    def langchain_api_key(self) -> str | None:
+        return self.langsmith_api_key
+
+    @property
+    def langchain_project(self) -> str:
+        return self.langsmith_project
+
+    @property
+    def langchain_endpoint(self) -> str:
+        return self.langsmith_endpoint
 
     # Persistence / Checkpoint Configuration
     checkpoint_db_path: str = Field(default="checkpoints.db", alias="CHECKPOINT_DB_PATH")
