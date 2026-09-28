@@ -36,6 +36,7 @@ flowchart TD
         VerifierNode["verifier_node\n(Validates claims vs evidence)"]
         HumanReviewNode["human_review_node\n(Interrupts graph for human review)"]
         HumanRouter{"human_router\n(Directs review action)"}
+        WriterNode["writer_node\n(Synthesizes grounded report with citations)"]
         FinalizeNode["finalize_node\n(Final state cleanup & publishing)"]
     end
 
@@ -55,7 +56,7 @@ flowchart TD
     end
 
     %% Client / API Flow
-    UI -->|"POST /api/research\nPOST /api/review"| API
+    UI -->|"POST /api/research\nPOST /api/research/{thread_id}/resume"| API
     API -->|"Server-Sent Events (SSE)"| UI
     API --> StreamHub
 
@@ -65,6 +66,7 @@ flowchart TD
     SupervisorRouter -->|"next_worker: 'research'"| ResearcherNode
     SupervisorRouter -->|"next_worker: 'verify'"| VerifierNode
     SupervisorRouter -->|"next_worker: 'human_review'"| HumanReviewNode
+    SupervisorRouter -->|"next_worker: 'writer'"| WriterNode
     SupervisorRouter -->|"next_worker: 'finish'"| FinalizeNode
 
     %% Research Subgraph Flow
@@ -74,15 +76,16 @@ flowchart TD
     CriticRouter -->|"Score < 0.8 & iter < 3"| ResearcherNode
     CriticRouter -->|"Score >= 0.8 OR iter >= 3"| SupervisorNode
 
-    %% Verifier & Review Flow
+    %% Verifier, Review & Writer Flow
     VerifierNode --> SupervisorNode
     HumanReviewNode -.->|"INTERRUPT"| UI
     UI -->|"Resume with HumanReview"| HumanReviewNode
     HumanReviewNode --> HumanRouter
-    HumanRouter -->|"action: 'approve'"| FinalizeNode
-    HumanRouter -->|"action: 'edit'"| VerifierNode
+    HumanRouter -->|"action: 'approve'"| WriterNode
+    HumanRouter -->|"action: 'edit'"| WriterNode
     HumanRouter -->|"action: 'research_more'"| ResearcherNode
     HumanRouter -->|"action: 'reject'"| FinalizeNode
+    WriterNode --> SupervisorNode
     FinalizeNode --> EndNode([Terminal State])
 
     %% Persistence & Tracing

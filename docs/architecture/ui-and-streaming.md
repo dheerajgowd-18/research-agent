@@ -31,16 +31,18 @@ Phase 14 exposes the Verified Research Agent through a web presentation layer an
   └──────────────────────────────┬──────────────────────────────┘
                                  │ Worker Routing
                                  ▼
-  ┌──────────────┐        ┌──────────────┐        ┌──────────────┐
-  │   Research   │        │   Verifier   │        │ Human Review │
-  │   Subgraph   │        │    Worker    │        │ Worker (HITL)│
-  └──────────────┘        └──────────────┘        └──────────────┘
+  ┌──────────────┐        ┌──────────────┐        ┌──────────────┐        ┌──────────────┐
+  │   Research   │        │   Verifier   │        │ Human Review │        │    Writer    │
+  │   Subgraph   │        │    Worker    │        │ Worker (HITL)│        │    Worker    │
+  └──────────────┘        └──────────────┘        └──────────────┘        └──────────────┘
 ```
 
 ### Architectural Rules
 1. **Frontend is Strictly a Presentation Layer**: The frontend code contains zero research logic, verifier evaluation, supervisor decisions, retry policies, or direct checkpoint access.
-2. **Backend is the Authoritative Source of Truth**: All critical state transitions, referential integrity checks, claim edits, and routing validations are executed server-side.
+2. **Backend is the Authoritative Source of Truth**: All critical state transitions, referential integrity checks, claim edits, writer synthesis, and routing validations are executed server-side.
 3. **Purity of State Flow**: User actions are submitted to the API as commands; the API routes them to LangGraph, which executes graph transitions and returns state snapshots.
+4. **Writer Synthesis Gate**: The Writer node strictly executes only AFTER human approval/edit, strictly using verified/approved claims and direct source evidence with exact citations `[1]`.
+5. **Research Workspace Design**: The UI employs a modern, minimal, light-mode research workspace philosophy (Linear/Vercel/Stripe aesthetic) with structured tables, expandable rows, interactive SVG architecture visualizer with slide-over node inspector sheet, and grounded final report hero presentation.
 
 ---
 
@@ -86,6 +88,7 @@ class AgentEvent(BaseModel):
 | `analysis_update` | `AnalystNode` | Analyst extracts atomic claims & findings. | `{"claims_count": int, "findings_count": int}` |
 | `critic_update` | `CriticNode` | Critic evaluates research quality & gaps. | `{"critique": {...}, "quality_score": float}` |
 | `verification_update`| `VerifierNode` | Verifier evaluates claim against evidence. | `{"claim": {...}, "count": int}` |
+| `writer_update` | `WriterNode` | Writer synthesizes grounded final report. | `{"title": str, "citations": [...], "answer": str}` |
 | `retry` | `ReliabilityLayer`| Transient network/rate-limit error retry. | `{"attempt": int, "delay": float, "error": str}` |
 | `human_review_required`| `HumanReviewNode`| Graph hits `interrupt()` review gate. | Review payload: claims, evidence, verification. |
 | `human_review_resumed` | `HumanReviewNode`| Human submits resume action. | `{"action": str, "feedback": str \| None}` |

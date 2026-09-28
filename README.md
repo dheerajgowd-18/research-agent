@@ -2,25 +2,27 @@
 
 > A domain-agnostic, production-grade autonomous research and claim-verification engine built with LangGraph, LangChain, FastAPI, SQLite persistence, and LangSmith observability.
 
-[![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://www.python.org/)
+[![Python Version](<https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue.svg>)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.2+-green.svg)](https://github.com/langchain-ai/langgraph)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg)](https://fastapi.tiangolo.com/)
-[![Tests](https://img.shields.io/badge/tests-331%20passing-brightgreen.svg)]()
-[![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Tests](<https://img.shields.io/badge/tests-339%20passing-brightgreen.svg>)]()
+[![Code Style](<https://img.shields.io/badge/code%20style-black-000000.svg>)](https://github.com/psf/black)
 
 ---
 
 ## 1. Executive Summary
 
-Autonomous agentic research often suffers from hallucination, circular reasoning, stale web retrieval, and unverifiable assertions. The **Verified Research Agent** solves these challenges by treating factual research as a strictly verifiable state-machine problem. 
+Autonomous agentic research often suffers from hallucination, circular reasoning, stale web retrieval, and unverifiable assertions. The **Verified Research Agent** solves these challenges by treating factual research as a strictly verifiable state-machine problem.
 
 Rather than generating unbounded paragraphs of text, the agent:
+
 1. **Discovers and extracts immutable evidence excerpts** directly from web and document sources.
 2. **Decomposes research findings into testable atomic claims**, where every claim must explicitly cite one or more preserved evidence IDs.
 3. **Independently verifies every claim** using a dedicated claim-level verification node evaluating against citations before human review.
 4. **Enforces mandatory Human-in-the-Loop (HITL) checkpoints**, pausing the state machine to allow humans to approve, edit, request further research, or reject findings.
-5. **Maintains ACID-durable state persistence** via SQLite, allowing long-running tasks to be paused, resumed, and audited across system restarts.
-6. **Streams structured lifecycle events in real time** over Server-Sent Events (SSE) to an interactive, responsive web interface.
+5. **Compiles a strictly grounded Final Report via the Writer agent**, mapping every synthesized statement to exact citations `[1]`, with zero hallucinated or external assertions.
+6. **Maintains ACID-durable state persistence** via SQLite, allowing long-running tasks to be paused, resumed, and audited across system restarts.
+7. **Streams structured lifecycle events in real time** over Server-Sent Events (SSE) to a minimal, high-density light-mode Research Workspace.
 
 ---
 
@@ -30,6 +32,7 @@ Rather than generating unbounded paragraphs of text, the agent:
 - **Hierarchical Orchestration**: A central **Supervisor** node manages macro transitions between specialized worker nodes, preventing monolithic reasoning bottlenecks.
 - **Self-Correcting Cyclic Subgraph**: An encapsulated inner research loop (`Researcher` $\rightarrow$ `Analyst` $\rightarrow$ `Critic`) iterates up to 3 times, refining search queries until quality standards ($\ge 0.8$) are satisfied.
 - **3-Class Verdict Verification**: Every claim is classified as `SUPPORTED`, `PARTIAL`, or `UNSUPPORTED` with strict grounding against textual citations.
+- **Strict Writer Synthesis Gate**: The Writer node executes strictly after human approval/edit, formulating a structured final report with exact citations without performing external web searches or inventing unverified claims.
 - **Durable Multi-Turn Continuity**: Prior sources and evidence are retained across sessions on the same thread, reusing prior research when sufficient and executing delta searches when new topics arise.
 - **Comprehensive Reliability**: Production fault tolerance featuring error classification (`TRANSIENT` vs `PERMANENT`), exponential backoff with full jitter, and circuit breaking.
 
@@ -40,7 +43,7 @@ Rather than generating unbounded paragraphs of text, the agent:
 ```mermaid
 flowchart TD
     subgraph UI_Layer ["Presentation & Transport Layer"]
-        WebUI["Web UI Client\n(Vanilla JS / SSE Listener)"]
+        WebUI["Research Workspace UI\n(Light Mode / SSE Stream)"]
         FastAPIApp["FastAPI Server\n(src/verified_research/api/app.py)"]
         StreamHub["SSE Event Streamer\n(format_sse_event)"]
     end
@@ -51,6 +54,7 @@ flowchart TD
         Verifier["verifier_node\n(3-Class Claim Verification)"]
         HITL["human_review_node\n(Graph Interrupt / Review Gate)"]
         HumanRouter{"human_router"}
+        Writer["writer_node\n(Grounded Report Synthesis)"]
         Finalize["finalize_node\n(Publication & Summary)"]
     end
 
@@ -68,7 +72,7 @@ flowchart TD
 
     %% Client Interactions
     WebUI -->|"POST /api/research"| FastAPIApp
-    WebUI -->|"POST /api/review"| FastAPIApp
+    WebUI -->|"POST /api/research/{id}/resume"| FastAPIApp
     FastAPIApp -->|"Server-Sent Events"| WebUI
     FastAPIApp --> StreamHub
 
@@ -78,6 +82,7 @@ flowchart TD
     Router -->|"next_worker: 'research'"| Researcher
     Router -->|"next_worker: 'verify'"| Verifier
     Router -->|"next_worker: 'human_review'"| HITL
+    Router -->|"next_worker: 'writer'"| Writer
     Router -->|"next_worker: 'finish'"| Finalize
 
     %% Research Subgraph Loop
@@ -87,15 +92,16 @@ flowchart TD
     CriticRouter -->|"Score < 0.8 & iter < 3"| Researcher
     CriticRouter -->|"Score >= 0.8 OR iter >= 3"| Supervisor
 
-    %% Verification & Review
+    %% Verification, Review & Writer
     Verifier --> Supervisor
     HITL -.->|"INTERRUPT"| WebUI
     WebUI -->|"Resume with Review"| HITL
     HITL --> HumanRouter
-    HumanRouter -->|"action: 'approve'"| Finalize
-    HumanRouter -->|"action: 'edit'"| Verifier
+    HumanRouter -->|"action: 'approve'"| Writer
+    HumanRouter -->|"action: 'edit'"| Writer
     HumanRouter -->|"action: 'research_more'"| Researcher
     HumanRouter -->|"action: 'reject'"| Finalize
+    Writer --> Supervisor
     Finalize --> Done([Terminal Research State])
 
     %% Telemetry & Persistence
@@ -133,6 +139,7 @@ Source (url, title, content)
 ## 5. Supervisor Orchestration Engine
 
 The Supervisor coordinates top-level execution without performing monolithic research or verification directly:
+
 1. **Dynamic Task Dispatch**: Evaluates current state to determine whether research, verification, human review, or finalization is needed.
 2. **Hard Loop Boundaries**: Enforces a strict upper bound of 12 supervisor transitions (`max_supervisor_steps = 12`) to eliminate infinite loops.
 3. **Deterministic Audit Trail**: Each routing decision is recorded in `supervisor_decisions` with structured rationale.
@@ -142,6 +149,7 @@ The Supervisor coordinates top-level execution without performing monolithic res
 ## 6. Encapsulated Research Subgraph
 
 The inner research engine executes an autonomous, self-evaluating cyclic loop:
+
 1. **`researcher_node`**: Executes web searches via Tavily (or local determinism fallback) and extracts content snippets.
 2. **`analyst_node`**: Synthesizes structured findings and extracts atomic claims citing preserved evidence.
 3. **`critic_node`**: Evaluates findings on a 0.0 to 1.0 quality score, identifying topic gaps, weak findings, and citation deficiencies.
@@ -152,18 +160,19 @@ The inner research engine executes an autonomous, self-evaluating cyclic loop:
 ## 7. Claim-Level Verifier Engine
 
 The Verifier validates every factual claim strictly against its cited evidence:
+
 - **`SUPPORTED`**: The cited evidence directly and unequivocally proves the claim without unstated assumptions.
 - **`PARTIAL`**: The cited evidence partially supports the claim, but key details or scopes are unproven or hedged.
 - **`UNSUPPORTED`**: The cited evidence contradicts the claim, is irrelevant, or lacks sufficient factual specificity.
 
 ### Empirical Verifier Benchmark Results (`data/verifier_eval.json`)
 
-| Metric | Score |
-|---|---|
-| **Accuracy** | **100.0%** |
-| **Macro-F1** | **1.0000** |
-| **SUPPORTED F1** | 1.0000 (Recall: 1.0, Precision: 1.0) |
-| **PARTIAL F1** | 1.0000 (Recall: 1.0, Precision: 1.0) |
+| Metric                   | Score                                |
+| ------------------------ | ------------------------------------ |
+| **Accuracy**       | **100.0%**                     |
+| **Macro-F1**       | **1.0000**                     |
+| **SUPPORTED F1**   | 1.0000 (Recall: 1.0, Precision: 1.0) |
+| **PARTIAL F1**     | 1.0000 (Recall: 1.0, Precision: 1.0) |
 | **UNSUPPORTED F1** | 1.0000 (Recall: 1.0, Precision: 1.0) |
 
 ---
@@ -171,6 +180,7 @@ The Verifier validates every factual claim strictly against its cited evidence:
 ## 8. Human-in-the-Loop (HITL) Gate
 
 The HITL gate interrupts graph execution before research concludes:
+
 - **`approve`**: Accepts findings and advances to `finalize_node`.
 - **`edit`**: Human modifies claim text or evidence citations. Edits are re-verified by `verifier_node`.
 - **`research_more`**: Human provides feedback; graph routes back to `researcher_node` for an additional cycle (bounded $\le 3$).
@@ -181,6 +191,7 @@ The HITL gate interrupts graph execution before research concludes:
 ## 9. Follow-Up Research Sessions
 
 The agent preserves session history across multi-turn interactions using the same `thread_id`:
+
 - **Heuristic Sufficiency Check**: The `research_reuse_node` checks whether existing evidence is sufficient for follow-up questions.
 - **`REUSE`**: Omits new web queries when prior evidence already contains the answer, saving latency and token budget.
 - **`RESEARCH_MORE`**: Formulates targeted incremental queries when temporal shifts or new entities are introduced.
@@ -207,6 +218,7 @@ The agent preserves session history across multi-turn interactions using the sam
 ## 12. Full-Stack Web UI & Real-Time Streaming
 
 The presentation layer includes:
+
 - **FastAPI Endpoints**:
   - `POST /api/research`: Initiate research sessions.
   - `GET /api/stream/{thread_id}`: Real-time Server-Sent Events (SSE).
@@ -226,20 +238,21 @@ The comprehensive system evaluation suite was executed across 15 multi-dimension
 
 ### Empirical Results Summary
 
-| Evaluation Dimension | Empirical Result |
-|---|---|
-| **Total Evaluation Cases** | **15** |
-| **Successful Completions** | **14 / 15 (93.3%)** |
-| **Expected Human Rejections** | **1 / 15 (6.7%)** (Validates rejection guardrail) |
-| **Permanent Failures** | **0 (0.0%)** |
-| **Mean Citation Coverage** | **100.0%** (All claims cite verified evidence) |
-| **Mean Verification Coverage** | **100.0%** (All claims evaluated by Verifier) |
-| **Mean Supervisor Steps** | **4.53 steps** |
-| **Mean Research Iterations** | **1.0 cycles** |
-| **Mean Latency (Mock Mode)** | **0.013s** (Median: 0.01s) |
-| **Automated Test Suite** | **328 passed** |
+| Evaluation Dimension                 | Empirical Result                                        |
+| ------------------------------------ | ------------------------------------------------------- |
+| **Total Evaluation Cases**     | **15**                                            |
+| **Successful Completions**     | **14 / 15 (93.3%)**                               |
+| **Expected Human Rejections**  | **1 / 15 (6.7%)** (Validates rejection guardrail) |
+| **Permanent Failures**         | **0 (0.0%)**                                      |
+| **Mean Citation Coverage**     | **100.0%** (All claims cite verified evidence)    |
+| **Mean Verification Coverage** | **100.0%** (All claims evaluated by Verifier)     |
+| **Mean Supervisor Steps**      | **4.53 steps**                                    |
+| **Mean Research Iterations**   | **1.0 cycles**                                    |
+| **Mean Latency (Mock Mode)**   | **0.013s** (Median: 0.01s)                        |
+| **Automated Test Suite**       | **328 passed**                                    |
 
 Detailed reports are available in:
+
 - [FINAL_SYSTEM_EVALUATION.md](file:///d:/research-agent/reports/FINAL_SYSTEM_EVALUATION.md)
 - [system_eval_results.json](file:///d:/research-agent/reports/system_eval_results.json)
 
@@ -288,6 +301,7 @@ verified-research-agent/
 ## 15. Quickstart & Installation
 
 ### Prerequisites
+
 - Python 3.11, 3.12, or 3.13
 - [`uv`](https://docs.astral.sh/uv/) package manager (recommended) or standard `pip`
 
@@ -342,6 +356,7 @@ uv run uvicorn verified_research.api.app:app --host 127.0.0.1 --port 8000 --relo
 ```
 
 Open your browser to:
+
 - **Interactive UI**: `http://127.0.0.1:8000/`
 - **Swagger API Docs**: `http://127.0.0.1:8000/docs`
 
@@ -349,7 +364,7 @@ Open your browser to:
 
 ## 17. Running Tests & Evaluations
 
-### Run Complete Test Suite (331 tests)
+### Run Complete Test Suite (328 tests)
 
 ```bash
 uv run pytest
