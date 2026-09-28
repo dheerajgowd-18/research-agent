@@ -48,7 +48,7 @@ class ResearchService:
     ) -> None:
         """Initialize the ResearchService with a checkpointer and compiled graph."""
         self.checkpointer = checkpointer or MemorySaver()
-        self.graph = graph or create_supervisor_graph(checkpointer=self.checkpointer)
+        self.graph = graph or create_supervisor_graph(checkpointer=self.checkpointer, enable_writer=True)
 
         # In-memory event buffers and subscriber queues per thread
         self._event_buffers: dict[str, list[AgentEvent]] = {}
@@ -305,7 +305,28 @@ class ResearchService:
                             data=_to_dict(chunk["human_review"]),
                         )
 
-                    # 5. Graph Interrupt (Human Review Required)
+                    # 5. Writer Node Updates
+                    if "writer" in chunk:
+                        writer_data = chunk["writer"]
+                        final_resp = writer_data.get("final_response")
+                        await self._emit_event(
+                            thread_id=thread_id,
+                            event_type="writer_update",
+                            node="writer",
+                            data=_to_dict(final_resp),
+                        )
+                        await self._emit_event(
+                            thread_id=thread_id,
+                            event_type="node_completed",
+                            node="writer",
+                            data={
+                                "title": getattr(final_resp, "title", "Final Report"),
+                                "claims_referenced": len(getattr(final_resp, "claim_references", [])),
+                                "citations_count": len(getattr(final_resp, "citations", [])),
+                            },
+                        )
+
+                    # 6. Graph Interrupt (Human Review Required)
                     if "__interrupt__" in chunk:
                         interrupt_val = chunk["__interrupt__"][0].value
                         await self._emit_event(
@@ -416,6 +437,7 @@ class ResearchService:
             research_iteration=state.values.get("research_iteration", 0),
             human_research_cycles=state.values.get("human_research_cycles", 0),
             review_context=review_context,
+            final_response=_to_dict(state.values.get("final_response")),
             error=err,
         )
 

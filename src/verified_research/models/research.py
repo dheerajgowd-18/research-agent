@@ -292,14 +292,14 @@ class ResearchReuseDecision(BaseModel):
     )
 
 
-SupervisorWorkerType = Literal["research", "verify", "human_review", "finish"]
+SupervisorWorkerType = Literal["research", "verify", "human_review", "writer", "finish"]
 
 
 class SupervisorDecision(BaseModel):
     """Structured decision produced by the Supervisor orchestrator.
 
     Attributes:
-        next_worker: The target worker node to execute next ('research', 'verify', 'human_review', 'finish').
+        next_worker: The target worker node to execute next ('research', 'verify', 'human_review', 'writer', 'finish').
         reasoning: Explicit rationale justifying the orchestration decision.
     """
 
@@ -314,6 +314,112 @@ class SupervisorDecision(BaseModel):
         min_length=1,
         description="Explicit justification detailing why this worker was chosen based on current state.",
     )
+
+
+class ReportSection(BaseModel):
+    """A thematic section in the final user-facing research report."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    title: str = Field(
+        ...,
+        min_length=1,
+        description="Heading of the section.",
+    )
+    content: str = Field(
+        ...,
+        min_length=1,
+        description="Substantive synthesized text of the section with inline citations.",
+    )
+    claim_ids: list[str] = Field(
+        default_factory=list,
+        description="List of verified claim IDs grounded in this section.",
+    )
+
+
+class Citation(BaseModel):
+    """An explicit source attribution linking text to preserved evidence and source documents."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    citation_id: str = Field(
+        ...,
+        min_length=1,
+        description="Citation identifier or marker (e.g. '[1]').",
+    )
+    source_id: str = Field(
+        ...,
+        min_length=1,
+        description="ID of the referenced source document.",
+    )
+    claim_ids: list[str] = Field(
+        default_factory=list,
+        description="Claim IDs supported by this citation.",
+    )
+    evidence_ids: list[str] = Field(
+        default_factory=list,
+        description="Preserved evidence IDs referenced by this citation.",
+    )
+    source_title: str = Field(
+        ...,
+        min_length=1,
+        description="Title of the referenced source document.",
+    )
+    source_url: str = Field(
+        ...,
+        min_length=1,
+        description="URL of the referenced source document.",
+    )
+
+
+class FinalReport(BaseModel):
+    """A complete, structured, and verified research response produced by the Writer node.
+
+    Attributes:
+        title: Concise editorial title of the research investigation.
+        summary: Executive summary of key verified conclusions.
+        answer: Full synthesized research response incorporating inline citations.
+        sections: Thematic sub-sections breaking down findings.
+        citations: Mapped source citations linking text to evidence.
+        claim_references: All verified claim IDs incorporated in the report.
+        verified_claim_count: Number of verified claims incorporated.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    title: str = Field(
+        ...,
+        min_length=1,
+        description="Concise editorial title of the research report.",
+    )
+    summary: str = Field(
+        ...,
+        min_length=1,
+        description="Executive summary of the verified findings.",
+    )
+    answer: str = Field(
+        ...,
+        min_length=1,
+        description="Comprehensive synthesized answer with inline citations.",
+    )
+    sections: list[ReportSection] = Field(
+        default_factory=list,
+        description="Structured sections detailing the research findings.",
+    )
+    citations: list[Citation] = Field(
+        default_factory=list,
+        description="Mapped citations linking statements to evidence and sources.",
+    )
+    claim_references: list[str] = Field(
+        default_factory=list,
+        description="List of verified claim IDs referenced in the report.",
+    )
+    verified_claim_count: int = Field(
+        default=0,
+        ge=0,
+        description="Count of verified claims incorporated into the report.",
+    )
+
 
 
 

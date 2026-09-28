@@ -3,6 +3,7 @@ from verified_research.models.research import (
     Claim,
     Critique,
     Evidence,
+    FinalReport,
     Finding,
     HumanReview,
     ResearchReuseDecision,
@@ -80,6 +81,7 @@ class ResearchState(TypedDict):
     supervisor_steps: NotRequired[int]
     supervisor_decision: NotRequired[SupervisorDecision]
     supervisor_termination_reason: NotRequired[str | None]
+    final_response: NotRequired[FinalReport | None]
     errors: NotRequired[list[ErrorInfo]]
     last_error: NotRequired[ErrorInfo | None]
 

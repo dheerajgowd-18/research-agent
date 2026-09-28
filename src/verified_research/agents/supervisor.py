@@ -81,13 +81,47 @@ def validate_supervisor_decision(
             reasoning=f"Supervisor step limit reached ({current_steps} >= {max_steps}); terminating safely.",
         )
 
+    # Invariant: Writer cannot run before human approval or edit
+    if decision.next_worker == "writer":
+        review = state.get("human_review")
+        if review is None or review.action not in ("approve", "edit"):
+            logger.warning(
+                "[Supervisor:Invariant] Writer cannot execute before human approval or edit. Overriding to 'human_review'."
+            )
+            return SupervisorDecision(
+                next_worker="human_review",
+                reasoning="Writer cannot execute before human approval or edit.",
+            )
+
+    # Invariant: If final_response already produced, cannot route to writer again
+    if state.get("final_response") is not None and decision.next_worker == "writer":
+        return SupervisorDecision(
+            next_worker="finish",
+            reasoning="Final report already produced; concluding workflow.",
+        )
+
     # Invariant 4 & 5: Human Review Action Finality & Bounds
     review = state.get("human_review")
     if review is not None:
-        if review.action in ("approve", "edit", "reject"):
+        if review.action == "reject":
             if decision.next_worker != "finish":
                 logger.warning(
-                    "[Supervisor:Invariant] Human action '%s' concludes workflow. Overriding '%s' to 'finish'.",
+                    "[Supervisor:Invariant] Human action 'reject' concludes workflow. Overriding '%s' to 'finish'.",
+                    decision.next_worker,
+                )
+                return SupervisorDecision(
+                    next_worker="finish",
+                    reasoning="Human review rejected research; terminating workflow.",
+                )
+        elif review.action in ("approve", "edit"):
+            if state.get("final_response") is not None and decision.next_worker != "finish":
+                return SupervisorDecision(
+                    next_worker="finish",
+                    reasoning=f"Human review finalized with action '{review.action}' and report written.",
+                )
+            elif decision.next_worker not in ("writer", "finish"):
+                logger.warning(
+                    "[Supervisor:Invariant] Human action '%s' allows only 'writer' or 'finish'. Overriding '%s' to 'finish'.",
                     review.action,
                     decision.next_worker,
                 )
@@ -150,9 +184,11 @@ class DeterministicSupervisorPolicy:
         self,
         max_steps: int = DEFAULT_MAX_SUPERVISOR_STEPS,
         max_human_cycles: int = DEFAULT_MAX_HUMAN_RESEARCH_CYCLES,
+        enable_writer: bool = False,
     ) -> None:
         self.max_steps = max_steps
         self.max_human_cycles = max_human_cycles
+        self.enable_writer = enable_writer
 
     def evaluate(self, state: ResearchState) -> SupervisorDecision:
         current_steps = state.get("supervisor_steps", 0)
@@ -162,13 +198,30 @@ class DeterministicSupervisorPolicy:
                 reasoning=f"Supervisor step cap reached ({current_steps} >= {self.max_steps}).",
             )
 
+        # 0. If final report was already produced, finish
+        if state.get("final_response") is not None:
+            return SupervisorDecision(
+                next_worker="finish",
+                reasoning="Final grounded report produced; concluding workflow.",
+            )
+
         # 1. Evaluate Human Review outcome if present
         review = state.get("human_review")
         if review is not None:
-            if review.action in ("approve", "edit", "reject"):
+            if review.action in ("approve", "edit"):
+                if self.enable_writer:
+                    return SupervisorDecision(
+                        next_worker="writer",
+                        reasoning=f"Human review completed with action '{review.action}'; routing to writer to synthesize final report.",
+                    )
                 return SupervisorDecision(
                     next_worker="finish",
                     reasoning=f"Human review completed with action '{review.action}'.",
+                )
+            if review.action == "reject":
+                return SupervisorDecision(
+                    next_worker="finish",
+                    reasoning="Human review rejected research.",
                 )
             if review.action == "research_more":
                 cycles = state.get("human_research_cycles", 0)
@@ -248,12 +301,16 @@ class LLMSupervisorPolicy:
         max_steps: int = DEFAULT_MAX_SUPERVISOR_STEPS,
         max_human_cycles: int = DEFAULT_MAX_HUMAN_RESEARCH_CYCLES,
         fallback_policy: SupervisorPolicy | None = None,
+        enable_writer: bool = False,
     ) -> None:
         self.llm = llm
         self.max_steps = max_steps
         self.max_human_cycles = max_human_cycles
+        self.enable_writer = enable_writer
         self.fallback = fallback_policy or DeterministicSupervisorPolicy(
-            max_steps=max_steps, max_human_cycles=max_human_cycles
+            max_steps=max_steps,
+            max_human_cycles=max_human_cycles,
+            enable_writer=enable_writer,
         )
 
     def _get_model(self) -> BaseChatModel:
@@ -271,11 +328,13 @@ class LLMSupervisorPolicy:
             "1. 'research': Invokes the Research Subgraph to search the web, analyze sources, and synthesize findings.\n"
             "2. 'verify': Invokes the Claim Verifier to evaluate atomic claims against preserved evidence excerpts.\n"
             "3. 'human_review': Invokes Human-in-the-Loop review to present verified claims to the user for approval.\n"
-            "4. 'finish': Concludes orchestration when work is completed or approved.\n\n"
+            "4. 'writer': Invokes the Writer to synthesize a final grounded report after human approval or edit.\n"
+            "5. 'finish': Concludes orchestration when work is completed or approved.\n\n"
             "MANDATORY INVARIANTS:\n"
             "- If claims exist but are unverified, you MUST route to 'verify'. NEVER bypass verification.\n"
             "- If no research or claims exist, you MUST route to 'research'.\n"
-            "- If human review approved, edited, or rejected the research, you MUST route to 'finish'.\n"
+            "- If human review approved or edited the research, route to 'writer' (if final_response not yet produced) or 'finish'.\n"
+            "- If human review rejected the research, route to 'finish'.\n"
             "- If human requested 'research_more', route to 'research' unless cycle limit is reached.\n"
             "Select the next worker and provide clear rationale."
         )
@@ -332,6 +391,7 @@ def create_supervisor_node(
     policy: SupervisorPolicy | None = None,
     max_steps: int = DEFAULT_MAX_SUPERVISOR_STEPS,
     max_human_cycles: int = DEFAULT_MAX_HUMAN_RESEARCH_CYCLES,
+    enable_writer: bool = False,
 ) -> Callable[[ResearchState], dict[str, Any]]:
     """Factory creating the Supervisor node coordinating worker execution in the graph loop.
 
@@ -344,7 +404,9 @@ def create_supervisor_node(
             - follow-up helper updates (if follow-up question requires initialization)
     """
     active_policy = policy or DeterministicSupervisorPolicy(
-        max_steps=max_steps, max_human_cycles=max_human_cycles
+        max_steps=max_steps,
+        max_human_cycles=max_human_cycles,
+        enable_writer=enable_writer,
     )
 
     def supervisor_node(state: ResearchState) -> dict[str, Any]:

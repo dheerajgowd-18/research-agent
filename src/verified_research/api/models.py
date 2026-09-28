@@ -29,6 +29,7 @@ AgentEventType = Literal[
     "retry",
     "human_review_required",
     "human_review_resumed",
+    "writer_update",
     "run_completed",
     "run_failed",
     "run_rejected",
@@ -129,5 +130,9 @@ class ResearchStateResponse(BaseModel):
     review_context: dict[str, Any] | None = Field(
         default=None,
         description="Active interrupt payload containing review items if waiting for human review.",
+    )
+    final_response: dict[str, Any] | None = Field(
+        default=None,
+        description="Structured final research report produced by the Writer.",
     )
     error: str | None = Field(default=None, description="Sanitized error description if failed.")

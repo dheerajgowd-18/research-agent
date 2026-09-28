@@ -142,7 +142,7 @@ def route_after_sufficiency(
 def route_after_supervisor(
     state: ResearchState,
     max_steps: int = DEFAULT_MAX_SUPERVISOR_STEPS,
-) -> Literal["research", "verify", "human_review", "finish"]:
+) -> Literal["research", "verify", "human_review", "writer", "finish"]:
     """Determine which specialized worker node should execute next based on supervisor decision.
 
     Safety Rules:
@@ -151,14 +151,14 @@ def route_after_supervisor(
         2. If supervisor_decision is missing or next_worker is not in allowed workers:
            -> 'finish' (safe fallback preventing unvalidated routing)
         3. Otherwise:
-           -> decision.next_worker ('research', 'verify', 'human_review', or 'finish')
+           -> decision.next_worker ('research', 'verify', 'human_review', 'writer', or 'finish')
 
     Args:
         state: Current graph state containing 'supervisor_steps' and 'supervisor_decision'.
         max_steps: Hard step boundary (defaults to DEFAULT_MAX_SUPERVISOR_STEPS = 8).
 
     Returns:
-        One of 'research', 'verify', 'human_review', or 'finish'.
+        One of 'research', 'verify', 'human_review', 'writer', or 'finish'.
     """
     decision = state.get("supervisor_decision")
     if decision is None:
@@ -179,7 +179,7 @@ def route_after_supervisor(
         return "finish"
 
     worker = decision.next_worker
-    if worker not in ("research", "verify", "human_review", "finish"):
+    if worker not in ("research", "verify", "human_review", "writer", "finish"):
         logger.error(
             "[Router:Supervisor] Unrecognized worker '%s' in supervisor decision. next=finish",
             worker,

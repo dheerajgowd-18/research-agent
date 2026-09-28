@@ -41,6 +41,10 @@ from verified_research.agents.verifier import (
     create_verifier_node,
     verifier_node,
 )
+from verified_research.agents.writer import (
+    WriterService,
+    create_writer_node,
+)
 
 __all__ = [
     "researcher_node",
@@ -73,5 +77,7 @@ __all__ = [
     "create_supervisor_node",
     "supervisor_node",
     "InvariantViolationError",
+    "WriterService",
+    "create_writer_node",
 ]
 

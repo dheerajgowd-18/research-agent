@@ -232,20 +232,22 @@ def build_supervisor_graph(
     custom_critic: Callable | None = None,
     custom_router: Callable | None = None,
     custom_human_review: Callable | None = None,
+    custom_writer: Callable | None = None,
     custom_supervisor: Callable | None = None,
     custom_supervisor_policy: Any | None = None,
     max_supervisor_steps: int = 8,
     max_human_research_cycles: int = 2,
+    enable_writer: bool = False,
 ) -> StateGraph:
     """Construct the Supervisor orchestration StateGraph.
 
     Architecture:
                         Supervisor
-                       /    |     \\
-                      ▼     ▼      ▼
-                 Research Verify Human Review
-                      │      │       │
-                      └──────┴───────┘
+                       /    |     \    \
+                      ▼     ▼      ▼    ▼
+                 Research Verify Human Writer
+                      │      │       │    │
+                      └──────┴───────┴────┘
                              │
                              ▼
                         Supervisor
@@ -256,9 +258,7 @@ def build_supervisor_graph(
         - research: Encapsulated Research Subgraph (researcher -> analyst -> critic)
         - verifier: Evidence-grounded claim-level verifier
         - human_review: Human-in-the-loop review with interrupt()
-
-    Orchestrator:
-        - supervisor: Evaluates state and decides next_worker ('research', 'verify', 'human_review', 'finish')
+        - writer: Synthesizes evidence-grounded final research report
     """
     if custom_subgraph is not None:
         subgraph = custom_subgraph
@@ -298,6 +298,16 @@ def build_supervisor_graph(
 
         human_review = human_review_node
 
+    writer_active = enable_writer or custom_writer is not None
+    if custom_writer is not None:
+        writer_worker = custom_writer
+    elif enable_writer:
+        from verified_research.agents.writer import create_writer_node
+
+        writer_worker = create_writer_node()
+    else:
+        writer_worker = None
+
     if custom_supervisor is not None:
         supervisor = custom_supervisor
     else:
@@ -307,6 +317,7 @@ def build_supervisor_graph(
             policy=custom_supervisor_policy,
             max_steps=max_supervisor_steps,
             max_human_cycles=max_human_research_cycles,
+            enable_writer=writer_active,
         )
 
     from verified_research.graph.router import route_after_supervisor
@@ -322,23 +333,31 @@ def build_supervisor_graph(
     builder.add_node("research", research_worker)
     builder.add_node("verifier", verifier)
     builder.add_node("human_review", human_review)
+    if writer_worker is not None:
+        builder.add_node("writer", writer_worker)
+
+    conditional_targets = {
+        "research": "research",
+        "verify": "verifier",
+        "human_review": "human_review",
+        "finish": END,
+    }
+    if writer_worker is not None:
+        conditional_targets["writer"] = "writer"
 
     builder.add_edge(START, "supervisor")
     builder.add_conditional_edges(
         "supervisor",
         supervisor_router,
-        {
-            "research": "research",
-            "verify": "verifier",
-            "human_review": "human_review",
-            "finish": END,
-        },
+        conditional_targets,
     )
 
     # All workers transition back to the supervisor
     builder.add_edge("research", "supervisor")
     builder.add_edge("verifier", "supervisor")
     builder.add_edge("human_review", "supervisor")
+    if writer_worker is not None:
+        builder.add_edge("writer", "supervisor")
 
     return builder
 
@@ -351,10 +370,12 @@ def create_supervisor_graph(
     custom_critic: Callable | None = None,
     custom_router: Callable | None = None,
     custom_human_review: Callable | None = None,
+    custom_writer: Callable | None = None,
     custom_supervisor: Callable | None = None,
     custom_supervisor_policy: Any | None = None,
     max_supervisor_steps: int = 8,
     max_human_research_cycles: int = 2,
+    enable_writer: bool = False,
     checkpointer: Any | None = None,
 ) -> CompiledStateGraph:
     """Construct and compile the Supervisor orchestration graph."""
@@ -366,10 +387,12 @@ def create_supervisor_graph(
         custom_critic=custom_critic,
         custom_router=custom_router,
         custom_human_review=custom_human_review,
+        custom_writer=custom_writer,
         custom_supervisor=custom_supervisor,
         custom_supervisor_policy=custom_supervisor_policy,
         max_supervisor_steps=max_supervisor_steps,
         max_human_research_cycles=max_human_research_cycles,
+        enable_writer=enable_writer,
     )
     return builder.compile(checkpointer=checkpointer)
 
