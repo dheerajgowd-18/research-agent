@@ -1,0 +1,200 @@
+[
+  {
+    "case_id": "sys_eval_001",
+    "category": "factual_direct",
+    "question": "What is the primary operational mechanism of superconducting transmon qubits?",
+    "description": "Direct factual question with clear physical consensus.",
+    "expected_properties": {
+      "min_claims": 1,
+      "min_sources": 1,
+      "expected_verdicts": ["SUPPORTED"],
+      "hitl_action": "approve",
+      "is_follow_up": false
+    }
+  },
+  {
+    "case_id": "sys_eval_002",
+    "category": "multi_source",
+    "question": "What are the key differences between superconducting qubits and trapped-ion quantum architectures?",
+    "description": "Comparative analysis requiring cross-referencing of multiple technology paradigms.",
+    "expected_properties": {
+      "min_claims": 2,
+      "min_sources": 2,
+      "expected_verdicts": ["SUPPORTED"],
+      "hitl_action": "approve",
+      "is_follow_up": false
+    }
+  },
+  {
+    "case_id": "sys_eval_003",
+    "category": "multi_claim",
+    "question": "What are the major security risks in enterprise Retrieval-Augmented Generation (RAG) systems?",
+    "description": "Multi-attribute research query requiring extraction of distinct attack surfaces (poisoning, extraction, injection).",
+    "expected_properties": {
+      "min_claims": 3,
+      "min_sources": 2,
+      "expected_verdicts": ["SUPPORTED", "PARTIAL"],
+      "hitl_action": "approve",
+      "is_follow_up": false
+    }
+  },
+  {
+    "case_id": "sys_eval_004",
+    "category": "partial_support",
+    "question": "Has quantum advantage been conclusively demonstrated across all commercial optimization problems?",
+    "description": "Query featuring an absolute universal claim that evidence should only partially or conditionally support.",
+    "expected_properties": {
+      "min_claims": 1,
+      "min_sources": 1,
+      "expected_verdicts": ["PARTIAL", "UNSUPPORTED"],
+      "hitl_action": "approve",
+      "is_follow_up": false
+    }
+  },
+  {
+    "case_id": "sys_eval_005",
+    "category": "insufficient_evidence",
+    "question": "What are the room-temperature ambient pressure superconducting metrics for LK-99 confirmed by NIST?",
+    "description": "Query where factual grounding demonstrates absence of confirmation or refuted claims.",
+    "expected_properties": {
+      "min_claims": 1,
+      "min_sources": 1,
+      "expected_verdicts": ["UNSUPPORTED"],
+      "hitl_action": "approve",
+      "is_follow_up": false
+    }
+  },
+  {
+    "case_id": "sys_eval_006",
+    "category": "temporal_current",
+    "question": "What are the latest 2026 quantum coherence time benchmark records for silicon spin qubits?",
+    "description": "Recent timeline query requiring strict temporal filtering.",
+    "expected_properties": {
+      "min_claims": 1,
+      "min_sources": 1,
+      "expected_verdicts": ["SUPPORTED", "PARTIAL"],
+      "hitl_action": "approve",
+      "is_follow_up": false
+    }
+  },
+  {
+    "case_id": "sys_eval_007",
+    "category": "multi_entity",
+    "question": "How do IBM Quantum Condor, Google Quantum AI Willow, and Rigetti Ankaa-2 processors compare in qubit count?",
+    "description": "Multiple corporate actor comparison requiring entity-specific metric attribution.",
+    "expected_properties": {
+      "min_claims": 3,
+      "min_sources": 2,
+      "expected_verdicts": ["SUPPORTED"],
+      "hitl_action": "approve",
+      "is_follow_up": false
+    }
+  },
+  {
+    "case_id": "sys_eval_008",
+    "category": "scope_distinction",
+    "question": "Does surface code error correction eliminate all physical errors in superconducting qubits?",
+    "description": "Query testing scope and hedging distinction between logical suppression and total elimination.",
+    "expected_properties": {
+      "min_claims": 1,
+      "min_sources": 1,
+      "expected_verdicts": ["PARTIAL", "UNSUPPORTED"],
+      "hitl_action": "approve",
+      "is_follow_up": false
+    }
+  },
+  {
+    "case_id": "sys_eval_009",
+    "category": "research_expansion",
+    "question": "What are the cryogenic cooling requirements for dilution refrigerators in transmon scaling?",
+    "description": "Deep technical query expected to trigger multi-pass critic refinement.",
+    "expected_properties": {
+      "min_claims": 2,
+      "min_sources": 2,
+      "expected_verdicts": ["SUPPORTED"],
+      "hitl_action": "approve",
+      "is_follow_up": false
+    }
+  },
+  {
+    "case_id": "sys_eval_010",
+    "category": "follow_up_reuse",
+    "question": "What was the dilution refrigeration base temperature mentioned earlier for transmon scaling?",
+    "description": "Follow-up question where prior research state contains sufficient evidence, evaluating REUSE decision.",
+    "expected_properties": {
+      "min_claims": 1,
+      "min_sources": 1,
+      "expected_verdicts": ["SUPPORTED"],
+      "hitl_action": "approve",
+      "is_follow_up": true,
+      "follow_up_to": "sys_eval_009"
+    }
+  },
+  {
+    "case_id": "sys_eval_011",
+    "category": "follow_up_expansion",
+    "question": "How do neutral atom optical tweezers trap atoms compared to the dilution refrigeration system?",
+    "description": "Follow-up question introducing an unresearched domain requiring RESEARCH_MORE routing.",
+    "expected_properties": {
+      "min_claims": 2,
+      "min_sources": 2,
+      "expected_verdicts": ["SUPPORTED"],
+      "hitl_action": "approve",
+      "is_follow_up": true,
+      "follow_up_to": "sys_eval_009"
+    }
+  },
+  {
+    "case_id": "sys_eval_012",
+    "category": "temporal_mismatch_followup",
+    "question": "What were the 2026 dilution refrigeration updates compared to 2024 baselines?",
+    "description": "Follow-up question testing temporal gap detection preventing stale reuse.",
+    "expected_properties": {
+      "min_claims": 1,
+      "min_sources": 1,
+      "expected_verdicts": ["SUPPORTED"],
+      "hitl_action": "approve",
+      "is_follow_up": true,
+      "follow_up_to": "sys_eval_009"
+    }
+  },
+  {
+    "case_id": "sys_eval_013",
+    "category": "hitl_edit",
+    "question": "What is the theoretical threshold for surface code fault tolerance in 2D architectures?",
+    "description": "Query configured to evaluate Human-in-the-Loop claim text refinement.",
+    "expected_properties": {
+      "min_claims": 1,
+      "min_sources": 1,
+      "expected_verdicts": ["SUPPORTED"],
+      "hitl_action": "edit",
+      "is_follow_up": false
+    }
+  },
+  {
+    "case_id": "sys_eval_014",
+    "category": "hitl_research_more",
+    "question": "What are the decoherence mitigation protocols in topological quantum systems?",
+    "description": "Query configured to trigger human-requested additional research pass.",
+    "expected_properties": {
+      "min_claims": 2,
+      "min_sources": 2,
+      "expected_verdicts": ["SUPPORTED"],
+      "hitl_action": "research_more",
+      "is_follow_up": false
+    }
+  },
+  {
+    "case_id": "sys_eval_015",
+    "category": "hitl_reject",
+    "question": "Is perpetual motion achievable using non-equilibrium Floquet time crystals?",
+    "description": "Unfounded physical claim triggering human rejection.",
+    "expected_properties": {
+      "min_claims": 1,
+      "min_sources": 1,
+      "expected_verdicts": ["UNSUPPORTED"],
+      "hitl_action": "reject",
+      "is_follow_up": false
+    }
+  }
+]
