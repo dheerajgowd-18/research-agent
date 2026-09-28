@@ -493,3 +493,71 @@ async def test_security_credentials_not_exposed(test_app):
         health_res = await client.get("/api/health")
         for sensitive_term in ["GROQ_API_KEY", "TAVILY_API_KEY", "LANGSMITH_API_KEY"]:
             assert sensitive_term not in health_res.text
+
+
+# ==============================================================================
+# 7. Worker Node Granular Lifecycle & Live Event Tests
+# ==============================================================================
+
+
+@pytest.mark.anyio
+async def test_node_started_and_completed_lifecycle(test_app):
+    """Verify that node_started and node_completed events are emitted for supervisor and workers."""
+    async with AsyncClient(transport=ASGITransport(app=test_app), base_url="http://test") as client:
+        init_res = await client.post("/api/research", json={"question": "Testing node lifecycle"})
+        tid = init_res.json()["thread_id"]
+
+        events = []
+        async with client.stream("GET", f"/api/research/{tid}/stream") as stream:
+            async for line in stream.aiter_lines():
+                if line.startswith("data: "):
+                    evt = json.loads(line[6:])
+                    events.append(evt)
+                    if evt["event_type"] == "human_review_required":
+                        break
+
+        event_types = [e["event_type"] for e in events]
+        nodes = [e.get("node") for e in events]
+
+        # Verify node_started and node_completed are present
+        assert "node_started" in event_types
+        assert "node_completed" in event_types
+        assert "supervisor" in nodes
+        assert "verifier" in nodes
+
+
+@pytest.mark.anyio
+async def test_subgraph_live_event_emitter_updates():
+    """Verify that emit_live_event dispatches analysis_update, critic_update, and retry events."""
+    from verified_research.api.events import emit_live_event, set_execution_event_emitter
+
+    emitted = []
+
+    def mock_emitter(event_type, node, data):
+        emitted.append((event_type, node, data))
+
+    set_execution_event_emitter(mock_emitter)
+    try:
+        emit_live_event("analysis_update", "analyst", {"claims_count": 3})
+        emit_live_event("critic_update", "critic", {"quality_score": 9})
+        emit_live_event("retry", "researcher", {"attempt": 1, "delay": 2.0})
+
+        assert len(emitted) == 3
+        assert emitted[0][0] == "analysis_update"
+        assert emitted[0][1] == "analyst"
+        assert emitted[1][0] == "critic_update"
+        assert emitted[1][1] == "critic"
+        assert emitted[2][0] == "retry"
+        assert emitted[2][1] == "researcher"
+    finally:
+        set_execution_event_emitter(None)
+
+
+@pytest.mark.anyio
+async def test_unknown_thread_id_returns_404(test_app):
+    """Querying a non-existent thread returns 404 with a helpful message."""
+    async with AsyncClient(transport=ASGITransport(app=test_app), base_url="http://test") as client:
+        res = await client.get("/api/research/research_nonexistent_99999")
+        assert res.status_code == 404
+        assert "not found" in res.json()["detail"].lower()
+
