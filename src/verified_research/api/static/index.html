@@ -3,666 +3,2013 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verified Research Agent</title>
+  <title>Verified Research Agent — Observability Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f172a;
-      --surface: #1e293b;
-      --surface-border: #334155;
-      --text-main: #f8fafc;
+      --bg: #090a0f;
+      --bg-subtle: #0e111a;
+      --surface: #131722;
+      --surface-elevated: #181d2c;
+      --surface-border: #23283b;
+      --surface-border-subtle: #1c2130;
+      --surface-border-hover: #333a52;
+      
+      --text: #f1f5f9;
       --text-muted: #94a3b8;
-      --primary: #38bdf8;
-      --primary-hover: #0284c7;
-      --success: #22c55e;
+      --text-dim: #64748b;
+      
+      --accent: #3b82f6;
+      --accent-muted: rgba(59, 130, 246, 0.15);
+      --accent-hover: #2563eb;
+      
+      --success: #10b981;
+      --success-muted: rgba(16, 185, 129, 0.12);
+      --success-border: rgba(16, 185, 129, 0.3);
+      
       --warning: #f59e0b;
-      --danger: #ef4444;
+      --warning-muted: rgba(245, 158, 11, 0.12);
+      --warning-border: rgba(245, 158, 11, 0.3);
+      
+      --danger: #f43f5e;
+      --danger-muted: rgba(244, 63, 94, 0.12);
+      --danger-border: rgba(244, 63, 94, 0.3);
+      
       --purple: #a855f7;
-      --radius: 8px;
+      --purple-muted: rgba(168, 85, 247, 0.12);
+      --purple-border: rgba(168, 85, 247, 0.3);
+
+      --radius-sm: 6px;
+      --radius: 10px;
+      --radius-lg: 14px;
+      
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text-main);
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      color: var(--text);
       line-height: 1.5;
-      padding: 24px;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
-    .container { max-width: 1200px; margin: 0 auto; }
-    header {
+
+    /* Layout Container */
+    .app-shell {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 20px 28px 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Top Navigation / Header */
+    header.top-nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--surface-border);
-      margin-bottom: 24px;
+      padding: 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(8px);
     }
-    .logo-group h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
-    .logo-group p { font-size: 0.875rem; color: var(--text-muted); }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #fff;
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.35);
+    }
+    .brand-titles h1 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .version-pill {
+      font-size: 0.6875rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      background: var(--accent-muted);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    .brand-titles p {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Status Beacon Badge */
     .status-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       padding: 6px 14px;
       border-radius: 9999px;
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       font-weight: 600;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      font-family: var(--font-mono);
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
     }
-    .status-idle { background: #334155; color: #cbd5e1; }
-    .status-running { background: #0369a1; color: #bae6fd; animation: pulse 2s infinite; }
-    .status-waiting_for_human { background: #b45309; color: #fef3c7; }
-    .status-resuming { background: #6b21a8; color: #f3e8ff; animation: pulse 2s infinite; }
-    .status-completed { background: #15803d; color: #bbf7d0; }
-    .status-failed { background: #991b1b; color: #fecaca; }
-    .status-rejected { background: #475569; color: #f1f5f9; border: 1px solid var(--danger); }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    .status-beacon {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
 
-    /* Session & Search Bar */
+    .status-idle { background: rgba(148, 163, 184, 0.1); color: var(--text-muted); border-color: var(--surface-border); }
+    .status-idle .status-beacon { background: var(--text-dim); }
+
+    .status-running { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); }
+    .status-running .status-beacon { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; animation: beaconPulse 1.5s infinite; }
+
+    .status-waiting_for_human { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border-color: rgba(245, 158, 11, 0.4); }
+    .status-waiting_for_human .status-beacon { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; animation: beaconPulse 1.2s infinite; }
+
+    .status-resuming { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border-color: rgba(168, 85, 247, 0.4); }
+    .status-resuming .status-beacon { background: #a855f7; box-shadow: 0 0 10px #a855f7; animation: beaconPulse 1.5s infinite; }
+
+    .status-completed { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.4); }
+    .status-completed .status-beacon { background: #10b981; box-shadow: 0 0 8px #10b981; }
+
+    .status-failed { background: rgba(244, 63, 94, 0.15); color: #fda4af; border-color: rgba(244, 63, 94, 0.4); }
+    .status-failed .status-beacon { background: #f43f5e; box-shadow: 0 0 8px #f43f5e; }
+
+    .status-rejected { background: rgba(100, 116, 139, 0.15); color: #cbd5e1; border-color: rgba(244, 63, 94, 0.3); }
+    .status-rejected .status-beacon { background: #64748b; }
+
+    @keyframes beaconPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.55; }
+    }
+
+    /* Meta Badges */
+    .meta-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+    .meta-chip:hover {
+      border-color: var(--surface-border-hover);
+      color: var(--text);
+    }
+    .timer-badge {
+      color: #38bdf8;
+      font-weight: 600;
+    }
+
+    /* Reconnection Bar in Header */
+    .reconnect-form {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .reconnect-input {
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      background: var(--bg-subtle);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      width: 150px;
+    }
+    .reconnect-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* Primary Cards & Common UI */
     .card {
       background: var(--surface);
       border: 1px solid var(--surface-border);
       border-radius: var(--radius);
       padding: 20px;
-      margin-bottom: 24px;
+      position: relative;
     }
-    .input-row { display: flex; gap: 12px; margin-bottom: 12px; }
-    input[type="text"], textarea {
-      flex: 1;
-      padding: 12px 16px;
-      border-radius: var(--radius);
-      border: 1px solid var(--surface-border);
-      background: #0f172a;
-      color: var(--text-main);
-      font-size: 0.95rem;
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
     }
-    input[type="text"]:focus, textarea:focus { outline: 2px solid var(--primary); }
+    .card-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title svg {
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+    }
+
+    /* Buttons */
     button {
-      padding: 10px 20px;
-      border-radius: var(--radius);
-      border: none;
+      font-family: var(--font-sans);
+      font-size: 0.8125rem;
       font-weight: 600;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      transition: background 0.15s ease;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s ease;
     }
-    .btn-primary { background: var(--primary); color: #0f172a; }
-    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
-    .btn-secondary { background: var(--surface-border); color: var(--text-main); }
-    .btn-secondary:hover:not(:disabled) { background: #475569; }
-    .btn-success { background: var(--success); color: #0f172a; }
-    .btn-warning { background: var(--warning); color: #0f172a; }
-    .btn-danger { background: var(--danger); color: #ffffff; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      filter: grayscale(40%);
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+    }
+    .btn-secondary {
+      background: var(--surface-elevated);
+      color: var(--text);
+      border-color: var(--surface-border);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--surface-border);
+      border-color: var(--surface-border-hover);
+    }
+    .btn-success {
+      background: var(--success);
+      color: #052e16;
+      font-weight: 700;
+    }
+    .btn-success:hover:not(:disabled) {
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    }
+    .btn-warning {
+      background: var(--warning);
+      color: #451a03;
+      font-weight: 700;
+    }
+    .btn-warning:hover:not(:disabled) {
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+    }
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    .btn-danger:hover:not(:disabled) {
+      box-shadow: 0 0 12px rgba(244, 63, 94, 0.4);
+    }
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 0.75rem;
+    }
 
-    /* Stepper / Timeline */
-    .stepper {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      background: var(--surface);
-      padding: 16px 24px;
-      border-radius: var(--radius);
-      border: 1px solid var(--surface-border);
-      position: relative;
-    }
-    .step-item {
+    /* Command / Query Bar */
+    .command-bar {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8125rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      z-index: 1;
-    }
-    .step-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--surface-border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.875rem;
-    }
-    .step-item.active .step-icon { background: var(--primary); color: #0f172a; box-shadow: 0 0 12px var(--primary); }
-    .step-item.active { color: var(--primary); }
-    .step-item.completed .step-icon { background: var(--success); color: #0f172a; }
-    .step-item.completed { color: var(--success); }
-
-    /* Operational Banner */
-    .supervisor-banner {
-      background: #172554;
-      border-left: 4px solid var(--primary);
-      padding: 12px 16px;
-      margin-bottom: 20px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
       gap: 12px;
+      background: linear-gradient(180deg, var(--surface) 0%, var(--bg-subtle) 100%);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
     }
-    .supervisor-banner strong { color: var(--primary); }
+    .input-wrapper {
+      display: flex;
+      gap: 12px;
+      position: relative;
+    }
+    .query-input {
+      flex: 1;
+      padding: 14px 18px;
+      font-size: 1rem;
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-sans);
+      transition: border-color 0.15s ease;
+    }
+    .query-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+    .btn-launch {
+      padding: 0 28px;
+      font-size: 0.9375rem;
+      border-radius: var(--radius);
+    }
+    .sample-chips {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .chip-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .chip {
+      padding: 5px 12px;
+      border-radius: 9999px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .chip:hover {
+      background: var(--surface-border);
+      color: var(--text);
+      border-color: var(--surface-border-hover);
+    }
 
-    /* Layout Columns */
-    .grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
-    @media (max-width: 900px) { .grid-layout { grid-template-columns: 1fr; } }
+    /* Live Architecture Graph Visualizer */
+    .arch-card {
+      padding: 20px;
+      overflow: hidden;
+    }
+    .arch-canvas-wrap {
+      width: 100%;
+      overflow-x: auto;
+      padding: 10px 0;
+    }
+    .arch-svg {
+      width: 100%;
+      min-width: 900px;
+      height: 220px;
+      display: block;
+    }
+    .arch-node {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .arch-node:hover {
+      filter: brightness(1.15);
+    }
+    .node-box {
+      fill: var(--surface-elevated);
+      stroke: var(--surface-border);
+      stroke-width: 1.5;
+      rx: 8;
+      transition: all 0.3s ease;
+    }
+    .node-title {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 700;
+      fill: var(--text);
+    }
+    .node-sub {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      fill: var(--text-dim);
+    }
+    .node-badge {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    .node-status-idle .node-box { stroke: var(--surface-border); fill: var(--surface-elevated); }
+    .node-status-idle .node-badge { fill: var(--text-dim); }
 
-    /* Metrics Cards */
-    .metrics-bar { display: flex; gap: 16px; margin-bottom: 20px; }
+    .node-status-running .node-box {
+      stroke: var(--accent);
+      stroke-width: 2.5;
+      fill: rgba(59, 130, 246, 0.15);
+      filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.45));
+    }
+    .node-status-running .node-badge { fill: #60a5fa; }
+
+    .node-status-completed .node-box {
+      stroke: var(--success);
+      stroke-width: 1.5;
+      fill: rgba(16, 185, 129, 0.1);
+    }
+    .node-status-completed .node-badge { fill: var(--success); }
+
+    .node-status-waiting .node-box {
+      stroke: var(--warning);
+      stroke-width: 2;
+      fill: rgba(245, 158, 11, 0.15);
+      filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.4));
+    }
+    .node-status-waiting .node-badge { fill: var(--warning); }
+
+    .node-status-failed .node-box {
+      stroke: var(--danger);
+      stroke-width: 2;
+      fill: rgba(244, 63, 94, 0.15);
+    }
+    .node-status-failed .node-badge { fill: var(--danger); }
+
+    /* SVG Connecting Edge Lines */
+    .arch-edge {
+      stroke: var(--surface-border);
+      stroke-width: 2;
+      fill: none;
+      transition: stroke 0.3s ease;
+    }
+    .arch-edge-active {
+      stroke: var(--accent);
+      stroke-width: 2.5;
+      stroke-dasharray: 6 4;
+      animation: edgeFlow 1s linear infinite;
+    }
+    @keyframes edgeFlow {
+      from { stroke-dashoffset: 20; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Data Flow Metrics Bar */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    }
     .metric-card {
       background: var(--surface);
       border: 1px solid var(--surface-border);
       border-radius: var(--radius);
-      padding: 12px 16px;
-      flex: 1;
-      text-align: center;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
-    .metric-card .val { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
-    .metric-card .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+    .metric-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .metric-val {
+      font-size: 1.75rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text);
+    }
+    .metric-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .breakdown-bar {
+      display: flex;
+      height: 6px;
+      width: 100%;
+      background: var(--bg-subtle);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .bar-seg { height: 100%; transition: width 0.3s ease; }
+    .bar-supported { background: var(--success); }
+    .bar-partial { background: var(--warning); }
+    .bar-unsupported { background: var(--danger); }
 
-    /* Claims & Verification Cards */
+    /* Main Console Workspace Grid */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 1050px) {
+      .workspace-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Execution Timeline / Live Event Stream */
+    .stream-panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 480px;
+    }
+    .filter-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--surface-border-subtle);
+    }
+    .tab-btn {
+      padding: 4px 10px;
+      font-size: 0.6875rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      background: var(--bg-subtle);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-dim);
+      cursor: pointer;
+    }
+    .tab-btn:hover { color: var(--text); border-color: var(--surface-border-hover); }
+    .tab-btn.active {
+      background: var(--accent-muted);
+      color: #60a5fa;
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+    .stream-scroll {
+      flex: 1;
+      max-height: 520px;
+      overflow-y: auto;
+      background: var(--bg);
+      border: 1px solid var(--surface-border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .stream-empty {
+      color: var(--text-dim);
+      text-align: center;
+      padding: 40px 16px;
+    }
+    .event-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-elevated);
+      border: 1px solid var(--surface-border-subtle);
+      transition: background 0.15s ease;
+    }
+    .event-row:hover { background: #1c2233; }
+    .event-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .event-time {
+      color: var(--text-dim);
+      font-size: 0.6875rem;
+      min-width: 60px;
+    }
+    .event-node {
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      border: 1px solid var(--surface-border);
+    }
+    .node-supervisor { color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); }
+    .node-researcher { color: #34d399; border-color: rgba(52, 211, 153, 0.3); }
+    .node-analyst { color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); }
+    .node-critic { color: #f472b6; border-color: rgba(244, 114, 182, 0.3); }
+    .node-verifier { color: #818cf8; border-color: rgba(129, 140, 248, 0.3); }
+    .node-human_review { color: #c084fc; border-color: rgba(192, 132, 252, 0.3); }
+
+    .event-badge {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    .ev-run_started { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+    .ev-node_started { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
+    .ev-supervisor_decision { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; }
+    .ev-research_update { background: rgba(52, 211, 153, 0.2); color: #6ee7b7; }
+    .ev-source_found { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .ev-analysis_update { background: rgba(251, 191, 36, 0.2); color: #fde68a; }
+    .ev-critic_update { background: rgba(244, 114, 182, 0.2); color: #fbcfe8; }
+    .ev-verification_update { background: rgba(129, 140, 248, 0.2); color: #c7d2fe; }
+    .ev-retry { background: rgba(245, 158, 11, 0.25); color: #fde047; }
+    .ev-human_review_required { background: rgba(192, 132, 252, 0.25); color: #e9d5ff; font-weight: 700; }
+    .ev-human_review_resumed { background: rgba(168, 85, 247, 0.25); color: #e9d5ff; }
+    .ev-node_completed { background: rgba(148, 163, 184, 0.1); color: #94a3b8; }
+    .ev-run_completed { background: rgba(16, 185, 129, 0.25); color: #6ee7b7; font-weight: 700; }
+    .ev-run_failed { background: rgba(244, 63, 94, 0.25); color: #fda4af; font-weight: 700; }
+    .ev-run_rejected { background: rgba(100, 116, 139, 0.25); color: #cbd5e1; }
+
+    .event-body {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      word-break: break-word;
+      padding-left: 2px;
+    }
+    .event-payload-btn {
+      font-size: 0.625rem;
+      color: var(--text-dim);
+      cursor: pointer;
+      text-decoration: underline;
+      align-self: flex-start;
+      margin-top: 2px;
+    }
+    .event-payload {
+      margin-top: 4px;
+      padding: 6px;
+      background: #0b0d14;
+      border-radius: 4px;
+      font-size: 0.6875rem;
+      color: #94a3b8;
+      white-space: pre-wrap;
+      display: none;
+    }
+
+    /* Side / Inspector Panel */
+    .inspector-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .stat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--bg-subtle);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--surface-border-subtle);
+      font-size: 0.8125rem;
+    }
+    .stat-label { color: var(--text-dim); }
+    .stat-value { font-family: var(--font-mono); font-weight: 600; color: var(--text); }
+
+    /* Research Loop & Critic Panel */
+    .critic-score-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .score-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.125rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      background: var(--surface-elevated);
+      border: 3px solid var(--accent);
+      color: #60a5fa;
+    }
+    .score-meta { display: flex; flex-direction: column; gap: 2px; }
+    .score-title { font-size: 0.8125rem; font-weight: 600; color: var(--text); }
+    .score-sub { font-size: 0.75rem; color: var(--text-dim); }
+
+    /* Human Review Console (HITL Section) */
+    #hitlSection {
+      border: 1px solid var(--warning-border);
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, var(--surface) 100%);
+      box-shadow: 0 0 24px rgba(245, 158, 11, 0.12);
+    }
+    .hitl-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .hitl-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--warning-muted);
+      border: 1px solid var(--warning-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--warning);
+      flex-shrink: 0;
+    }
+    .hitl-text h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fef3c7;
+      margin-bottom: 4px;
+    }
+    .hitl-text p {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+    .hitl-actions-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--surface-border);
+    }
+
+    /* Modal / Expandable Dialogs */
+    .dialog-box {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      display: none;
+    }
+    .dialog-box.open { display: block; }
+    .dialog-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .dialog-input {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      margin-bottom: 10px;
+    }
+
+    /* Claims & Grounding Explorer */
+    .claims-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
     .claim-card {
-      background: #131d31;
+      background: var(--surface-elevated);
       border: 1px solid var(--surface-border);
       border-radius: var(--radius);
       padding: 16px;
-      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.15s ease;
     }
+    .claim-card:hover { border-color: var(--surface-border-hover); }
     .claim-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 10px;
+      align-items: center;
+      gap: 10px;
     }
-    .claim-title { font-weight: 600; font-size: 1rem; color: #f1f5f9; }
+    .claim-id {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
     .verdict-tag {
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
       font-weight: 700;
-      white-space: nowrap;
-    }
-    .verdict-supported { background: #14532d; color: #86efac; border: 1px solid #22c55e; }
-    .verdict-partial { background: #713f12; color: #fde047; border: 1px solid #eab308; }
-    .verdict-unsupported { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
-    .evidence-box {
-      margin-top: 12px;
-      padding: 12px;
-      background: #0f172a;
-      border-left: 3px solid var(--surface-border);
+      padding: 3px 8px;
       border-radius: 4px;
-      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
-    .evidence-meta {
+    .verdict-SUPPORTED { background: var(--success-muted); color: var(--success); border: 1px solid var(--success-border); }
+    .verdict-PARTIAL { background: var(--warning-muted); color: var(--warning); border: 1px solid var(--warning-border); }
+    .verdict-UNSUPPORTED { background: var(--danger-muted); color: var(--danger); border: 1px solid var(--danger-border); }
+
+    .claim-text {
+      font-size: 0.875rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .confidence-wrap {
       display: flex;
-      gap: 12px;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+    .conf-meter {
+      flex: 1;
+      height: 4px;
+      background: var(--bg);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .conf-fill { height: 100%; background: var(--accent); }
+    .claim-reasoning {
       font-size: 0.75rem;
       color: var(--text-muted);
-      margin-top: 6px;
+      background: var(--bg-subtle);
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      border-left: 2px solid var(--accent);
     }
-    .evidence-meta a { color: var(--primary); text-decoration: none; }
-    .evidence-meta a:hover { text-decoration: underline; }
-
-    /* HITL Callout Modal / Section */
-    .hitl-section {
-      background: #2a1f07;
-      border: 2px solid var(--warning);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 24px;
-    }
-    .hitl-section h2 { font-size: 1.25rem; color: #fef08a; margin-bottom: 8px; }
-    .hitl-controls { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-    .hitl-edit-pane { margin-top: 16px; padding: 16px; background: #1e293b; border-radius: var(--radius); }
-
-    /* Log Console */
-    .log-stream {
-      background: #090d16;
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius);
-      padding: 12px;
-      font-family: monospace;
+    .evidence-quote {
       font-size: 0.75rem;
-      max-height: 400px;
-      overflow-y: auto;
+      color: #94a3b8;
+      background: #0d1017;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px dashed var(--surface-border);
+      font-style: italic;
     }
-    .log-entry { margin-bottom: 6px; padding: 4px; border-bottom: 1px solid #1e293b; }
-    .log-time { color: var(--text-muted); }
-    .log-node { color: var(--primary); font-weight: 600; }
+
+    /* Sources Explorer */
+    .sources-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .source-item {
+      padding: 12px 14px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .source-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .source-title {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #38bdf8;
+      text-decoration: none;
+    }
+    .source-title:hover { text-decoration: underline; }
+    .source-id {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      color: var(--text-dim);
+    }
+    .source-snippet {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Completed Executive Summary */
+    .summary-card {
+      border-color: var(--success-border);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, var(--surface) 100%);
+    }
+    .summary-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 10px 16px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--surface-border-hover);
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      color: var(--text);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Header -->
-    <header>
-      <div class="logo-group">
-        <h1>Verified Research Agent</h1>
-        <p>Ground-truth claim verification with Human-in-the-Loop orchestration</p>
+
+<div class="app-shell">
+  <!-- Section 1: Header & Nav -->
+  <header class="top-nav">
+    <div class="brand-wrap">
+      <div class="brand-icon">VR</div>
+      <div class="brand-titles">
+        <h1>Verified Research Agent <span class="version-pill">LangSmith Observability</span></h1>
+        <p>Evidence-grounded multi-worker LangGraph supervisor & verification system</p>
       </div>
+    </div>
+
+    <div class="nav-controls">
+      <!-- Status Badge -->
       <div id="statusBadge" class="status-badge status-idle">
-        <span id="statusDot">●</span>
-        <span id="statusText">IDLE</span>
+        <span class="status-beacon"></span>
+        <span id="statusLabel">IDLE</span>
       </div>
-    </header>
 
-    <!-- Session & Question Controls -->
-    <section class="card">
-      <div class="input-row">
-        <input type="text" id="questionInput" placeholder="Enter research query (e.g. What are the latest enterprise RAG security risks?)" />
-        <button id="btnStart" class="btn-primary" onclick="startResearch()">Start Research</button>
+      <!-- Active Thread Badge -->
+      <div id="threadBadge" class="meta-chip" onclick="copyThreadId()" title="Click to copy Thread ID">
+        <span id="threadIdDisplay">no_session</span>
+        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
       </div>
-      <div class="input-row" style="margin-bottom: 0;">
-        <input type="text" id="threadInput" placeholder="Reconnect to Session / Thread ID (optional)" />
-        <button id="btnReconnect" class="btn-secondary" onclick="reconnectSession()">Reconnect</button>
-      </div>
-    </section>
 
-    <!-- Execution Stepper -->
-    <section class="stepper" id="stepper">
-      <div class="step-item" id="step-supervisor">
-        <div class="step-icon">1</div>
-        <span>Supervisor</span>
-      </div>
-      <div class="step-item" id="step-research">
-        <div class="step-icon">2</div>
-        <span>Research</span>
-      </div>
-      <div class="step-item" id="step-verifier">
-        <div class="step-icon">3</div>
-        <span>Verifier</span>
-      </div>
-      <div class="step-item" id="step-human_review">
-        <div class="step-icon">4</div>
-        <span>Human Review</span>
-      </div>
-      <div class="step-item" id="step-finish">
-        <div class="step-icon">5</div>
-        <span>Finish</span>
-      </div>
-    </section>
+      <!-- Elapsed Timer -->
+      <div class="meta-chip timer-badge" id="elapsedTimer">00:00.0s</div>
 
-    <!-- Supervisor Operational Banner -->
-    <div id="supervisorBanner" class="supervisor-banner" style="display: none;">
-      <div>
-        <strong>Supervisor Decision:</strong>
-        <span id="supervisorText">Evaluating research plan...</span>
+      <!-- Session Reconnect Form -->
+      <form class="reconnect-form" onsubmit="handleReconnect(event)">
+        <input type="text" id="reconnectInput" class="reconnect-input" placeholder="research_id..." />
+        <button type="submit" class="btn-secondary btn-sm">Restore</button>
+      </form>
+    </div>
+  </header>
+
+  <!-- Section 2: Command Bar & Sample Prompts -->
+  <section class="command-bar">
+    <div class="input-wrapper">
+      <input type="text" id="questionInput" class="query-input" placeholder="Enter a complex research inquiry (e.g. enterprise RAG threat models, context limits, retrieval vulnerabilities)..." onkeydown="if(event.key==='Enter') startResearch()" />
+      <button id="startBtn" class="btn-primary btn-launch" onclick="startResearch()">
+        <span>Launch Investigation</span>
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+      </button>
+    </div>
+    <div class="sample-chips">
+      <span class="chip-label">Quick Queries:</span>
+      <button class="chip" onclick="setQuery('What are enterprise RAG security risks, vector poison attacks, and defense mitigations?')">Enterprise RAG Security</button>
+      <button class="chip" onclick="setQuery('What causes needle-in-a-haystack retrieval degradation in long-context LLMs?')">Long-Context Limits</button>
+      <button class="chip" onclick="setQuery('How does iterative multi-agent critique improve factual verification accuracy?')">Multi-Agent Critique</button>
+      <button class="chip" onclick="setQuery('What are the empirical trade-offs between dense semantic retrieval and sparse BM25 indexing?')">Dense vs BM25</button>
+    </div>
+  </section>
+
+  <!-- Section 3: Live LangGraph Architecture Visualizer (Connected Nodes) -->
+  <section class="card arch-card">
+    <div class="card-header">
+      <span class="card-title">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        LangGraph Supervisor Architecture
+      </span>
+      <span id="activeWorkerLabel" class="meta-chip">Idle</span>
+    </div>
+
+    <div class="arch-canvas-wrap">
+      <svg class="arch-svg" viewBox="0 0 920 200">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="#333a52" />
+          </marker>
+          <marker id="arrow-active" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="#3b82f6" />
+          </marker>
+        </defs>
+
+        <!-- Edges -->
+        <!-- START to Supervisor -->
+        <path id="edge-start-sup" class="arch-edge" d="M 65 100 L 135 100" marker-end="url(#arrow)" />
+        <!-- Supervisor to Research Subgraph -->
+        <path id="edge-sup-res" class="arch-edge" d="M 235 75 C 280 40, 310 40, 355 40" marker-end="url(#arrow)" />
+        <!-- Research Subgraph back to Supervisor -->
+        <path id="edge-res-sup" class="arch-edge" d="M 355 55 C 310 55, 270 70, 235 85" marker-end="url(#arrow)" />
+        <!-- Supervisor to Verifier -->
+        <path id="edge-sup-ver" class="arch-edge" d="M 235 100 L 495 100" marker-end="url(#arrow)" />
+        <!-- Verifier back to Supervisor -->
+        <path id="edge-ver-sup" class="arch-edge" d="M 495 110 C 370 125, 320 120, 235 110" marker-end="url(#arrow)" />
+        <!-- Supervisor to Human Review -->
+        <path id="edge-sup-hitl" class="arch-edge" d="M 235 120 C 280 160, 480 160, 635 160" marker-end="url(#arrow)" />
+        <!-- Human Review back to Supervisor -->
+        <path id="edge-hitl-sup" class="arch-edge" d="M 635 170 C 470 185, 280 170, 235 125" marker-end="url(#arrow)" />
+        <!-- Supervisor to Finish/End -->
+        <path id="edge-sup-end" class="arch-edge" d="M 235 90 C 400 20, 700 20, 785 90" marker-end="url(#arrow)" />
+
+        <!-- Nodes -->
+        <!-- START Node -->
+        <g id="node-start" class="arch-node">
+          <circle cx="45" cy="100" r="18" fill="#181d2c" stroke="#23283b" stroke-width="1.5" />
+          <text x="45" y="103" text-anchor="middle" font-size="9" font-family="var(--font-mono)" font-weight="700" fill="#94a3b8">START</text>
+        </g>
+
+        <!-- Supervisor Node -->
+        <g id="node-supervisor" class="arch-node node-status-idle" transform="translate(135, 60)" onclick="filterStreamNode('supervisor')">
+          <rect class="node-box" width="100" height="80" />
+          <text class="node-title" x="50" y="30" text-anchor="middle">Supervisor</text>
+          <text class="node-sub" x="50" y="46" text-anchor="middle">Routing Brain</text>
+          <text class="node-badge" x="50" y="66" text-anchor="middle">QUEUED</text>
+        </g>
+
+        <!-- Research Subgraph Node -->
+        <g id="node-research" class="arch-node node-status-idle" transform="translate(355, 10)" onclick="filterStreamNode('research')">
+          <rect class="node-box" width="115" height="70" />
+          <text class="node-title" x="57" y="24" text-anchor="middle">Research</text>
+          <text class="node-sub" x="57" y="38" text-anchor="middle">Researcher/Analyst/Critic</text>
+          <text class="node-badge" x="57" y="56" text-anchor="middle">QUEUED</text>
+        </g>
+
+        <!-- Verifier Node -->
+        <g id="node-verifier" class="arch-node node-status-idle" transform="translate(495, 65)" onclick="filterStreamNode('verifier')">
+          <rect class="node-box" width="110" height="70" />
+          <text class="node-title" x="55" y="25" text-anchor="middle">Verifier</text>
+          <text class="node-sub" x="55" y="40" text-anchor="middle">Evidence Grounding</text>
+          <text class="node-badge" x="55" y="58" text-anchor="middle">QUEUED</text>
+        </g>
+
+        <!-- Human Review Node -->
+        <g id="node-human_review" class="arch-node node-status-idle" transform="translate(635, 125)" onclick="filterStreamNode('human_review')">
+          <rect class="node-box" width="115" height="65" />
+          <text class="node-title" x="57" y="24" text-anchor="middle">Human Review</text>
+          <text class="node-sub" x="57" y="38" text-anchor="middle">HITL Interrupt</text>
+          <text class="node-badge" x="57" y="54" text-anchor="middle">QUEUED</text>
+        </g>
+
+        <!-- END Node -->
+        <g id="node-finish" class="arch-node node-status-idle" transform="translate(785, 70)" onclick="filterStreamNode('')">
+          <circle cx="25" cy="30" r="22" fill="#181d2c" stroke="#23283b" stroke-width="1.5" class="finish-circle" />
+          <text x="25" y="34" text-anchor="middle" font-size="10" font-family="var(--font-mono)" font-weight="700" fill="#94a3b8">END</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Section 4: Data Flow Pipeline Bar -->
+  <section class="metrics-grid">
+    <div class="metric-card">
+      <span class="metric-title">Sources Gathered</span>
+      <span class="metric-val" id="metricSources">0</span>
+      <span class="metric-sub" id="metricSourcesSub">0 external domains indexed</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-title">Evidence Extracted</span>
+      <span class="metric-val" id="metricEvidence">0</span>
+      <span class="metric-sub" id="metricEvidenceSub">0 verbatim passages extracted</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-title">Claims Formulated</span>
+      <span class="metric-val" id="metricClaims">0</span>
+      <span class="metric-sub" id="metricClaimsSub">0 factual propositions synthesized</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-title">Grounding Verification</span>
+      <span class="metric-val" id="metricVerified">0%</span>
+      <div class="breakdown-bar">
+        <div id="barSupported" class="bar-seg bar-supported" style="width: 0%"></div>
+        <div id="barPartial" class="bar-seg bar-partial" style="width: 0%"></div>
+        <div id="barUnsupported" class="bar-seg bar-unsupported" style="width: 0%"></div>
+      </div>
+      <span class="metric-sub" id="metricVerifiedSub">0 supported • 0 partial • 0 unsupported</span>
+    </div>
+  </section>
+
+  <!-- Section 10 & 11: Human Review Console (HITL Banner & Action Controls) -->
+  <section id="hitlSection" class="card" style="display: none;">
+    <div class="hitl-banner">
+      <div class="hitl-icon">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      </div>
+      <div class="hitl-text">
+        <h3>Human-in-the-Loop Review Required</h3>
+        <p>Supervisor has paused graph execution at checkpoint. Inspect the synthesized claims and verification evidence below before selecting an authoritative action.</p>
       </div>
     </div>
 
-    <!-- Human Review Section (Shown during interrupt) -->
-    <section id="hitlSection" class="hitl-section" style="display: none;">
-      <h2>⚠️ Human Review Required</h2>
-      <p>Research execution has paused for human inspection. Review the verified claims below and choose an action to proceed.</p>
+    <!-- Review Items Context Snapshot -->
+    <div id="hitlContextSummary" class="stat-list" style="margin-bottom: 12px;"></div>
 
-      <div class="hitl-controls">
-        <button class="btn-success" onclick="submitReview('approve')">✓ Approve Research</button>
-        <button class="btn-primary" onclick="toggleEditPane()">✎ Edit Claims</button>
-        <button class="btn-warning" onclick="promptResearchMore()">⟳ Request More Research</button>
-        <button class="btn-danger" onclick="confirmReject()">✕ Reject Research</button>
-      </div>
+    <div class="hitl-actions-bar">
+      <button class="btn-success" onclick="submitHitlAction('approve')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        Approve & Complete
+      </button>
+      <button class="btn-secondary" onclick="toggleDialog('editDialog')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        Edit Claims
+      </button>
+      <button class="btn-warning" onclick="toggleDialog('researchMoreDialog')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        Research More
+      </button>
+      <button class="btn-danger" onclick="toggleDialog('rejectDialog')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        Reject Run
+      </button>
+    </div>
 
-      <div id="editPane" class="hitl-edit-pane" style="display: none;">
-        <h3>Edit Claims</h3>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Edit claim text while preserving existing evidence linkages.</p>
-        <div id="editClaimsContainer"></div>
-        <button class="btn-primary" style="margin-top: 12px;" onclick="submitEditedClaims()">Submit Edited Claims</button>
-      </div>
-
-      <div id="feedbackPane" class="hitl-edit-pane" style="display: none;">
-        <h3>Research Feedback</h3>
-        <textarea id="feedbackInput" rows="3" placeholder="Provide targeted topics or queries for additional research passes..."></textarea>
-        <button class="btn-warning" style="margin-top: 12px;" onclick="submitReview('research_more')">Dispatch Research Pass</button>
-      </div>
-    </section>
-
-    <!-- Metrics Bar -->
-    <div class="metrics-bar">
-      <div class="metric-card">
-        <div class="val" id="metricIteration">0</div>
-        <div class="label">Research Iteration</div>
-      </div>
-      <div class="metric-card">
-        <div class="val" id="metricSources">0</div>
-        <div class="label">Sources Found</div>
-      </div>
-      <div class="metric-card">
-        <div class="val" id="metricClaims">0</div>
-        <div class="label">Claims Verified</div>
-      </div>
-      <div class="metric-card">
-        <div class="val" id="metricCycles">0</div>
-        <div class="label">Human Cycles</div>
+    <!-- Edit Claims Dialog -->
+    <div id="editDialog" class="dialog-box">
+      <div class="dialog-title">Edit Claims (Client-validated against available Evidence IDs)</div>
+      <div id="editClaimsContainer" style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;"></div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-primary btn-sm" onclick="saveEditedClaims()">Submit Edited Claims</button>
+        <button class="btn-secondary btn-sm" onclick="toggleDialog('editDialog')">Cancel</button>
       </div>
     </div>
 
-    <!-- Main Content Grid -->
-    <div class="grid-layout">
-      <!-- Left: Claims, Evidence, & Traceability -->
-      <div>
-        <h2 style="font-size: 1.15rem; margin-bottom: 16px;">Verified Claims & Grounding Evidence</h2>
-        <div id="claimsContainer">
-          <p style="color: var(--text-muted); font-size: 0.9rem;">No active claims. Start research above to formulate and verify findings.</p>
+    <!-- Research More Dialog -->
+    <div id="researchMoreDialog" class="dialog-box">
+      <div class="dialog-title">Guide Further Research</div>
+      <p style="font-size:0.75rem; color:var(--text-dim); margin-bottom:8px;">Provide specific guidance or missing topics for the research subgraph to investigate:</p>
+      <input type="text" id="researchMoreFeedback" class="dialog-input" placeholder="e.g., Focus on concrete prompt injection attack trees and defense benchmarks..." />
+      <div style="display:flex; gap:8px;">
+        <button class="btn-warning btn-sm" onclick="submitResearchMore()">Launch Next Cycle</button>
+        <button class="btn-secondary btn-sm" onclick="toggleDialog('researchMoreDialog')">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Reject Dialog -->
+    <div id="rejectDialog" class="dialog-box">
+      <div class="dialog-title">Reject Research Run</div>
+      <p style="font-size:0.75rem; color:var(--text-dim); margin-bottom:8px;">State the reason for rejecting this research synthesis:</p>
+      <input type="text" id="rejectFeedback" class="dialog-input" placeholder="e.g., Unacceptable factual grounding or hallucinations present..." />
+      <div style="display:flex; gap:8px;">
+        <button class="btn-danger btn-sm" onclick="submitReject()">Confirm Rejection</button>
+        <button class="btn-secondary btn-sm" onclick="toggleDialog('rejectDialog')">Cancel</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 12: Completed State Summary View -->
+  <section id="completedSection" class="card summary-card" style="display: none;">
+    <div class="card-header">
+      <span class="card-title" style="color: var(--success);">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Research Investigation Completed
+      </span>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-secondary btn-sm" onclick="copyMarkdownReport()">Copy Markdown Report</button>
+        <button class="btn-secondary btn-sm" onclick="downloadJsonState()">Download JSON</button>
+      </div>
+    </div>
+    <div class="summary-text" id="completedSummaryText"></div>
+  </section>
+
+  <!-- Section 13: Failed / Error State Recovery -->
+  <section id="failedSection" class="card" style="display:none; border-color:var(--danger-border); background:rgba(244,63,94,0.06);">
+    <div class="card-header">
+      <span class="card-title" style="color: var(--danger);">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Execution Failed
+      </span>
+      <button class="btn-danger btn-sm" onclick="retryRun()">Retry Run</button>
+    </div>
+    <p id="failedErrorText" style="font-family:var(--font-mono); font-size:0.8125rem; color:#fecaca;"></p>
+  </section>
+
+  <!-- Main Workspace Grid: Timeline (Left) & Inspector/Findings (Right) -->
+  <div class="workspace-grid">
+    <!-- Left Column: Section 5 Live Execution Timeline -->
+    <div class="card stream-panel">
+      <div class="card-header">
+        <span class="card-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Live Execution Timeline
+        </span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span id="eventCountBadge" class="meta-chip">0 events</span>
+          <button class="btn-secondary btn-sm" onclick="toggleAutoScroll()" id="autoScrollBtn">Auto-scroll: ON</button>
         </div>
       </div>
 
-      <!-- Right: Live Execution Log -->
-      <div>
-        <h2 style="font-size: 1.15rem; margin-bottom: 16px;">Execution Stream</h2>
-        <div id="logStream" class="log-stream">
-          <div class="log-entry" style="color: var(--text-muted);">Waiting for run initiation...</div>
+      <!-- Filter Tabs -->
+      <div class="filter-tabs">
+        <button class="tab-btn active" onclick="setFilter('all')">ALL</button>
+        <button class="tab-btn" onclick="setFilter('supervisor')">SUPERVISOR</button>
+        <button class="tab-btn" onclick="setFilter('researcher')">RESEARCHER</button>
+        <button class="tab-btn" onclick="setFilter('analyst')">ANALYST</button>
+        <button class="tab-btn" onclick="setFilter('critic')">CRITIC</button>
+        <button class="tab-btn" onclick="setFilter('verifier')">VERIFIER</button>
+        <button class="tab-btn" onclick="setFilter('human_review')">HUMAN REVIEW</button>
+      </div>
+
+      <div class="stream-scroll" id="eventsList">
+        <div class="stream-empty">No active execution. Launch an investigation or restore a session to inspect events.</div>
+      </div>
+    </div>
+
+    <!-- Right Column: Inspector + Critic + Claims + Sources -->
+    <div class="inspector-panel">
+      <!-- Section 6: Run Inspector Panel -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            Run Inspector
+          </span>
+        </div>
+        <div class="stat-list">
+          <div class="stat-item">
+            <span class="stat-label">Supervisor Steps</span>
+            <span class="stat-value" id="statSteps">0 / 8</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Human Cycles</span>
+            <span class="stat-value" id="statHumanCycles">0 / 3</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Research Iterations</span>
+            <span class="stat-value" id="statIterations">0 / 2</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Termination Reason</span>
+            <span class="stat-value" id="statTermination">-</span>
+          </div>
+        </div>
+        <div id="supervisorReasoningWrap" style="margin-top:12px; display:none;">
+          <div style="font-size:0.6875rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px;">Supervisor Reasoning</div>
+          <div id="supervisorReasoningText" style="font-size:0.75rem; color:var(--text-muted); background:var(--bg-subtle); padding:8px; border-radius:var(--radius-sm); border:1px solid var(--surface-border-subtle);"></div>
+        </div>
+      </div>
+
+      <!-- Section 7: Research Loop & Critic Panel -->
+      <div class="card" id="criticCard" style="display:none;">
+        <div class="card-header">
+          <span class="card-title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            Critic & Loop Quality
+          </span>
+          <span class="meta-chip" id="criticDecisionBadge">Passed</span>
+        </div>
+        <div class="critic-score-row">
+          <div class="score-circle" id="criticScore">0</div>
+          <div class="score-meta">
+            <span class="score-title">Information Coverage Score</span>
+            <span class="score-sub" id="criticFeedbackText">Quality meets synthesis threshold</span>
+          </div>
+        </div>
+        <div id="criticMissingWrap" style="display:none; margin-top:8px;">
+          <span style="font-size:0.6875rem; font-weight:600; color:var(--text-dim); text-transform:uppercase;">Missing Topics Identified:</span>
+          <div id="criticMissingChips" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;"></div>
+        </div>
+      </div>
+
+      <!-- Section 8: Claims & Evidence Cards -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            Synthesized Claims & Grounding
+          </span>
+          <span id="claimsCountBadge" class="meta-chip">0 claims</span>
+        </div>
+        <div class="claims-list" id="claimsContainer">
+          <div style="font-size:0.75rem; color:var(--text-dim); text-align:center; padding:20px;">No claims synthesized yet.</div>
+        </div>
+      </div>
+
+      <!-- Section 9: Source Explorer -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+            Retrieved Sources Explorer
+          </span>
+          <span id="sourcesCountBadge" class="meta-chip">0 sources</span>
+        </div>
+        <div class="sources-list" id="sourcesContainer">
+          <div style="font-size:0.75rem; color:var(--text-dim); text-align:center; padding:20px;">No external sources indexed yet.</div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <script>
-    let activeThreadId = null;
-    let eventSource = null;
-    let currentState = null;
+<!-- Toast Feedback -->
+<div id="toast" class="toast"></div>
 
-    function setStatus(status) {
-      const badge = document.getElementById('statusBadge');
-      const text = document.getElementById('statusText');
-      badge.className = `status-badge status-${status.toLowerCase()}`;
-      text.textContent = status.replace('_', ' ').toUpperCase();
+<script>
+  // State variables
+  let activeThreadId = null;
+  let activeEventSource = null;
+  let currentEvents = [];
+  let currentFilter = 'all';
+  let autoScroll = true;
+  let runStartTime = null;
+  let timerInterval = null;
+  let currentState = null;
 
-      const btnStart = document.getElementById('btnStart');
-      const isBusy = (status === 'running' || status === 'resuming');
-      btnStart.disabled = isBusy;
+  // On page load, initialize from hash or local storage
+  window.addEventListener('DOMContentLoaded', () => {
+    const hashThread = window.location.hash.replace('#thread=', '').trim();
+    const storedThread = localStorage.getItem('active_thread_id');
+    const tid = hashThread || storedThread;
+    if (tid && tid.startsWith('research_')) {
+      restoreSession(tid);
+    }
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  function setQuery(q) {
+    document.getElementById('questionInput').value = q;
+  }
+
+  function copyThreadId() {
+    if (!activeThreadId) return;
+    navigator.clipboard.writeText(activeThreadId).then(() => {
+      showToast(`Copied Thread ID: ${activeThreadId}`);
+    });
+  }
+
+  function toggleAutoScroll() {
+    autoScroll = !autoScroll;
+    const btn = document.getElementById('autoScrollBtn');
+    btn.textContent = `Auto-scroll: ${autoScroll ? 'ON' : 'OFF'}`;
+  }
+
+  function toggleDialog(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('open');
+  }
+
+  function setFilter(node) {
+    currentFilter = node;
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.toLowerCase() === (node === 'human_review' ? 'human review' : node));
+    });
+    renderEvents();
+  }
+
+  function filterStreamNode(node) {
+    setFilter(node ? node : 'all');
+  }
+
+  // Timer logic
+  function startTimer() {
+    clearInterval(timerInterval);
+    runStartTime = Date.now();
+    timerInterval = setInterval(() => {
+      const elapsed = Date.now() - runStartTime;
+      const secs = (elapsed / 1000).toFixed(1);
+      const m = Math.floor(secs / 60).toString().padStart(2, '0');
+      const s = (secs % 60).toFixed(1).padStart(4, '0');
+      document.getElementById('elapsedTimer').textContent = `${m}:${s}s`;
+    }, 100);
+  }
+
+  function stopTimer() {
+    clearInterval(timerInterval);
+  }
+
+  // Update Status Badge
+  function updateStatus(status) {
+    const badge = document.getElementById('statusBadge');
+    const label = document.getElementById('statusLabel');
+    badge.className = `status-badge status-${status}`;
+    label.textContent = status.replace(/_/g, ' ');
+
+    if (status === 'running' || status === 'resuming') {
+      document.getElementById('startBtn').disabled = true;
+      if (!runStartTime) startTimer();
+    } else {
+      document.getElementById('startBtn').disabled = false;
+      stopTimer();
     }
 
-    function addLog(event) {
-      const log = document.getElementById('logStream');
-      const entry = document.createElement('div');
-      entry.className = 'log-entry';
-      const time = new Date(event.timestamp || Date.now()).toLocaleTimeString();
-      const nodeTag = event.node ? `[${event.node}]` : '';
-      const summary = JSON.stringify(event.data || {});
-      entry.innerHTML = `<span class="log-time">${time}</span> <span class="log-node">${event.event_type} ${nodeTag}</span>: ${summary}`;
-      log.prepend(entry);
-    }
+    // HITL Section visibility
+    document.getElementById('hitlSection').style.display = status === 'waiting_for_human' ? 'block' : 'none';
+    document.getElementById('completedSection').style.display = status === 'completed' ? 'block' : 'none';
+    document.getElementById('failedSection').style.display = status === 'failed' ? 'block' : 'none';
 
-    function updateStepper(node) {
-      const steps = ['supervisor', 'research', 'verifier', 'human_review', 'finish'];
-      steps.forEach(s => {
-        const el = document.getElementById(`step-${s}`);
-        if (!el) return;
-        if (s === node) {
-          el.className = 'step-item active';
-        } else if (steps.indexOf(s) < steps.indexOf(node)) {
-          el.className = 'step-item completed';
+    // Update Architecture node states
+    updateArchNodes(status);
+  }
+
+  function updateArchNodes(status, activeNode = null) {
+    // Reset all nodes
+    const nodes = ['supervisor', 'research', 'verifier', 'human_review'];
+    nodes.forEach(n => {
+      const g = document.getElementById(`node-${n}`);
+      if (g) {
+        g.setAttribute('class', 'arch-node node-status-idle');
+        const b = g.querySelector('.node-badge');
+        if (b) b.textContent = 'QUEUED';
+      }
+    });
+
+    if (status === 'running') {
+      const target = activeNode || 'supervisor';
+      const targetEl = document.getElementById(`node-${target}`);
+      if (targetEl) {
+        targetEl.setAttribute('class', 'arch-node node-status-running');
+        const b = targetEl.querySelector('.node-badge');
+        if (b) b.textContent = 'ACTIVE';
+      }
+      document.getElementById('activeWorkerLabel').textContent = `Active: ${target}`;
+    } else if (status === 'waiting_for_human') {
+      const g = document.getElementById('node-human_review');
+      if (g) {
+        g.setAttribute('class', 'arch-node node-status-waiting');
+        const b = g.querySelector('.node-badge');
+        if (b) b.textContent = 'INTERRUPTED';
+      }
+      document.getElementById('activeWorkerLabel').textContent = 'Waiting for Human';
+    } else if (status === 'completed') {
+      nodes.forEach(n => {
+        const g = document.getElementById(`node-${n}`);
+        if (g) {
+          g.setAttribute('class', 'arch-node node-status-completed');
+          const b = g.querySelector('.node-badge');
+          if (b) b.textContent = 'DONE';
         }
+      });
+      document.getElementById('activeWorkerLabel').textContent = 'Execution Concluded';
+    } else if (status === 'failed') {
+      document.getElementById('activeWorkerLabel').textContent = 'Failed';
+    }
+  }
+
+  // Start Research
+  async function startResearch() {
+    const qInput = document.getElementById('questionInput');
+    const question = qInput.value.trim();
+    if (!question || question.length < 3) {
+      showToast('Please enter a valid research question (min 3 chars).');
+      return;
+    }
+
+    // Reset UI
+    currentEvents = [];
+    renderEvents();
+    updateStatus('running');
+    startTimer();
+
+    try {
+      const res = await fetch('/api/research', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Failed to start research run.');
+      }
+
+      const data = await res.json();
+      activeThreadId = data.thread_id;
+      localStorage.setItem('active_thread_id', activeThreadId);
+      window.location.hash = `thread=${activeThreadId}`;
+      document.getElementById('threadIdDisplay').textContent = activeThreadId;
+      showToast(`Initiated research session: ${activeThreadId}`);
+
+      connectSSE(activeThreadId);
+    } catch (err) {
+      updateStatus('failed');
+      document.getElementById('failedErrorText').textContent = err.message;
+      showToast(`Error: ${err.message}`);
+    }
+  }
+
+  // Session Reconnection
+  function handleReconnect(e) {
+    e.preventDefault();
+    const tid = document.getElementById('reconnectInput').value.trim();
+    if (tid) restoreSession(tid);
+  }
+
+  async function restoreSession(tid) {
+    activeThreadId = tid;
+    localStorage.setItem('active_thread_id', tid);
+    window.location.hash = `thread=${tid}`;
+    document.getElementById('threadIdDisplay').textContent = tid;
+    document.getElementById('reconnectInput').value = tid;
+
+    try {
+      const res = await fetch(`/api/research/${tid}`);
+      if (!res.ok) throw new Error('Session not found.');
+      const state = await res.json();
+      currentState = state;
+      applyStateSnapshot(state);
+      connectSSE(tid);
+      showToast(`Session ${tid} recovered.`);
+    } catch (err) {
+      showToast(`Failed to restore ${tid}: ${err.message}`);
+    }
+  }
+
+  // SSE Real-Time Event Stream Connection
+  function connectSSE(tid) {
+    if (activeEventSource) {
+      activeEventSource.close();
+    }
+
+    activeEventSource = new EventSource(`/api/research/${tid}/stream`);
+
+    activeEventSource.onmessage = (e) => {
+      try {
+        const evt = JSON.parse(e.data);
+        handleLiveEvent(evt);
+      } catch (err) {
+        console.error('Failed to parse SSE event data', err);
+      }
+    };
+
+    activeEventSource.onerror = (err) => {
+      // Reconnect or inspect status if stopped
+      fetchStateSnapshot(tid);
+    };
+  }
+
+  // Event Dispatcher
+  function handleLiveEvent(evt) {
+    currentEvents.push(evt);
+    document.getElementById('eventCountBadge').textContent = `${currentEvents.length} events`;
+    renderEvents();
+
+    const evType = evt.event_type;
+    const node = evt.node;
+    const data = evt.data || {};
+
+    // Live Architecture node update
+    if (node) updateArchNodes('running', node);
+
+    // Node-specific live updates
+    if (evType === 'supervisor_decision') {
+      document.getElementById('statSteps').textContent = `${data.step || 1} / 8`;
+      if (data.reasoning) {
+        document.getElementById('supervisorReasoningWrap').style.display = 'block';
+        document.getElementById('supervisorReasoningText').textContent = data.reasoning;
+      }
+    } else if (evType === 'research_update') {
+      if (data.sources_count) document.getElementById('metricSources').textContent = data.sources_count;
+      if (data.claims_count) document.getElementById('metricClaims').textContent = data.claims_count;
+    } else if (evType === 'source_found') {
+      appendSourceCard(data);
+    } else if (evType === 'analysis_update') {
+      if (data.claims_count) document.getElementById('metricClaims').textContent = data.claims_count;
+      if (data.claims) renderClaims(data.claims);
+    } else if (evType === 'critic_update') {
+      renderCriticInfo(data.critique);
+    } else if (evType === 'verification_update') {
+      if (data.claim) updateClaimVerification(data.claim);
+      if (data.verification_results) updateAllVerifications(data.verification_results);
+    } else if (evType === 'human_review_required') {
+      updateStatus('waiting_for_human');
+      if (activeEventSource) activeEventSource.close();
+      fetchStateSnapshot(evt.thread_id);
+    } else if (evType === 'human_review_resumed') {
+      updateStatus('resuming');
+    } else if (evType === 'run_completed') {
+      updateStatus('completed');
+      fetchStateSnapshot(evt.thread_id);
+    } else if (evType === 'run_failed') {
+      updateStatus('failed');
+      document.getElementById('failedErrorText').textContent = data.error || 'Execution encountered an unrecoverable error.';
+    } else if (evType === 'run_rejected') {
+      updateStatus('rejected');
+    }
+  }
+
+  // Fetch full state snapshot
+  async function fetchStateSnapshot(tid) {
+    try {
+      const res = await fetch(`/api/research/${tid}`);
+      if (res.ok) {
+        const state = await res.json();
+        currentState = state;
+        applyStateSnapshot(state);
+      }
+    } catch (err) {
+      console.error('Error fetching state snapshot:', err);
+    }
+  }
+
+  // Populate UI from full state snapshot
+  function applyStateSnapshot(state) {
+    if (!state) return;
+    updateStatus(state.status);
+
+    if (state.question) {
+      document.getElementById('questionInput').value = state.question;
+    }
+
+    // Counters
+    document.getElementById('metricSources').textContent = (state.sources || []).length;
+    document.getElementById('metricSourcesSub').textContent = `${(state.sources || []).length} external sources indexed`;
+    document.getElementById('metricEvidence').textContent = (state.evidence || []).length;
+    document.getElementById('metricEvidenceSub').textContent = `${(state.evidence || []).length} verbatim quotes extracted`;
+    document.getElementById('metricClaims').textContent = (state.claims || []).length;
+    document.getElementById('metricClaimsSub').textContent = `${(state.claims || []).length} atomic claims distilled`;
+
+    document.getElementById('statSteps').textContent = `${state.supervisor_steps || 0} / 8`;
+    document.getElementById('statHumanCycles').textContent = `${state.human_research_cycles || 0} / 3`;
+    document.getElementById('statIterations').textContent = `${state.research_iteration || 0} / 2`;
+    document.getElementById('statTermination').textContent = state.supervisor_termination_reason || '-';
+
+    if (state.supervisor_decision && state.supervisor_decision.reasoning) {
+      document.getElementById('supervisorReasoningWrap').style.display = 'block';
+      document.getElementById('supervisorReasoningText').textContent = state.supervisor_decision.reasoning;
+    }
+
+    // Render Sources, Claims, Verifications
+    renderSourcesList(state.sources || []);
+    renderClaimsWithGrounding(state.claims || [], state.evidence || [], state.verification_results || []);
+    renderVerificationMetrics(state.verification_results || []);
+
+    // HITL Review Context
+    if (state.status === 'waiting_for_human' && state.review_context) {
+      renderHitlContext(state.review_context);
+      populateEditDialog(state.claims || [], state.evidence || []);
+    }
+
+    // Completed summary
+    if (state.status === 'completed') {
+      const supCount = (state.verification_results || []).filter(v => v.verdict === 'SUPPORTED').length;
+      document.getElementById('completedSummaryText').innerHTML = `
+        <strong>Verified Research Investigation Finalized</strong><br/>
+        Investigated: <em>"${state.question}"</em><br/>
+        Synthesized <strong>${(state.claims || []).length} claims</strong> supported by <strong>${(state.sources || []).length} retrieved sources</strong> and <strong>${(state.evidence || []).length} verbatim evidence passages</strong>.<br/>
+        ${supCount} claims verified as fully SUPPORTED with direct textual grounding.
+      `;
+    }
+  }
+
+  // Render Timeline Events
+  function renderEvents() {
+    const container = document.getElementById('eventsList');
+    const filtered = currentEvents.filter(e => {
+      if (currentFilter === 'all') return true;
+      return (e.node || '').toLowerCase() === currentFilter.toLowerCase();
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="stream-empty">No events match current filter.</div>';
+      return;
+    }
+
+    container.innerHTML = filtered.map((e, idx) => {
+      const time = e.timestamp ? e.timestamp.split('T')[1].slice(0, 11) : '';
+      const nodeClass = `node-${e.node || 'system'}`;
+      const evClass = `ev-${e.event_type}`;
+      const payloadStr = JSON.stringify(e.data || {}, null, 2);
+
+      let summary = '';
+      if (e.event_type === 'supervisor_decision') {
+        summary = `Next: <strong>${e.data.next_worker}</strong> (Step ${e.data.step}) — ${e.data.reasoning || ''}`;
+      } else if (e.event_type === 'source_found') {
+        summary = `Source: <strong>${e.data.title || e.data.source_id}</strong> (${e.data.url || ''})`;
+      } else if (e.event_type === 'research_update') {
+        summary = `Sources: ${e.data.sources_count || 0}, Claims: ${e.data.claims_count || 0}`;
+      } else if (e.event_type === 'analysis_update') {
+        summary = `Formulated ${e.data.claims_count || 0} claims, ${e.data.findings_count || 0} findings`;
+      } else if (e.event_type === 'critic_update') {
+        const score = e.data.critique ? e.data.critique.quality_score : '';
+        summary = `Quality: <strong>${score}/10</strong> — ${e.data.critique ? e.data.critique.reasoning : ''}`;
+      } else if (e.event_type === 'verification_update') {
+        summary = `Verification update: ${e.data.count || 1} claims evaluated`;
+      } else if (e.event_type === 'retry') {
+        summary = `Transient error retry on <strong>${e.node}</strong> (Attempt ${e.data.attempt}): ${e.data.error || ''}`;
+      } else if (e.event_type === 'human_review_required') {
+        summary = `Execution paused at checkpoint. Awaiting authoritative human review.`;
+      } else if (e.event_type === 'run_completed') {
+        summary = `Completed: ${e.data.claims_count || 0} claims, ${e.data.sources_count || 0} sources.`;
+      } else {
+        summary = e.data.message || JSON.stringify(e.data);
+      }
+
+      return `
+        <div class="event-row">
+          <div class="event-top">
+            <span class="event-time">${time}</span>
+            <span class="event-node ${nodeClass}">${e.node || 'SYS'}</span>
+            <span class="event-badge ${evClass}">${e.event_type}</span>
+          </div>
+          <div class="event-body">${summary}</div>
+          <span class="event-payload-btn" onclick="togglePayload('payload-${idx}')">Inspect Payload</span>
+          <pre id="payload-${idx}" class="event-payload">${payloadStr}</pre>
+        </div>
+      `;
+    }).join('');
+
+    if (autoScroll) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }
+
+  function togglePayload(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
+  }
+
+  // Render Sources List
+  function renderSourcesList(sources) {
+    const container = document.getElementById('sourcesContainer');
+    document.getElementById('sourcesCountBadge').textContent = `${sources.length} sources`;
+    if (!sources || sources.length === 0) {
+      container.innerHTML = '<div style="font-size:0.75rem; color:var(--text-dim); text-align:center; padding:20px;">No external sources indexed yet.</div>';
+      return;
+    }
+    container.innerHTML = sources.map(s => `
+      <div class="source-item">
+        <div class="source-top">
+          <a class="source-title" href="${s.url}" target="_blank" rel="noopener noreferrer">${s.title || s.url}</a>
+          <span class="source-id">${s.source_id}</span>
+        </div>
+        <div class="source-snippet">${s.content || ''}</div>
+      </div>
+    `).join('');
+  }
+
+  function appendSourceCard(source) {
+    const container = document.getElementById('sourcesContainer');
+    if (container.querySelector('.stream-empty')) container.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'source-item';
+    div.innerHTML = `
+      <div class="source-top">
+        <a class="source-title" href="${source.url}" target="_blank" rel="noopener noreferrer">${source.title || source.url}</a>
+        <span class="source-id">${source.source_id}</span>
+      </div>
+      <div class="source-snippet">${source.content || ''}</div>
+    `;
+    container.prepend(div);
+  }
+
+  // Render Claims & Grounding Cards
+  function renderClaimsWithGrounding(claims, evidenceList, verifications) {
+    const container = document.getElementById('claimsContainer');
+    document.getElementById('claimsCountBadge').textContent = `${claims.length} claims`;
+    if (!claims || claims.length === 0) {
+      container.innerHTML = '<div style="font-size:0.75rem; color:var(--text-dim); text-align:center; padding:20px;">No claims synthesized yet.</div>';
+      return;
+    }
+
+    const evMap = {};
+    (evidenceList || []).forEach(e => { evMap[e.evidence_id] = e; });
+    const verMap = {};
+    (verifications || []).forEach(v => { verMap[v.claim_id] = v; });
+
+    container.innerHTML = claims.map(c => {
+      const v = verMap[c.claim_id];
+      const verdict = v ? v.verdict : 'PENDING';
+      const conf = v ? Math.round(v.confidence * 100) : 0;
+      const reasoning = v ? v.reasoning : 'Awaiting claim-level verifier evaluation...';
+      const linkedEvidence = (c.evidence_ids || []).map(eid => evMap[eid]).filter(Boolean);
+
+      return `
+        <div class="claim-card">
+          <div class="claim-header">
+            <span class="claim-id">${c.claim_id}</span>
+            <span class="verdict-tag verdict-${verdict}">${verdict}</span>
+          </div>
+          <div class="claim-text">${c.text}</div>
+          <div class="confidence-wrap">
+            <span>Confidence: ${conf}%</span>
+            <div class="conf-meter"><div class="conf-fill" style="width: ${conf}%"></div></div>
+          </div>
+          <div class="claim-reasoning"><strong>Rationale:</strong> ${reasoning}</div>
+          ${linkedEvidence.map(ev => `
+            <div class="evidence-quote">
+              "${ev.text}" <span style="color:var(--accent); font-style:normal;">[${ev.source_id}]</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderVerificationMetrics(verifications) {
+    const total = verifications.length;
+    if (total === 0) return;
+    const sup = verifications.filter(v => v.verdict === 'SUPPORTED').length;
+    const part = verifications.filter(v => v.verdict === 'PARTIAL').length;
+    const unsup = verifications.filter(v => v.verdict === 'UNSUPPORTED').length;
+
+    const supPct = Math.round((sup / total) * 100);
+    const partPct = Math.round((part / total) * 100);
+    const unsupPct = Math.round((unsup / total) * 100);
+
+    document.getElementById('metricVerified').textContent = `${supPct}%`;
+    document.getElementById('barSupported').style.width = `${supPct}%`;
+    document.getElementById('barPartial').style.width = `${partPct}%`;
+    document.getElementById('barUnsupported').style.width = `${unsupPct}%`;
+    document.getElementById('metricVerifiedSub').textContent = `${sup} supported • ${part} partial • ${unsup} unsupported`;
+  }
+
+  function renderCriticInfo(critique) {
+    if (!critique) return;
+    const card = document.getElementById('criticCard');
+    card.style.display = 'block';
+    const score = Math.round((critique.quality_score || 0) * 10);
+    document.getElementById('criticScore').textContent = `${score}%`;
+    document.getElementById('criticFeedbackText').textContent = critique.reasoning || '';
+    document.getElementById('criticDecisionBadge').textContent = critique.should_research_again ? 'Loop Needed' : 'Approved';
+
+    if (critique.missing_aspects && critique.missing_aspects.length > 0) {
+      document.getElementById('criticMissingWrap').style.display = 'block';
+      document.getElementById('criticMissingChips').innerHTML = critique.missing_aspects.map(m => `
+        <span class="chip" style="font-size:0.6875rem;">${m}</span>
+      `).join('');
+    }
+  }
+
+  // HITL Review Support
+  function renderHitlContext(ctx) {
+    const container = document.getElementById('hitlContextSummary');
+    if (!ctx || !ctx.review_items) {
+      container.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted);">No review items in interrupt context.</div>';
+      return;
+    }
+    container.innerHTML = ctx.review_items.map(item => `
+      <div class="stat-item" style="flex-direction:column; align-items:flex-start; gap:4px;">
+        <div style="display:flex; justify-content:space-between; width:100%;">
+          <span class="stat-label">${item.claim_id}</span>
+          <span class="verdict-tag verdict-${item.verification ? item.verification.verdict : 'PENDING'}">${item.verification ? item.verification.verdict : 'PENDING'}</span>
+        </div>
+        <div style="font-size:0.8125rem; color:var(--text);">${item.text}</div>
+      </div>
+    `).join('');
+  }
+
+  function populateEditDialog(claims, evidence) {
+    const container = document.getElementById('editClaimsContainer');
+    const validEvidenceIds = (evidence || []).map(e => e.evidence_id);
+
+    container.innerHTML = claims.map((c, i) => `
+      <div style="background:var(--bg); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--surface-border);">
+        <div style="font-size:0.6875rem; color:var(--text-dim); margin-bottom:4px;">Claim ID: ${c.claim_id}</div>
+        <input type="text" id="edit-claim-text-${i}" class="dialog-input" value="${c.text.replace(/"/g, '&quot;')}" style="margin-bottom:6px;" />
+        <div style="font-size:0.6875rem; color:var(--text-dim); margin-bottom:2px;">Evidence IDs (comma-separated, available: ${validEvidenceIds.join(', ')}):</div>
+        <input type="text" id="edit-claim-ev-${i}" class="dialog-input" value="${(c.evidence_ids || []).join(', ')}" />
+      </div>
+    `).join('');
+  }
+
+  async function submitHitlAction(action, payload = {}) {
+    if (!activeThreadId) return;
+    try {
+      updateStatus('resuming');
+      const body = { action, ...payload };
+      const res = await fetch(`/api/research/${activeThreadId}/resume`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Resume request rejected.');
+      }
+
+      showToast(`Action '${action}' submitted. Resuming execution.`);
+      connectSSE(activeThreadId);
+    } catch (err) {
+      showToast(`Resume error: ${err.message}`);
+      updateStatus('waiting_for_human');
+    }
+  }
+
+  function saveEditedClaims() {
+    if (!currentState || !currentState.claims) return;
+    const editedClaims = [];
+    const validEvidence = (currentState.evidence || []).map(e => e.evidence_id);
+
+    for (let i = 0; i < currentState.claims.length; i++) {
+      const orig = currentState.claims[i];
+      const text = document.getElementById(`edit-claim-text-${i}`).value.trim();
+      const evStr = document.getElementById(`edit-claim-ev-${i}`).value.trim();
+      const evIds = evStr ? evStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+      // Client-side validation: evidence IDs must exist in available evidence
+      for (const eid of evIds) {
+        if (!validEvidence.includes(eid)) {
+          showToast(`Validation error: Evidence ID '${eid}' does not exist.`);
+          return;
+        }
+      }
+
+      editedClaims.push({
+        claim_id: orig.claim_id,
+        text: text,
+        evidence_ids: evIds
       });
     }
 
-    function updateSupervisorBanner(decision, reasoning) {
-      const banner = document.getElementById('supervisorBanner');
-      const text = document.getElementById('supervisorText');
-      if (decision) {
-        banner.style.display = 'flex';
-        text.textContent = `Selected '${decision}'. ${reasoning || ''}`;
-      }
+    toggleDialog('editDialog');
+    submitHitlAction('edit', { edited_claims: editedClaims });
+  }
+
+  function submitResearchMore() {
+    const feedback = document.getElementById('researchMoreFeedback').value.trim();
+    toggleDialog('researchMoreDialog');
+    submitHitlAction('research_more', { feedback: feedback || 'Please perform additional targeted search.' });
+  }
+
+  function submitReject() {
+    const feedback = document.getElementById('rejectFeedback').value.trim();
+    toggleDialog('rejectDialog');
+    submitHitlAction('reject', { feedback: feedback || 'Rejected by human reviewer.' });
+  }
+
+  function retryRun() {
+    if (currentState && currentState.question) {
+      setQuery(currentState.question);
+      startResearch();
     }
+  }
 
-    async function startResearch() {
-      const question = document.getElementById('questionInput').value.trim();
-      const threadId = document.getElementById('threadInput').value.trim();
-      if (!question) {
-        alert('Please enter a research question.');
-        return;
-      }
+  function copyMarkdownReport() {
+    if (!currentState) return;
+    const sup = (currentState.verification_results || []).filter(v => v.verdict === 'SUPPORTED');
+    const md = [
+      `# Verified Research Report`,
+      `**Question:** ${currentState.question}`,
+      `**Thread ID:** ${currentState.thread_id}`,
+      `**Verified Claims (${sup.length}):**`,
+      ...sup.map(v => {
+        const c = (currentState.claims || []).find(x => x.claim_id === v.claim_id);
+        return `- **${c ? c.text : v.claim_id}** (Confidence: ${Math.round(v.confidence * 100)}%)\n  *Rationale:* ${v.reasoning}`;
+      }),
+      `\n**Sources Indexed (${(currentState.sources || []).length}):**`,
+      ...(currentState.sources || []).map(s => `- [${s.title || s.url}](${s.url})`),
+    ].join('\n');
 
-      setStatus('running');
-      try {
-        const res = await fetch('/api/research', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question, thread_id: threadId || null })
-        });
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
-        activeThreadId = data.thread_id;
-        document.getElementById('threadInput').value = activeThreadId;
-        connectSSE(activeThreadId);
-      } catch (err) {
-        setStatus('failed');
-        alert('Failed to start research: ' + err.message);
-      }
-    }
+    navigator.clipboard.writeText(md).then(() => showToast('Markdown report copied to clipboard!'));
+  }
 
-    function connectSSE(threadId) {
-      if (eventSource) eventSource.close();
-      eventSource = new EventSource(`/api/research/${threadId}/stream`);
+  function downloadJsonState() {
+    if (!currentState) return;
+    const blob = new Blob([JSON.stringify(currentState, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentState.thread_id || 'research'}_state.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
 
-      eventSource.onmessage = (e) => {
-        try {
-          const event = JSON.parse(e.data);
-          handleAgentEvent(event);
-        } catch (err) {
-          console.error('Error parsing SSE data', err);
-        }
-      };
-
-      eventSource.onerror = (err) => {
-        console.warn('SSE connection error; polling snapshot fallback', err);
-        fetchState(threadId);
-      };
-    }
-
-    function handleAgentEvent(event) {
-      addLog(event);
-
-      if (event.node) updateStepper(event.node);
-
-      switch (event.event_type) {
-        case 'supervisor_decision':
-          updateSupervisorBanner(event.data.next_worker, event.data.reasoning);
-          break;
-        case 'research_update':
-          document.getElementById('metricSources').textContent = event.data.sources_count || 0;
-          document.getElementById('metricClaims').textContent = event.data.claims_count || 0;
-          break;
-        case 'verification_update':
-          document.getElementById('metricClaims').textContent = event.data.count || 0;
-          fetchState(activeThreadId);
-          break;
-        case 'human_review_required':
-          setStatus('waiting_for_human');
-          updateStepper('human_review');
-          document.getElementById('hitlSection').style.display = 'block';
-          fetchState(activeThreadId);
-          break;
-        case 'human_review_resumed':
-          setStatus('resuming');
-          document.getElementById('hitlSection').style.display = 'none';
-          break;
-        case 'run_completed':
-          setStatus('completed');
-          updateStepper('finish');
-          fetchState(activeThreadId);
-          if (eventSource) eventSource.close();
-          break;
-        case 'run_rejected':
-          setStatus('rejected');
-          document.getElementById('hitlSection').style.display = 'none';
-          fetchState(activeThreadId);
-          if (eventSource) eventSource.close();
-          break;
-        case 'run_failed':
-          setStatus('failed');
-          alert('Research failed: ' + (event.data.error || 'Unknown error'));
-          if (eventSource) eventSource.close();
-          break;
-      }
-    }
-
-    async function reconnectSession() {
-      const threadId = document.getElementById('threadInput').value.trim();
-      if (!threadId) {
-        alert('Please enter a thread ID to reconnect.');
-        return;
-      }
-      activeThreadId = threadId;
-      await fetchState(threadId);
-      connectSSE(threadId);
-    }
-
-    async function fetchState(threadId) {
-      try {
-        const res = await fetch(`/api/research/${threadId}`);
-        if (!res.ok) throw new Error(await res.text());
-        currentState = await res.json();
-        renderState(currentState);
-      } catch (err) {
-        console.error('Failed to fetch state', err);
-      }
-    }
-
-    function renderState(state) {
-      setStatus(state.status);
-      document.getElementById('metricIteration').textContent = state.research_iteration;
-      document.getElementById('metricSources').textContent = (state.sources || []).length;
-      document.getElementById('metricClaims').textContent = (state.claims || []).length;
-      document.getElementById('metricCycles').textContent = state.human_research_cycles;
-
-      if (state.question) document.getElementById('questionInput').value = state.question;
-      if (state.status === 'waiting_for_human') {
-        document.getElementById('hitlSection').style.display = 'block';
-        updateStepper('human_review');
-      } else {
-        document.getElementById('hitlSection').style.display = 'none';
-      }
-
-      renderClaims(state.claims, state.evidence, state.sources, state.verification_results);
-    }
-
-    function renderClaims(claims, evidenceList, sourcesList, verifications) {
-      const container = document.getElementById('claimsContainer');
-      if (!claims || claims.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No claims available.</p>';
-        return;
-      }
-
-      const evMap = {};
-      (evidenceList || []).forEach(e => { evMap[e.evidence_id] = e; });
-      const srcMap = {};
-      (sourcesList || []).forEach(s => { srcMap[s.source_id] = s; });
-      const verMap = {};
-      (verifications || []).forEach(v => { verMap[v.claim_id] = v; });
-
-      container.innerHTML = claims.map(c => {
-        const v = verMap[c.claim_id];
-        const verdict = v ? v.verdict : 'UNVERIFIED';
-        const conf = v && v.confidence ? Math.round(v.confidence * 100) : 0;
-        let vClass = 'verdict-unsupported';
-        let vSymbol = '✕';
-        if (verdict === 'SUPPORTED') { vClass = 'verdict-supported'; vSymbol = '✓'; }
-        else if (verdict === 'PARTIAL') { vClass = 'verdict-partial'; vSymbol = '◐'; }
-
-        const evidenceHtml = (c.evidence_ids || []).map(eid => {
-          const ev = evMap[eid];
-          if (!ev) return `<div class="evidence-box">Evidence [${eid}] not found in state.</div>`;
-          const src = srcMap[ev.source_id];
-          return `
-            <div class="evidence-box">
-              <p>"${ev.text}"</p>
-              <div class="evidence-meta">
-                <span>Evidence ID: ${ev.evidence_id}</span>
-                ${src ? `<span>Source: <a href="${src.url}" target="_blank">${src.title || src.url}</a></span>` : ''}
-              </div>
-            </div>
-          `;
-        }).join('');
-
-        return `
-          <div class="claim-card">
-            <div class="claim-header">
-              <div class="claim-title">[${c.claim_id}] ${c.text}</div>
-              <span class="verdict-tag ${vClass}">${vSymbol} ${verdict} (${conf}%)</span>
-            </div>
-            ${v && v.reasoning ? `<p style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 8px;"><strong>Rationale:</strong> ${v.reasoning}</p>` : ''}
-            <div>
-              <strong style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Grounding Traceability</strong>
-              ${evidenceHtml}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    /* Human in the loop handlers */
-    function toggleEditPane() {
-      const pane = document.getElementById('editPane');
-      const isVisible = pane.style.display === 'block';
-      pane.style.display = isVisible ? 'none' : 'block';
-      document.getElementById('feedbackPane').style.display = 'none';
-
-      if (!isVisible && currentState && currentState.claims) {
-        const container = document.getElementById('editClaimsContainer');
-        container.innerHTML = currentState.claims.map((c, i) => `
-          <div style="margin-bottom: 12px;">
-            <label style="font-size: 0.8rem; color: var(--text-muted);">Claim ${c.claim_id} (Evidence: ${c.evidence_ids.join(', ')}):</label>
-            <textarea id="edit_claim_${i}" rows="2" style="width: 100%; margin-top: 4px;">${c.text}</textarea>
-          </div>
-        `).join('');
-      }
-    }
-
-    function promptResearchMore() {
-      const pane = document.getElementById('feedbackPane');
-      pane.style.display = pane.style.display === 'block' ? 'none' : 'block';
-      document.getElementById('editPane').style.display = 'none';
-    }
-
-    async function submitReview(action) {
-      if (!activeThreadId) return;
-      const feedback = document.getElementById('feedbackInput').value.trim() || null;
-      try {
-        const res = await fetch(`/api/research/${activeThreadId}/resume`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, feedback })
-        });
-        if (!res.ok) throw new Error(await res.text());
-        setStatus('resuming');
-        document.getElementById('hitlSection').style.display = 'none';
-      } catch (err) {
-        alert('Resume action failed: ' + err.message);
-      }
-    }
-
-    async function submitEditedClaims() {
-      if (!activeThreadId || !currentState || !currentState.claims) return;
-      const edited_claims = currentState.claims.map((c, i) => ({
-        claim_id: c.claim_id,
-        text: document.getElementById(`edit_claim_${i}`).value.trim(),
-        evidence_ids: c.evidence_ids
-      }));
-
-      try {
-        const res = await fetch(`/api/research/${activeThreadId}/resume`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'edit', edited_claims })
-        });
-        if (!res.ok) throw new Error(await res.text());
-        setStatus('resuming');
-        document.getElementById('hitlSection').style.display = 'none';
-        document.getElementById('editPane').style.display = 'none';
-      } catch (err) {
-        alert('Failed to submit edited claims: ' + err.message);
-      }
-    }
-
-    function confirmReject() {
-      if (confirm('Are you sure you want to reject this research? This is a terminal action.')) {
-        submitReview('reject');
-      }
-    }
-  </script>
 </body>
 </html>
